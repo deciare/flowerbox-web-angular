@@ -126,7 +126,11 @@ export class TerminalComponent implements OnInit {
 			}
 			this.appendLine(chunks);
 		});
-		this.scrollToBottom();
+
+		// If any new lines were output, scroll to bottom
+		if (data.log.length) {
+			this.scrollToBottom();
+		}
 	}
 
 	private handleErrorOutput(error: string) {
