@@ -1,0 +1,8 @@
+node_modules/
+typings/
+
+# Local changes only
+config.js
+
+# Finder metadata
+.DS_Store

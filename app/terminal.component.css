@@ -1,0 +1,23 @@
+.terminal {
+	background-color: black;
+	color: #eeeeee;
+	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
+	font-size: 12pt;
+	width: 100%;
+	height: 100vh;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+.terminal .history {
+	color: #888888;
+}
+.terminal .line {
+	white-space: pre-wrap;
+}
+.terminal .line .cursor {
+	background-color: #eeeeee;
+	color: black;
+}
+.terminal .wob {
+	color: #55aaaa !important;
+}

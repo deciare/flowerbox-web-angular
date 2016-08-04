@@ -1,0 +1,6 @@
+<div [id]="domId" class="terminal" (window:keydown)="onKey($event)">
+	<div *ngFor="let line of scrollback">
+		<span class="history line" *ngFor="let chunk of line.chunks"><span class="{{chunk.type}}" *ngIf="chunk.type == 'input'">{{prompt}}</span><span *ngIf="chunk.url"><a href="{{chunk.url}}" class="{{chunk.type}}">{{chunk.text}}</a></span><span class="{{chunk.type}}" *ngIf="!chunk.url">{{chunk.text}}</span></span>
+	</div>
+	<div class="line"><span class="prompt">{{prompt}}</span><span>{{inputLeft}}</span><span class="cursor">{{inputCursor}}</span><span>{{inputRight}}</span></div>
+</div>
