@@ -1,6 +1,11 @@
 node_modules/
 typings/
 
+# JavaScript files and maps compiled from TypeScript
+# (run tsc to create these files)
+app/*.js
+app/*.js.map
+
 # Local changes only
 config.js
 
