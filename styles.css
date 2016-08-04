@@ -17,3 +17,18 @@ body, input[text], button {
 	color: #888;
 	font-family: Cambria, Georgia;
 }
+.tooltip .tooltip-inner {
+	background-color: #333333;
+}
+.tooltip.top .tooltip-arrow {
+	border-top-color: #333333;
+}
+.tooltip.right .tooltip-arrow {
+	border-right-color: #333333;
+}
+.tooltip.bottom .tooltip-arrow {
+	border-bottom-color: #333333;
+}
+.tooltip.left .tooltip-arrow {
+	border-left-color: #333333;
+}

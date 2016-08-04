@@ -3,7 +3,7 @@
 		<tbody>
 			<tr class="history" *ngFor="let line of scrollback">
 				<td class="left-margin">
-					{{line.timestamp | date:"HH:mm"}}
+					<span data-toggle="tooltip" data-placement="right" title="{{line.timestamp | date:'medium'}}">{{line.timestamp | date:"HH:mm"}}</span>
 				</td>
 				<td class="main-content">
 					<span *ngFor="let chunk of line.chunks">

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from "@angular/core";
+import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
 import { HearLog, HearLogItem, WobRef } from "./hear-log";
 import { TerminalCommandService } from "./terminal-command.service";
 
@@ -46,7 +46,7 @@ class ScrollbackLine {
 		TerminalCommandService
 	]
 })
-export class TerminalComponent implements OnInit {
+export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnInit {
 	private cursorAtEnd: boolean;
 	private cursorPosition: number;
 	private cursorSpeed: number;
@@ -75,13 +75,6 @@ export class TerminalComponent implements OnInit {
 
 		// Initialise empty command line
 		this.deleteLine();
-
-		// Initialise jQuery reference to this component's toplevel element.
-		// This must be done with a setTimeout() because domId has not been
-		// bound to the id property of the terminal's container div at the time
-		// ngOnInit() executes. Not wrapping this initialisation in a
-		// setTimeout() would result in this.element being undefined.
-		setTimeout(() => { this.element = $(`#${this.domId}`); }, 0);
 	}
 
 	ngOnInit() {
@@ -90,6 +83,16 @@ export class TerminalComponent implements OnInit {
 			this.handleOutput.bind(this),
 			this.handleErrorOutput.bind(this)
 		);
+	}
+
+	ngAfterViewInit() {
+		// Initialise jQuery reference to this component's toplevel element.
+		this.element = $(`#${this.domId}`);
+	}
+
+	ngAfterViewChecked() {
+		// Bootstrap: Opt-in to tooltip data API
+		$('[data-toggle="tooltip"]').tooltip();
 	}
 
 	trackByScrollbackLine(index: number, line: ScrollbackLine) {
