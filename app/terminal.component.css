@@ -12,7 +12,10 @@
 	vertical-align: top;
 }
 .terminal .history {
-	color: #888888;
+	color: #999999;
+}
+.terminal .history .command {
+	color: #559955;
 }
 .terminal .pre {
 	white-space: pre-wrap;
@@ -30,4 +33,5 @@
 }
 .terminal .wob {
 	color: #55aaaa !important;
+	text-decoration: underline;
 }
