@@ -18,8 +18,9 @@ class ScrollbackChunk {
 
 class ScrollbackLine {
 	chunks: ScrollbackChunk[];
+	timestamp: Date;
 
-	constructor(chunk: any) {
+	constructor(chunk: any, timestamp?: Date) {
 		if (chunk instanceof Array) {
 			this.chunks = chunk;
 		}
@@ -29,6 +30,8 @@ class ScrollbackLine {
 		else {
 			console.error("ScrollbackLine constructor: invaild chunk", chunk);
 		}
+
+		this.timestamp = timestamp;
 	}
 }
 
@@ -56,6 +59,7 @@ export class TerminalComponent implements OnInit {
 	private scrollback: ScrollbackLine[];
 	private scrollbackMaxLength: number;
 	private prompt: string;
+	private lastShownTimestamp: Date;
 
 	@Input()
 	domId: string;
@@ -93,38 +97,75 @@ export class TerminalComponent implements OnInit {
 	}
 
 	private handleOutput(data: HearLog) {
+		var isFirstLine: boolean = true;
+
 		console.debug("Handling output:", data);
 		data.log.forEach((log) => {
 			var chunks: ScrollbackChunk[] = [];
+			var timestamp: Date = new Date(log.timestamp);
 
-			switch(log.type) {
-				case HearLogItem.TypeCommand:
-					if (log.tag != this.terminalCommandService.tag) {
-						chunks.push(new ScrollbackChunk("command", this.prompt + log.items[0]))
-					}
-					break;
-				case HearLogItem.TypeOutput:
-					chunks.push(new ScrollbackChunk("output", log.timestamp + ": "));
-					log.items.forEach((item) => {
-						var type: string;
-						var url: string;
-
-						if (typeof(item) === "object") {
-							switch(item.rich) {
-								case "wob":
-									type = "wob";
-									url = "/objinfo/" + item.id;
-									break;
-							}
-							chunks.push(new ScrollbackChunk(type, item.text, url));
-						}
-						else {
-							chunks.push(new ScrollbackChunk("output", item));
-						}
-					});
-					break;
+			// If a hear log entry exists, but it has no items, then the Server
+			// is informing us that it means to display a blank line
+			if (log.items.length == 0) {
+				chunks.push(new ScrollbackChunk("blank", " "));
 			}
-			this.appendLine(chunks);
+			else {
+				switch(log.type) {
+					case HearLogItem.TypeCommand: // echoed command
+						// If this command hasn't already been locally echoed,
+						// it either came from a previous session or other
+						// simultaneously connected session. Display it.
+						if (log.tag != this.terminalCommandService.tag) {
+							chunks.push(new ScrollbackChunk("command", this.prompt + log.items[0]));
+						}
+						// Skip processing this line (i.e. don't display a
+						// blank line) if this command has already been
+						// locally echoed
+						else {
+							return;
+						}
+						break;
+					case HearLogItem.TypeOutput: // generic output
+						log.items.forEach((item) => {
+							var type: string;
+							var url: string;
+
+							if (typeof(item) === "object") {
+								switch(item.rich) {
+									case "wob":
+										type = "wob";
+										url = "/objinfo/" + item.id;
+										break;
+								}
+								chunks.push(new ScrollbackChunk(type, item.text, url));
+							}
+							else {
+								chunks.push(new ScrollbackChunk("output", item));
+							}
+						});
+						break;
+				}
+			}
+
+			// Show a timestmap on this line if:
+			//  - It is the first line in the HearLog (e.g. new message or
+			//    response to newly entered command
+			//  - A timestamp has never been shown in this session (i.e. the
+			//    user just logged in on this session and a backog is being
+			//    shown)
+			//  - The minute of the current line's timestamp differs from the
+			//    last timestamp that was shown
+			if (isFirstLine ||
+				!this.lastShownTimestamp ||
+				timestamp.getMinutes() != this.lastShownTimestamp.getMinutes()) {
+				this.appendLine(new ScrollbackLine(chunks, timestamp));
+				isFirstLine = false;
+			}
+			else {
+				this.appendLine(new ScrollbackLine(chunks, undefined));
+			}
+
+			this.lastShownTimestamp = timestamp;
 		});
 
 		// If any new lines were output, scroll to bottom
@@ -134,7 +175,7 @@ export class TerminalComponent implements OnInit {
 	}
 
 	private handleErrorOutput(error: string) {
-		console.log("Handing error output:", error);
+		console.debug("Handing error output:", error);
 		this.appendLine("error", error);
 		this.scrollToBottom();
 	}
@@ -350,7 +391,12 @@ export class TerminalComponent implements OnInit {
 		var command = this.inputLeft + (this.cursorAtEnd ? "" : this.inputCursor + this.inputRight);
 
 		// Append input to scrollback buffer
-		this.appendLine("input", command);
+		if (command.trim()) {
+			this.appendLine("command", this.prompt + command, new Date());
+		}
+		else {
+			this.appendLine("blank", " ");
+		}
 
 		// Clear this line
 		this.deleteLine();
@@ -372,19 +418,21 @@ export class TerminalComponent implements OnInit {
 		}
 	}
 
-	appendLine(typeOrChunks: any, text?: string) {
-		if (typeof(typeOrChunks) === "string") {
-			this.scrollback.push(new ScrollbackLine(new ScrollbackChunk(typeOrChunks, text)));
+	appendLine(typeOrLine: any, text?: string, timestamp?: Date) {
+		var line: ScrollbackLine;
+
+		if (typeof(typeOrLine) === "string") {
+			line = new ScrollbackLine(new ScrollbackChunk(typeOrLine, text), timestamp);
 		}
-		else if (typeof(typeOrChunks) === "object" &&
-			(
-				typeOrChunks instanceof Array ||
-				typeOrChunks instanceof ScrollbackChunk
-			)
+		else if (typeof(typeOrLine) === "object" &&
+			typeOrLine instanceof ScrollbackLine
 		) {
-			this.scrollback.push(new ScrollbackLine(typeOrChunks));
+			line = typeOrLine;
 		}
 
+		// Add line to scrollback buffer
+		this.scrollback.push(line);
+		// Age out old lines from scrollback buffer
 		if (this.scrollback.length >= this.scrollbackMaxLength) {
 			this.scrollback.shift();
 		}

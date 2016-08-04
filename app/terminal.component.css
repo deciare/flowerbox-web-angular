@@ -8,15 +8,25 @@
 	overflow-x: hidden;
 	overflow-y: scroll;
 }
+.terminal td {
+	vertical-align: top;
+}
 .terminal .history {
 	color: #888888;
 }
-.terminal .line {
+.terminal .pre {
 	white-space: pre-wrap;
 }
-.terminal .line .cursor {
+.terminal .cursor {
 	background-color: #eeeeee;
 	color: black;
+}
+.terminal .left-margin {
+	border-right: 1px solid #666666;
+	padding-right: 10px;
+}
+.terminal .main-content {
+	padding-left: 10px;
 }
 .terminal .wob {
 	color: #55aaaa !important;
