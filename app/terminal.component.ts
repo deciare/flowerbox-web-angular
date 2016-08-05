@@ -1,39 +1,10 @@
 import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
 import { HearLog, HearLogItem, WobRef } from "./hear-log";
+import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
 import { TerminalCommandService } from "./terminal-command.service";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
-
-class ScrollbackChunk {
-	text: string;
-	type: string;
-	url: string;
-
-	constructor(type: string, text: string, url?: string) {
-		this.type = type;
-		this.text = text;
-		this.url = url;
-	}
-}
-
-class ScrollbackLine {
-	chunks: ScrollbackChunk[];
-	timestamp: Date;
-
-	constructor(chunk: any, timestamp?: Date) {
-		if (chunk instanceof Array) {
-			this.chunks = chunk;
-		}
-		else if (chunk instanceof ScrollbackChunk) {
-			this.chunks = [ chunk ];
-		}
-		else {
-			console.error("ScrollbackLine constructor: invaild chunk", chunk);
-		}
-
-		this.timestamp = timestamp;
-	}
-}
+///<reference path="../typings/globals/bootstrap/index.d.ts" />
 
 @Component({
 	moduleId: module.id,
