@@ -2,6 +2,7 @@ import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angu
 import { HearLog, HearLogItem, WobRef } from "./hear-log";
 import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
 import { TerminalCommandService } from "./terminal-command.service";
+import { InteractiveChunkComponent } from "./interactive-chunk.component";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
@@ -13,6 +14,9 @@ import { TerminalCommandService } from "./terminal-command.service";
 		"./terminal.component.css"
 	],
 	templateUrl: "./terminal.component.html",
+	directives: [
+		InteractiveChunkComponent
+	],
 	providers: [
 		TerminalCommandService
 	]
@@ -85,39 +89,41 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			}
 			else {
 				switch(log.type) {
-					case HearLogItem.TypeCommand: // echoed command
-						// If this command hasn't already been locally echoed,
-						// it either came from a previous session or other
-						// simultaneously connected session. Display it.
-						if (log.tag != this.terminalCommandService.tag) {
-							chunks.push(new ScrollbackChunk("command", this.prompt + log.items[0]));
-						}
-						// Skip processing this line (i.e. don't display a
-						// blank line) if this command has already been
-						// locally echoed
-						else {
-							return;
-						}
-						break;
-					case HearLogItem.TypeOutput: // generic output
-						log.items.forEach((item) => {
-							var type: string;
-							var url: string;
+				case HearLogItem.TypeCommand: // echoed command
+					// If this command hasn't already been locally echoed,
+					// it either came from a previous session or other
+					// simultaneously connected session. Display it.
+					if (log.tag != this.terminalCommandService.tag) {
+						chunks.push(new ScrollbackChunk("command", this.prompt + log.items[0]));
+					}
+					// Skip processing this line (i.e. don't display a
+					// blank line) if this command has already been
+					// locally echoed
+					else {
+						return;
+					}
+					break;
+				case HearLogItem.TypeOutput: // generic output
+					log.items.forEach((item) => {
+						var type: string;
+						var interactive: any;
 
-							if (typeof(item) === "object") {
-								switch(item.rich) {
-									case "wob":
-										type = "wob";
-										url = "/objinfo/" + item.id;
-										break;
-								}
-								chunks.push(new ScrollbackChunk(type, item.text, url));
+						if (typeof(item) === "object") {
+							switch(item.rich) {
+								case "wob":
+									type = "wob";
+									interactive = {
+										id: item.id
+									};
+									break;
 							}
-							else {
-								chunks.push(new ScrollbackChunk("output", item));
-							}
-						});
-						break;
+							chunks.push(new ScrollbackChunk(type, item.text, interactive));
+						}
+						else {
+							chunks.push(new ScrollbackChunk("output", item));
+						}
+					});
+					break;
 				}
 			}
 

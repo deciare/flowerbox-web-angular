@@ -17,6 +17,27 @@ body, input[text], button {
 	color: #888;
 	font-family: Cambria, Georgia;
 }
+.pre {
+	white-space: pre-wrap;
+}
+.popover {
+	background-color: #333333;
+}
+.popover .arrow {
+    background-color: black;
+}
+.popover .popover-title {
+    background-color: #555555;
+	border-bottom-color: #333333;
+	color: white;
+}
+.popover .popover-content {
+    background-color: #333333;
+    color: white;
+}
+.popover.top > .arrow:after {
+	border-top-color: #333333;
+}
 .tooltip .tooltip-inner {
 	background-color: #333333;
 }

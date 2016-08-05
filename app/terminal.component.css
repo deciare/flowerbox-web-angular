@@ -17,9 +17,6 @@
 .terminal .history .command {
 	color: #559955;
 }
-.terminal .pre {
-	white-space: pre-wrap;
-}
 .terminal .cursor {
 	background-color: #eeeeee;
 	color: black;
@@ -30,8 +27,4 @@
 }
 .terminal .main-content {
 	padding-left: 10px;
-}
-.terminal .wob {
-	color: #55aaaa !important;
-	text-decoration: underline;
 }
