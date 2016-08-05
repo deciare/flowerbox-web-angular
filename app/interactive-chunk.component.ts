@@ -1,6 +1,7 @@
 import { Component, Input } from "@angular/core";
 import { Http, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
+import { Urls } from "./urls";
 import { ScrollbackChunk } from "./scrollback";
 import { TagService } from "./tag.service";
 
@@ -39,7 +40,7 @@ export class InteractiveChunkComponent {
 			// it can no longer be changed, so there's no point in getting new
 			// data from the server each time; reuse cached value
 			if (!this.content) {
-				this.http.get("http://localhost:3001/world/wob/" + this.chunk.interactive.id + " /property/desc")
+				this.http.get(Urls.worldWob + this.chunk.interactive.id + " /property/desc")
 					.toPromise()
 					.then((response: Response) => {
 						// Cache response

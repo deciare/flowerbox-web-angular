@@ -4,13 +4,12 @@ import { Observable } from "rxjs/observable";
 import { Observer } from "rxjs/observer";
 import "rxjs/add/operator/toPromise";
 import { HearLog, HearLogItem, WobRef } from "./hear-log";
+import { Urls } from "./urls";
 import { TagService } from "./tag.service";
 
 
 @Injectable()
 export class TerminalCommandService {
-	private execUrl: string;
-	private outputUrl: string;
 	private interval: any;
 	private lastCheckTime: number;
 
@@ -22,8 +21,6 @@ export class TerminalCommandService {
 		private http: Http,
 		private tagService: TagService
 	) {
-		this.execUrl = "http://localhost:3001/terminal/command";
-		this.outputUrl = "http://localhost:3001/terminal/new-output";
 		this.lastCheckTime = 0; // UNIX timestamp of most recent query to new-output
 		this.output = Observable.create(this.awaitOutput.bind(this));
 		this.tag = this.tagService.makeTag(); // Random tag for identifying commands submitted from this session
@@ -88,8 +85,8 @@ export class TerminalCommandService {
 			"Content-Type": "application/json"
 		});
 
-		console.debug("Getting output from", this.outputUrl + "/?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers);
-		return this.http.get(this.outputUrl + "/?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers)
+		console.debug("Getting output from", Urls.termOutput + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers);
+		return this.http.get(Urls.termOutput + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers)
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),  this.handleServerError.bind(this)
@@ -101,7 +98,7 @@ export class TerminalCommandService {
 			"Content-Type": "application/json"
 		});
 
-		return this.http.get(this.execUrl + "/" + encodeURIComponent(command) + "?tag=" + this.tag)
+		return this.http.get(Urls.termExec + encodeURIComponent(command) + "?tag=" + this.tag)
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this), this.handleServerError.bind(this)
