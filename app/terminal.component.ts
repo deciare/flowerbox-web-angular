@@ -77,8 +77,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	private handleOutput(data: HearLog) {
 		var isFirstLine: boolean = true;
 
-		console.debug("Handling output:", data);
-
+		//console.debug("Handling output:", data);
 		if (data.error) {
 			// Log detailed error to console
 			console.log("Error received by TerminalComponent.handleOutput():", data.error);

@@ -27,7 +27,7 @@ export class TerminalCommandService {
 	}
 
 	handleResponse(response: Response): Promise<any> {
-		console.debug("handleResponse", response);
+		//console.debug("handleResponse", response);
 		var data = response.json();
 		if (!data.success) {
 			return this.handleDataError(data);
@@ -36,12 +36,12 @@ export class TerminalCommandService {
 	}
 
 	handleDataError(data: any): Promise<void> {
-		console.debug("handleDataError", data);
+		//console.debug("handleDataError", data);
 		return Promise.reject(`Data error: ${data.error}`);
 	}
 
 	handleServerError(response: Response): Promise<void> {
-		console.debug("handleServerError", response);
+		//console.debug("handleServerError", response);
 		if (response.status) {
 			return Promise.reject(`Server error: ${response.status} ${response.statusText}`);
 		}
@@ -85,7 +85,7 @@ export class TerminalCommandService {
 			"Content-Type": "application/json"
 		});
 
-		console.debug("Getting output from", Urls.termOutput + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers);
+		//console.debug("Getting output from", Urls.termOutput + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers);
 		return this.http.get(Urls.termOutput + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers)
 			.toPromise()
 			.then(
