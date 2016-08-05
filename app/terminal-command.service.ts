@@ -4,6 +4,8 @@ import { Observable } from "rxjs/observable";
 import { Observer } from "rxjs/observer";
 import "rxjs/add/operator/toPromise";
 import { HearLog, HearLogItem, WobRef } from "./hear-log";
+import { TagService } from "./tag.service";
+
 
 @Injectable()
 export class TerminalCommandService {
@@ -16,23 +18,16 @@ export class TerminalCommandService {
 
 	output: Observable<HearLog>;
 
-	constructor(private http: Http) {
+	constructor(
+		private http: Http,
+		private tagService: TagService
+	) {
 		this.execUrl = "http://localhost:3001/terminal/command";
 		this.outputUrl = "http://localhost:3001/terminal/new-output";
 		this.lastCheckTime = 0; // UNIX timestamp of most recent query to new-output
 		this.output = Observable.create(this.awaitOutput.bind(this));
-		this.tag = this.makeTag(); // Random tag for identifying commands submitted from this session
+		this.tag = this.tagService.makeTag(); // Random tag for identifying commands submitted from this session
 	}
-
-	makeTag(): string {
-		var text = "";
-	    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-	    for (var i = 0; i < 16; i++)
-	        text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-	    return text;
-	};
 
 	handleResponse(response: Response): Promise<any> {
 		console.debug("handleResponse", response);
