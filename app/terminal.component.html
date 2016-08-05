@@ -6,7 +6,10 @@
 					<span data-toggle="tooltip" data-placement="right" title="{{line.timestamp | date:'medium'}}">{{line.timestamp | date:"HH:mm"}}</span>
 				</td>
 				<td class="main-content">
-					<span *ngFor="let chunk of line.chunks"><interactive-chunk *ngIf="chunk.interactive" [chunk]="chunk"></interactive-chunk><span class="{{chunk.type}} pre" *ngIf="!chunk.interactive">{{chunk.text}}</span></span>
+					<span *ngFor="let chunk of line.chunks" class="pre-container">
+						<interactive-chunk *ngIf="chunk.interactive" [chunk]="chunk"></interactive-chunk>
+						<span class="{{chunk.type}} pre" *ngIf="!chunk.interactive">{{chunk.text}}</span>
+					</span>
 				</td>
 			</tr>
 			<tr class="input">

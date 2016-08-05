@@ -17,7 +17,20 @@ body, input[text], button {
 	color: #888;
 	font-family: Cambria, Georgia;
 }
+
+/* Whitespace between adjacent inline elements is collapsed into a single
+ * space. That single space is in addition to any spaces embedded within .pre
+ * elements, and may cause unintended extra spaces to appear between chunks of
+ * server output.
+ *
+ * This can be addressed by displaying adjacent .pre elements as inline-block
+ * instead of inline.
+ */
+.pre-container {
+	display: inline-block;
+}
 .pre {
+	display: inline-block;
 	white-space: pre-wrap;
 }
 .popover {

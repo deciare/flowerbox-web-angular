@@ -14,7 +14,9 @@ import { TagService } from "./tag.service";
 	styleUrls: [
 		"./interactive-chunk.component.css"
 	],
-	template: `<span id="{{tag}}" [ngSwitch]="chunk.type" data-toggle="popover" data-placement="top" data-trigger="hover" (mouseover)="getContent()"><span *ngSwitchCase="'wob'" class="{{chunk.type}} pre">{{chunk.text}}</span></span>`,
+	template: `<span id="{{tag}}" [ngSwitch]="chunk.type" class="pre-container" data-toggle="popover" data-placement="top" data-trigger="hover" (mouseover)="getContent()">
+		<span *ngSwitchCase="'wob'" class="{{chunk.type}} pre">{{chunk.text}}</span>
+	</span>`,
 	providers: [
 		TagService
 	]
