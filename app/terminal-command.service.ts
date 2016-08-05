@@ -44,9 +44,13 @@ export class TerminalCommandService {
 	}
 
 	handleServerError(response: Response): Promise<void> {
-		console.debug("handleServerError", data);
-		var data = response.json();
-		return Promise.reject(`Server error: ${data.status} ${data.statusText}`);
+		console.debug("handleServerError", response);
+		if (response.status) {
+			return Promise.reject(`Server error: ${response.status} ${response.statusText}`);
+		}
+		else {
+			return Promise.reject("Could not connect to server.");
+		}
 	}
 
 	awaitOutput(observer: Observer<any>) {
@@ -65,14 +69,17 @@ export class TerminalCommandService {
 				observer.next(data);
 
 				// Send next request
-				return this.awaitOutput(observer);
+				this.awaitOutput(observer);
 			})
 			.catch((error) => {
 				// Notify observer about server error or data error
-				observer.error(error);
+				observer.next({ error: error });
 
-				// Send next request
-				return this.awaitOutput(observer);
+				// To avoid spamming the server while it is down, wait a while
+				// before sending the next request
+				setTimeout(() => {
+					this.awaitOutput(observer)
+				}, 15000);
 			});
 	}
 

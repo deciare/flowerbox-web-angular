@@ -35,6 +35,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	private scrollbackMaxLength: number;
 	private prompt: string;
 	private lastShownTimestamp: Date;
+	private hasServerError: boolean;
 
 	@Input()
 	domId: string;
@@ -55,8 +56,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	ngOnInit() {
 		// Subscribe to output from the TerminalCommandService
 		this.terminalCommandService.output.subscribe(
-			this.handleOutput.bind(this),
-			this.handleErrorOutput.bind(this)
+			this.handleOutput.bind(this)
 		);
 	}
 
@@ -78,6 +78,36 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		var isFirstLine: boolean = true;
 
 		console.debug("Handling output:", data);
+
+		if (data.error) {
+			// Log detailed error to console
+			console.log("Error received by TerminalComponent.handleOutput():", data.error);
+
+			// Show friendly error message on terminal
+			if (!this.hasServerError) {
+				this.appendLine(new ScrollbackLine(new ScrollbackChunk("text-danger", "The server or network is experiencing technical issues. You will not be able to submit commands or interact with the world."), new Date()));
+				this.appendLine("text-danger", "This session will automatically keep trying to reconnect you.");
+			}
+			this.scrollToBottom();
+
+			// Indicate that an error is currently happening
+			this.hasServerError = true;
+
+			// Skip regular data processing
+			return;
+		}
+		else {
+			// If we were in an error state, notify the user that we have
+			// recovered
+			if (this.hasServerError) {
+				this.appendLine(new ScrollbackLine(new ScrollbackChunk("text-success", "Reconnected!"), new Date()));
+				this.scrollToBottom();
+			}
+
+			// Indicate that no error is currently happening
+			this.hasServerError = false;
+		}
+
 		data.log.forEach((log) => {
 			var chunks: ScrollbackChunk[] = [];
 			var timestamp: Date = new Date(log.timestamp);
@@ -152,12 +182,6 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		if (data.log.length) {
 			this.scrollToBottom();
 		}
-	}
-
-	private handleErrorOutput(error: string) {
-		console.debug("Handing error output:", error);
-		this.appendLine("error", error);
-		this.scrollToBottom();
 	}
 
 	private indexOfLeftWordBoundary(): number {
@@ -393,7 +417,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			// Execute command
 			this.terminalCommandService.exec(command)
 				.catch((error) => {
-					this.appendLine("error", error);
+					this.appendLine("text-danger", error);
 				});
 		}
 	}
