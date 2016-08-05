@@ -13,9 +13,7 @@ import { TagService } from "./tag.service";
 	styleUrls: [
 		"./interactive-chunk.component.css"
 	],
-	template: `<span id="{{tag}}" [ngSwitch]="chunk.type" data-toggle="popover" data-placement="top" data-trigger="hover" title="{{chunk.text}}" (mouseover)="getContent()">
-		<span *ngSwitchCase="'wob'" class="{{chunk.type}} pre">{{chunk.text}}</span>
-	</span>`,
+	template: `<span id="{{tag}}" [ngSwitch]="chunk.type" data-toggle="popover" data-placement="top" data-trigger="hover" (mouseover)="getContent()"><span *ngSwitchCase="'wob'" class="{{chunk.type}} pre">{{chunk.text}}</span></span>`,
 	providers: [
 		TagService
 	]
@@ -49,7 +47,8 @@ export class InteractiveChunkComponent {
 
 						// Set popover content
 						$(`#${this.tag}`).popover({
-							content: this.content
+							content: this.content,
+							title: this.chunk.text
 						});
 
 						// Show the popover. It didn't auto-show the first time
