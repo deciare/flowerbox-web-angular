@@ -42,16 +42,30 @@ export class InteractiveChunkComponent {
 			// it can no longer be changed, so there's no point in getting new
 			// data from the server each time; reuse cached value
 			if (!this.content) {
-				this.http.get(Urls.worldWob + this.chunk.interactive.id + " /property/desc")
+				this.http.get(Urls.worldWob + this.chunk.interactive.id + " /info")
 					.toPromise()
 					.then((response: Response) => {
+						var data = response.json();
+						var verbs: string[] = data.verbs.filter((verb) => {
+							if (verb.value.charAt(0) != "$") {
+								return true;
+							}
+						})
+						.map((verb) => {
+							return verb.value;
+						});
+
 						// Cache response
-						this.content = response.json().value.value;
+						this.content = `
+							<p>${data.desc}</p>
+							<p><b>Verbs:</b> ${verbs.join(", ")}</p>
+						`;
 
 						// Set popover content
 						$(`#${this.tag}`).popover({
+							html: true,
 							content: this.content,
-							title: this.chunk.text
+							title: `${data.name} (#${data.id})`
 						});
 
 						// Show the popover. It didn't auto-show the first time
