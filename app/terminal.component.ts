@@ -1,6 +1,7 @@
 import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
 import { HearLog, HearLogItem, WobRef } from "./hear-log";
 import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
+import { AutocompleteService } from "./autocomplete.service";
 import { TerminalCommandService } from "./terminal-command.service";
 import { InteractiveChunkComponent } from "./interactive-chunk.component";
 
@@ -18,6 +19,7 @@ import { InteractiveChunkComponent } from "./interactive-chunk.component";
 		InteractiveChunkComponent
 	],
 	providers: [
+		AutocompleteService,
 		TerminalCommandService
 	]
 })
@@ -40,7 +42,10 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	@Input()
 	domId: string;
 
-	constructor(private terminalCommandService : TerminalCommandService) {
+	constructor(
+		private autocompleteService : AutocompleteService,
+		private terminalCommandService : TerminalCommandService
+	) {
 		this.cursorSpeed = 500; // Cursor blink rate in milliseconds
 		this.inputRight = ""; // User input string to right of cursor
 		this.inputHistory = []; // User input history
@@ -139,12 +144,12 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 
 						if (typeof(item) === "object") {
 							switch(item.rich) {
-								case "wob":
-									type = "wob";
-									interactive = {
-										id: item.id
-									};
-									break;
+							case "wob":
+								type = "wob";
+								interactive = {
+									id: item.id
+								};
+								break;
 							}
 							chunks.push(new ScrollbackChunk(type, item.text, interactive));
 						}
@@ -336,7 +341,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 
 	deleteToStart() {
 		// Adjust cursor position by length of characters to be removed
-		this.cursorPosition -= this.inputLeft.length;
+		this.cursorPosition = 0;
 		// Remove characters to left of cursor
 		this.inputLeft = "";
 	}
@@ -383,6 +388,57 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 				scrollTop: this.element.prop("scrollHeight")
 			}, 100, "linear")
 		}, 0);
+	}
+
+	autocompleteInput() {
+		this.autocompleteService.completeCommand(this.inputLeft, 1)
+			.then((completions: string[]) => {
+				var inCommon: string;
+
+				console.log("Completions:", completions);
+				// If no completions were found, don't cange the command line.
+				if (completions.length == 0) {
+					inCommon = this.inputLeft;
+				}
+				// if 1 completion was found, replace the command line
+				// with the completion.
+				else if (completions.length == 1) {
+					inCommon = completions[0];
+				}
+				// If multiple completions were found, replace the command line
+				// with the longest substring that the completions have in
+				// common.
+				//
+				// Also show a list of possible completions.
+				else {
+					this.appendLine("completion", "Suggestions:");
+					completions.forEach((completion) => {
+						// List each possible completion
+						this.appendLine("completion", "  " + completion);
+
+						// Determine the longest substring that all completions
+						// have in common.
+						if (inCommon === undefined) {
+							inCommon = completion
+						}
+						else {
+							var i: number;
+							for (i = 0; i < completion.length; i++) {
+								if (inCommon.charAt(i).toLowerCase() !== completion.charAt(i).toLowerCase()) {
+									break;
+								}
+							}
+							inCommon = inCommon.substring(0, i);
+						}
+					});
+					this.scrollToBottom();
+				}
+
+				// Overwrite characters to left of cursor with the longest
+				// string that is in common between all suggested completions.
+				this.inputLeft = inCommon;
+				this.cursorPosition = this.inputLeft.length;
+			});
 	}
 
 	insertInput(text: string) {
@@ -491,6 +547,12 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			case "Delete":
 				this.forwardDelete();
 				break;
+			case "Enter":
+				this.submitInput();
+				break;
+			case "Escape":
+				// Unimplemented
+				break;
 			case "Home":
 				this.moveCursorToStart();
 				break;
@@ -503,8 +565,8 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			case "PageDown":
 				this.scroll(+0.9);
 				break;
-			case "Enter":
-				this.submitInput();
+			case "Tab":
+				this.autocompleteInput();
 				break;
 			case "a":
 				if (event.ctrlKey) {

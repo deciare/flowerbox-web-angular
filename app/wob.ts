@@ -1,0 +1,52 @@
+import { ModelBase } from "./model-base";
+
+export class AttachedItem {
+	constructor(sourceid: number, value: string) {
+		this.sourceid = sourceid;
+		this.value = value;
+	}
+
+	public sourceid: number;
+	public value: string;
+}
+
+export class Info extends ModelBase {
+	constructor(id: number, base: number, container: number,
+			name: string, desc: string, globalid: string,
+			properties?: AttachedItem[], verbs?: AttachedItem[]) {
+		super(true);
+
+		this.id = id;
+		this.base = base;
+		this.container = container;
+
+		this.name = name;
+		this.desc = desc;
+		this.globalid = globalid;
+
+		this.properties = properties;
+		this.verbs = verbs;
+	}
+
+	// Intrinsic properties
+	public id: number;
+	public base: number;
+	public container: number;
+
+	// Common named properties
+	public name: string;
+	public desc: string;
+	public globalid: string;
+
+	// List of properties and verbs, by wob ID.
+	public properties: AttachedItem[];
+	public verbs: AttachedItem[];
+}
+
+export class InfoList {
+	constructor(list: Info[]) {
+		this.list = list;
+	}
+
+	public list: Info[];
+}
