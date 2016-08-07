@@ -92,11 +92,16 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 					password = response;
 					return this.sessionService.login(username, password);
 				})
-				.then(() => {
+				.then((response: string) => {
+					this.appendLine("text-info", response);
+
 					// Subscribe to output from the TerminalEventService
 					this.terminalEventService.output.subscribe(
 						this.handleOutput.bind(this)
 					);
+				},
+				(error: string) => {
+					this.appendLine("text-danger", error);
 				})
 		}
 		else {
@@ -115,10 +120,6 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	ngAfterViewChecked() {
 		// Bootstrap: Opt-in to tooltip data API
 		$('[data-toggle="tooltip"]').tooltip();
-	}
-
-	trackByScrollbackLine(index: number, line: ScrollbackLine) {
-		return index;
 	}
 
 	private handleOutput(data: EventStream) {
