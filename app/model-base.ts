@@ -5,6 +5,11 @@
 */
 
 export class ModelBase {
+	constructor(success: boolean, errorMessage?: string) {
+		this.success = success;
+		this.error = errorMessage;
+	}
+
 	public success: boolean;
 	public error: string;
 }

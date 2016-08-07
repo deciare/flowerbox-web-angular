@@ -1,15 +1,26 @@
+/*
+	Flowerbox
+	Copyright (C) 2016 Dove, Kayateia
+	For license info, please see notes/gpl-3.0.txt under the project root.
+*/
+
 import { ModelBase } from "./model-base";
 
-export class AttachedItem {
-	constructor(sourceid: number, value: string) {
-		this.sourceid = sourceid;
+// For returning properties on a wob.
+export class Property extends ModelBase {
+	constructor(id: number, property: string, value: any) {
+		super(true);
+		this.id = id;
+		this.property = property;
 		this.value = value;
 	}
 
-	public sourceid: number;
-	public value: string;
+	public id: number;
+	public property: string;
+	public value: any;
 }
 
+// For returning the basic info about a wob.
 export class Info extends ModelBase {
 	constructor(id: number, base: number, container: number,
 			name: string, desc: string, globalid: string,
@@ -41,6 +52,24 @@ export class Info extends ModelBase {
 	// List of properties and verbs, by wob ID.
 	public properties: AttachedItem[];
 	public verbs: AttachedItem[];
+}
+
+export class AttachedItem {
+	constructor(sourceid: number, value: string) {
+		this.sourceid = sourceid;
+		this.value = value;
+	}
+
+	public sourceid: number;
+	public value: string;
+}
+
+export class IdList {
+	constructor(list: number[]) {
+		this.list = list;
+	}
+
+	public list: number[];
 }
 
 export class InfoList {
