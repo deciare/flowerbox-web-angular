@@ -65,7 +65,6 @@ export class SessionService {
 			})
 			.toPromise()
 			.then((response: Response): Promise<any> => {
-				console.log(response);
 				var data = response.json();
 				if (data.success) {
 					this.token = "Bearer " + data.token;

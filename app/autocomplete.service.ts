@@ -41,7 +41,6 @@ export class AutocompleteService {
 			}
 		}
 
-		console.log("Returning word list:", wordList);
 		return wordList;
 	}
 
@@ -74,8 +73,6 @@ export class AutocompleteService {
 					matches = [];
 					word = wordList[i];
 
-					console.log("Current word:", word);
-
 					data.list.forEach((wob: Info) => {
 						// If including verbs in the search...
 						if (includeVerbs) {
@@ -85,7 +82,6 @@ export class AutocompleteService {
 								if (verb.value.toLowerCase().match("^" + word)) {
 									// Assign matches to object properties, to
 									// ensure each value is distinct
-									console.log("Matched verb:", verb.value);
 									completions[verb.value] = true;
 								}
 							});
@@ -93,11 +89,9 @@ export class AutocompleteService {
 
 						// Check whether this wob's aname starts with the same
 						// characters as the current word
-						console.log("Wob match term:", "^" + word);
 						if (wob.name.toLowerCase().match("^" + word)) {
 							// Assign matches to object properties, to
 							// ensure each value is distinct
-							console.log("Matched wob:", wob.name);
 							completions[wob.name] = true;
 						}
 					});

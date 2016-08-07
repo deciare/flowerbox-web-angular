@@ -4,6 +4,7 @@
 	For licensing info, please see LICENCE file.
 */
 import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
+import { Subscription } from "rxjs/subscription";
 import { Config } from "./config";
 import { EventStream, EventStreamItem, WobRef } from "./event-stream";
 import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
@@ -57,6 +58,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	private promptingInput: boolean;
 	private lastShownTimestamp: Date;
 	private hasServerError: boolean;
+	private eventStreamSubscription: Subscription;
 
 	@Input()
 	domId: string;
@@ -80,22 +82,10 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	}
 
 	ngOnInit() {
-		if (!this.sessionService.isLoggedIn()) {
-			this.loginPrompt()
-				.then((response: string) => {
-					// When login successful,
-					// subscribe to output from the TerminalEventService
-					this.terminalEventService.output.subscribe(
-						this.handleOutput.bind(this)
-					);
-				});
-		}
-		else {
-			// Subscribe to output from the TerminalEventService
-			this.terminalEventService.output.subscribe(
-				this.handleOutput.bind(this)
-			);
-		}
+		this.subscribeToEventStream()
+			.then((subscription: Subscription) => {
+				this.eventStreamSubscription = subscription;
+			});
 	}
 
 	ngAfterViewInit() {
@@ -118,7 +108,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 
 			if (data.error.match(/Missing bearer token/) || data.error.match(/Token validation error/)) {
 				this.appendLine("text-info", "You are not logged in, or your session is invalid. To login, type:")
-				this.appendLine("text-info", "  login <username> <password>");
+				this.appendLine("text-info", "  login");
 				this.appendLine("text-info", "To log out afterward, type:");
 				this.appendLine("text-info", "  logout");
 			}
@@ -256,6 +246,28 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 				this.appendLine("text-danger", error);
 				return this.loginPrompt();
 			})
+	}
+
+	private subscribeToEventStream(): Promise<Subscription> {
+		// If not yet logged in, first attempt to log in
+		if (!this.sessionService.isLoggedIn()) {
+			return this.loginPrompt()
+				.then((response: string) => {
+					// When login successful,
+					// subscribe to output from the TerminalEventService
+					return this.terminalEventService.output.subscribe(
+						this.handleOutput.bind(this)
+					);
+				});
+		}
+		else {
+			// Subscribe to output from the TerminalEventService
+			return Promise.resolve(
+				this.terminalEventService.output.subscribe(
+					this.handleOutput.bind(this)
+				)
+			);
+		}
 	}
 
 	private indexOfLeftWordBoundary(): number {
@@ -468,7 +480,6 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			.then((completions: string[]) => {
 				var inCommon: string;
 
-				console.log("Completions:", completions);
 				// If no completions were found, don't cange the command line.
 				if (completions.length == 0) {
 					inCommon = this.inputLeft;
@@ -530,20 +541,30 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		var matches: string[]; // results of regex matching
 		var processOnServer: boolean = true; // whether to exec on server
 
-		// TODO: Show a real login prompt at some point. For now, have a
-		// special command that is parsed locally to log in.
-		if (matches = command.match(/^login ([A-Za-z0-9]*)+ (.*)+/)) {
-			// First match is login, second match is password
-			this.sessionService.login(matches[1], matches[2])
-				.then((msg) => {
-					this.appendLine("text-info", msg);
-				});
+		if (matches = command.match(/^login$/)) {
+			// Calling subscribeToEventStream() without a valid session will
+			// automatically trigger a login prompt
+			this.subscribeToEventStream()
+			.then((subscription: Subscription) => {
+				this.eventStreamSubscription = subscription;
+			});
+
 			// This command should be consumed (not executed on server)
 			processOnServer = false;
 		}
 		else if (matches = command.match(/^logout$/)) {
+			// Delete authorization token from local stores
 			this.sessionService.logout();
-			this.appendLine("text-info", "Logged out");
+
+			// Tell the user they've been logged out
+			this.appendLine("text-info", "Logged out. To log back in, type:");
+			this.appendLine("text-info", "  login");
+
+			// Unsubscribe from the event stream to repeated errors about not
+			// being logged in
+			this.eventStreamSubscription.unsubscribe();
+
+			// This command should be consumed (not executed on server)
 			processOnServer = false;
 		}
 
