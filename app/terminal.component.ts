@@ -2,6 +2,7 @@ import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angu
 import { HearLog, HearLogItem, WobRef } from "./hear-log";
 import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
 import { AutocompleteService } from "./autocomplete.service";
+import { SessionService } from "./session.service";
 import { TerminalCommandService } from "./terminal-command.service";
 import { InteractiveChunkComponent } from "./interactive-chunk.component";
 
@@ -43,8 +44,9 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	domId: string;
 
 	constructor(
-		private autocompleteService : AutocompleteService,
-		private terminalCommandService : TerminalCommandService
+		private autocompleteService: AutocompleteService,
+		private sessionService: SessionService,
+		private terminalCommandService: TerminalCommandService
 	) {
 		this.cursorSpeed = 500; // Cursor blink rate in milliseconds
 		this.inputRight = ""; // User input string to right of cursor
@@ -114,6 +116,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 
 		data.log.forEach((log) => {
 			var chunks: ScrollbackChunk[] = [];
+			var lineType: string = "output";
 			var timestamp: Date = new Date(log.timestamp);
 
 			// If a hear log entry exists, but it has no items, then the Server
@@ -137,6 +140,8 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 						return;
 					}
 					break;
+				case HearLogItem.TypeError: // data error
+					lineType = "text-warning";
 				case HearLogItem.TypeOutput: // generic output
 					log.items.forEach((item) => {
 						var type: string;
@@ -154,7 +159,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 							chunks.push(new ScrollbackChunk(type, item.text, interactive));
 						}
 						else {
-							chunks.push(new ScrollbackChunk("output", item));
+							chunks.push(new ScrollbackChunk(lineType, item));
 						}
 					});
 					break;
@@ -446,12 +451,58 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		this.cursorPosition++;
 	}
 
+	/**
+	 * Attempt to execute the current input as a command to this
+	 * TerminalComponent. This processing should take place before user input
+	 * is submitted to the server.
+	 *
+	 * @returns (boolean) true if command should be forwarded to server
+	 */
+	localExec(command: string): boolean {
+		var matches: string[]; // results of regex matching
+		var processOnServer: boolean = true; // whether to exec on server
+
+		// TODO: Show a real login prompt at some point. For now, have a
+		// special command that is parsed locally to log in.
+		if (matches = command.match(/^login ([A-Za-z0-9]*)+ (.*)+/)) {
+			// First match is login, second match is password
+			this.sessionService.login(matches[1], matches[2])
+				.then((msg) => {
+					this.appendLine("text-information", msg);
+				});
+			// This command should be consumed (not executed on server)
+			processOnServer = false;
+		}
+		else if (matches = command.match(/^logout$/)) {
+			this.sessionService.logout();
+			this.appendLine("text-information", "Logged out");
+			processOnServer = false;
+		}
+
+		return processOnServer;
+	}
+
 	submitInput() {
 		var command = this.inputLeft + (this.cursorAtEnd ? "" : this.inputCursor + this.inputRight);
 
-		// Append input to scrollback buffer
+		// If command is not blank...
 		if (command.trim()) {
+			// Append input to scrollback buffer
 			this.appendLine("command", this.prompt + command, new Date());
+
+			// Append command to input history
+			this.inputHistory.push(command);
+			this.inputHistoryIndex = this.inputHistory.length;
+
+			// Attempt to execute this as a local command
+			if (this.localExec(command)) {
+				// If the command was not consumed by local execution, attempt
+				// to execute it on the server
+				this.terminalCommandService.exec(command)
+					.catch((error) => {
+						this.appendLine("text-danger", error);
+					});
+			}
 		}
 		else {
 			this.appendLine("blank", " ");
@@ -462,19 +513,6 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 
 		// Always keep the bottom in view when submitting a command
 		this.scrollToBottom();
-
-		// If command is not blank...
-		if (command.trim()) {
-			// Append command to input history
-			this.inputHistory.push(command);
-			this.inputHistoryIndex = this.inputHistory.length;
-
-			// Execute command
-			this.terminalCommandService.exec(command)
-				.catch((error) => {
-					this.appendLine("text-danger", error);
-				});
-		}
 	}
 
 	appendLine(typeOrLine: any, text?: string, timestamp?: Date) {

@@ -1,13 +1,15 @@
 import { Injectable } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
+import { SessionService } from "./session.service";
 import { Urls } from "./urls";
 import { AttachedItem, Info, InfoList } from "./wob";
 
 @Injectable()
 export class AutocompleteService {
 	constructor(
-		private http: Http
+		private http: Http,
+		private sessionService: SessionService
 	) {
 		// Dependency injection only; no code
 	}
@@ -127,7 +129,15 @@ export class AutocompleteService {
 	}
 
 	getWobs(locationId: number) {
-		return this.http.get(Urls.worldWob + locationId + "/contents")
+		var headers = new Headers({
+			"Authorization": this.sessionService.token,
+			"Content-Type": "application/json"
+		});
+
+		return this.http.get(
+				Urls.worldWob + locationId + "/contents",
+				{ headers: headers}
+			)
 			.toPromise()
 			.then((response: Response) => {
 				var data: InfoList = response.json();

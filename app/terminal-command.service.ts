@@ -4,8 +4,9 @@ import { Observable } from "rxjs/observable";
 import { Observer } from "rxjs/observer";
 import "rxjs/add/operator/toPromise";
 import { HearLog, HearLogItem, WobRef } from "./hear-log";
-import { Urls } from "./urls";
+import { SessionService } from "./session.service";
 import { TagService } from "./tag.service";
+import { Urls } from "./urls";
 
 
 @Injectable()
@@ -19,6 +20,7 @@ export class TerminalCommandService {
 
 	constructor(
 		private http: Http,
+		private sessionService: SessionService,
 		private tagService: TagService
 	) {
 		this.lastCheckTime = 0; // UNIX timestamp of most recent query to new-output
@@ -82,11 +84,15 @@ export class TerminalCommandService {
 
 	getOutput() {
 		var headers = new Headers({
+			"Authorization": this.sessionService.token,
 			"Content-Type": "application/json"
 		});
 
 		//console.debug("Getting output from", Urls.termOutput + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers);
-		return this.http.get(Urls.termOutput + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers)
+		return this.http.get(
+				Urls.termEvents + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(),
+				{ headers: headers }
+			)
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),  this.handleServerError.bind(this)
@@ -95,10 +101,14 @@ export class TerminalCommandService {
 
 	exec(command: string) {
 		var headers = new Headers({
+			"Authorization": this.sessionService.token,
 			"Content-Type": "application/json"
 		});
 
-		return this.http.get(Urls.termExec + encodeURIComponent(command) + "?tag=" + this.tag)
+		return this.http.get(
+				Urls.termExec + encodeURIComponent(command) + "?tag=" + this.tag,
+				{ headers: headers }
+			)
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this), this.handleServerError.bind(this)

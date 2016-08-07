@@ -1,8 +1,9 @@
 import { Component, Input } from "@angular/core";
-import { Http, Response } from "@angular/http";
+import { Headers, Http, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 import { Urls } from "./urls";
 import { ScrollbackChunk } from "./scrollback";
+import { SessionService } from "./session.service";
 import { TagService } from "./tag.service";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
@@ -30,30 +31,42 @@ export class InteractiveChunkComponent {
 
 	constructor(
 		private http: Http,
+		private sessionService: SessionService,
 		private tagService: TagService
 	) {
 		this.tag = "InteractiveChunk_" + this.tagService.makeTag(4);
 	}
 
 	getContent() {
+		var headers = new Headers({
+			"Authorization": this.sessionService.token,
+			"Content-Type": "application/json"
+		});
+		var verbs: string[] = [];
+
 		switch(this.chunk.type) {
 		case "wob":
 			// Once a Bootstrap popover's content is set for the first time,
 			// it can no longer be changed, so there's no point in getting new
 			// data from the server each time; reuse cached value
 			if (!this.content) {
-				this.http.get(Urls.worldWob + this.chunk.interactive.id + " /info")
+				this.http.get(
+						Urls.worldWob + this.chunk.interactive.id + " /info",
+						{ headers: headers }
+					)
 					.toPromise()
 					.then((response: Response) => {
 						var data = response.json();
-						var verbs: string[] = data.verbs.filter((verb) => {
-							if (verb.value.charAt(0) != "$") {
-								return true;
-							}
-						})
-						.map((verb) => {
-							return verb.value;
-						});
+						if (data.verbs) {
+							verbs = data.verbs.filter((verb) => {
+								if (verb.value.charAt(0) != "$") {
+									return true;
+								}
+							})
+							.map((verb) => {
+								return verb.value;
+							});
+						}
 
 						// Cache response
 						this.content = `
