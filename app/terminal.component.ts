@@ -571,7 +571,9 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		// If command is not blank...
 		if (command.trim()) {
 			// Append input to scrollback buffer
-			this.appendLine("command", this.prompt + command, new Date());
+			this.appendLine("command", this.prompt + " "
+				+ (this.inputMask ? new MaskPipe().transform(command, this.inputMask) : command),
+				new Date());
 
 			// If awaiting input from the user in response to a specific prompt
 			if (this.promptingInput) {
