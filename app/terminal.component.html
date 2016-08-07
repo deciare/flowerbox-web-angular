@@ -15,7 +15,13 @@
 			<tr class="input">
 				<td class="left-margin"></td>
 				<td class="main-content">
-					<span class="prompt pre">{{prompt}}</span><span class="pre">{{inputLeft}}</span><span class="cursor pre">{{inputCursor}}</span><span class="pre">{{inputRight}}</span>
+					<span class="prompt pre">{{prompt}}</span>
+					<span *ngIf="inputMask" class="pre-container">
+						<span class="pre">{{inputLeft | mask:inputMask}}</span><span class="cursor pre">{{inputCursor | mask:inputMask}}</span><span class="pre">{{inputRight | mask:inputMask}}</span>
+					</span>
+					<span *ngIf="!inputMask" class="pre-container">
+						<span class="pre">{{inputLeft}}</span><span class="cursor pre">{{inputCursor}}</span><span class="pre">{{inputRight}}</span>
+					</span>
 				</td>
 			</tr>
 		</tbody>

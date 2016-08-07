@@ -10,10 +10,13 @@ import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
 import { AutocompleteService } from "./autocomplete.service";
 import { SessionService } from "./session.service";
 import { TerminalEventService } from "./terminal-event.service";
+import { MaskPipe } from "./mask.pipe";
 import { InteractiveChunkComponent } from "./interactive-chunk.component";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
+
+// TODO: Implement input masking using a custom implementation of Pipe()
 
 @Component({
 	moduleId: module.id,
@@ -24,6 +27,9 @@ import { InteractiveChunkComponent } from "./interactive-chunk.component";
 	templateUrl: "./terminal.component.html",
 	directives: [
 		InteractiveChunkComponent
+	],
+	pipes: [
+		MaskPipe
 	],
 	providers: [
 		AutocompleteService,
@@ -38,11 +44,17 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	private inputCursor: string;
 	private inputLeft: string;
 	private inputRight: string;
+	private inputMask: string;
 	private inputHistory: string[];
 	private inputHistoryIndex: number;
 	private scrollback: ScrollbackLine[];
 	private scrollbackMaxLength: number;
+	private defaultPrompt: string;
 	private prompt: string;
+	private promptResolve: Function;
+	private promptReject: Function;
+	private promptedInput: string;
+	private promptingInput: boolean;
 	private lastShownTimestamp: Date;
 	private hasServerError: boolean;
 
@@ -60,17 +72,39 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		this.inputHistoryIndex = 0; // 0-based index of currently shown input history
 		this.scrollback = []; // Scrollback buffer
 		this.scrollbackMaxLength = 5000; // Max number of scrollback lines
-		this.prompt = "fb> "; // Command prompt
+		this.defaultPrompt = "fb>"; // Default command prompt
+		this.prompt = this.defaultPrompt; // Current command prompt
 
 		// Initialise empty command line
 		this.deleteLine();
 	}
 
 	ngOnInit() {
-		// Subscribe to output from the TerminalEventService
-		this.terminalEventService.output.subscribe(
-			this.handleOutput.bind(this)
-		);
+		if (!this.sessionService.isLoggedIn()) {
+			var username, password;
+
+			this.promptInput("Username:")
+				.then((response: string) => {
+					username = response;
+					return this.promptInput("Password:", "*");
+				})
+				.then((response: string) => {
+					password = response;
+					return this.sessionService.login(username, password);
+				})
+				.then(() => {
+					// Subscribe to output from the TerminalEventService
+					this.terminalEventService.output.subscribe(
+						this.handleOutput.bind(this)
+					);
+				})
+		}
+		else {
+			// Subscribe to output from the TerminalEventService
+			this.terminalEventService.output.subscribe(
+				this.handleOutput.bind(this)
+			);
+		}
 	}
 
 	ngAfterViewInit() {
@@ -262,7 +296,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 
 	deleteLine() {
 		this.inputLeft = "";
-		this.inputCursor = " ";
+		this.inputCursor = "\xa0"; // non-breaking space
 		this.inputRight = "";
 		this.cursorPosition = 0;
 		this.cursorAtEnd = true;
@@ -305,7 +339,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 
 	setCursorPosition(index: number) {
 		var atEnd = false
-		var command = this.inputLeft + (this.cursorAtEnd ? "" : this.inputCursor + this.inputRight);
+		var command = this.getCommand();
 
 		// Can't move cursor past beginning of line
 		if (index < 0) {
@@ -333,7 +367,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			this.inputRight = command.slice(index + 1);
 		}
 		else {
-			this.inputCursor = " ";
+			this.inputCursor = "\xa0"; // non-breaking space
 			this.inputRight = "";
 		}
 	}
@@ -376,7 +410,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	deleteToEnd() {
 		if (!this.cursorAtEnd) {
 			// Remove character under cursor and characters to right of cursor
-			this.inputCursor = " ";
+			this.inputCursor = "\xa0"; // non-breaking space
 			this.inputRight = "";
 			// Cursor is now at end of line
 			this.cursorAtEnd = true;
@@ -507,26 +541,62 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		return processOnServer;
 	}
 
+	promptInput(prompt: string, mask?: string): Promise<string> {
+		return new Promise((resolve, reject) => {
+			// Set a special prompt
+			this.prompt = prompt;
+
+			// Set character to echo instead of actual character typed by user
+			this.inputMask = mask;
+
+			// Indicate that the next command should be treated as a response
+			// to this prompt instead of being processed as a regular command
+			this.promptingInput = true;
+
+			// Make it possible to resolve or reject this promise from outside
+			// of this function
+			this.promptResolve = resolve;
+			this.promptReject = reject;
+		});
+	}
+
+	getCommand(): string {
+		return this.inputLeft + (this.cursorAtEnd ? "" : this.inputCursor + this.inputRight);
+	}
+
 	submitInput() {
-		var command = this.inputLeft + (this.cursorAtEnd ? "" : this.inputCursor + this.inputRight);
+		var command = this.getCommand();
 
 		// If command is not blank...
 		if (command.trim()) {
 			// Append input to scrollback buffer
 			this.appendLine("command", this.prompt + command, new Date());
 
-			// Append command to input history
-			this.inputHistory.push(command);
-			this.inputHistoryIndex = this.inputHistory.length;
+			// If awaiting input from the user in response to a specific prompt
+			if (this.promptingInput) {
+				// Reset prompt to standard appearance
+				this.prompt = this.defaultPrompt;
+				this.promptingInput = false;
+				// Disbale input mask
+				this.inputMask = undefined;
 
-			// Attempt to execute this as a local command
-			if (this.localExec(command)) {
-				// If the command was not consumed by local execution, attempt
-				// to execute it on the server
-				this.terminalEventService.exec(command)
-					.catch((error) => {
-						this.appendLine("text-danger", error);
-					});
+				// Treat this command as the response to a prompt
+				this.promptResolve(command);
+			}
+			else {
+				// Append command to input history
+				this.inputHistory.push(command);
+				this.inputHistoryIndex = this.inputHistory.length;
+
+				// Attempt to execute this as a local command
+				if (this.localExec(command)) {
+					// If the command was not consumed by local execution,
+					// attempt to execute it on the server
+					this.terminalEventService.exec(command)
+						.catch((error) => {
+							this.appendLine("text-danger", error);
+						});
+				}
 			}
 		}
 		else {
