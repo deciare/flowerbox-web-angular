@@ -418,7 +418,10 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	}
 
 	autocompleteInput() {
-		this.autocompleteService.completeCommand(this.inputLeft, 1)
+		this.sessionService.getPlayerInfo()
+			.then((data) => {
+				return this.autocompleteService.completeCommand(this.inputLeft, data.container);
+			})
 			.then((completions: string[]) => {
 				var inCommon: string;
 

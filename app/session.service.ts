@@ -4,7 +4,7 @@
 	For licensing info, please see LICENCE file.
 */
 import { Injectable } from "@angular/core";
-import { Http, Response } from "@angular/http";
+import { Headers, Http, Response } from "@angular/http";
 import { Cookie } from "ng2-cookies/ng2-cookies";
 import "rxjs/add/operator/toPromise";
 import { Urls } from "./urls";
@@ -33,6 +33,30 @@ export class SessionService {
 
 	isLoggedIn() {
 		return this.token !== undefined;
+	}
+
+	getPlayerInfo(): Promise<any> {
+		var headers = new Headers({
+			"Authorization": this.token,
+			"Content-Type": "application/json"
+		});
+
+		return this.http.get(
+				Urls.userPlayerInfo,
+				{ headers: headers }
+			)
+			.toPromise()
+			.then((response: Response) => {
+				var data = response.json();
+
+				if (data.success) {
+					return Promise.resolve(data);
+				}
+				else {
+					return Promise.reject(data.error);
+				}
+			},
+			this.handleServerError.bind(this))
 	}
 
 	login(username: string, password: string): Promise<any> {
