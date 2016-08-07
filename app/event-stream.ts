@@ -1,18 +1,19 @@
 import { ModelBase } from "./model-base";
 
-export class HearLog extends ModelBase {
-	public log: HearLogItem[];
+export class EventStream extends ModelBase {
+	public log: EventStreamItem[];
 }
 
-export class HearLogItem {
+export class EventStreamItem {
 	public timestamp: number;
 	public tag: string;
 	public type: string;
 	public items: any[];
 
 	// These are possible values for the "type" member.
-	public static TypeOutput = "output";
 	public static TypeCommand = "command";
+	public static TypeError = "error";
+	public static TypeOutput = "output";
 }
 
 // Rich text with a wob reference.

@@ -1,9 +1,9 @@
 import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
-import { HearLog, HearLogItem, WobRef } from "./hear-log";
+import { EventStream, EventStreamItem, WobRef } from "./event-stream";
 import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
 import { AutocompleteService } from "./autocomplete.service";
 import { SessionService } from "./session.service";
-import { TerminalCommandService } from "./terminal-command.service";
+import { TerminalEventService } from "./terminal-event.service";
 import { InteractiveChunkComponent } from "./interactive-chunk.component";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
@@ -21,7 +21,7 @@ import { InteractiveChunkComponent } from "./interactive-chunk.component";
 	],
 	providers: [
 		AutocompleteService,
-		TerminalCommandService
+		TerminalEventService
 	]
 })
 export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnInit {
@@ -46,7 +46,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	constructor(
 		private autocompleteService: AutocompleteService,
 		private sessionService: SessionService,
-		private terminalCommandService: TerminalCommandService
+		private terminalEventService: TerminalEventService
 	) {
 		this.cursorSpeed = 500; // Cursor blink rate in milliseconds
 		this.inputRight = ""; // User input string to right of cursor
@@ -61,8 +61,8 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	}
 
 	ngOnInit() {
-		// Subscribe to output from the TerminalCommandService
-		this.terminalCommandService.output.subscribe(
+		// Subscribe to output from the TerminalEventService
+		this.terminalEventService.output.subscribe(
 			this.handleOutput.bind(this)
 		);
 	}
@@ -81,7 +81,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		return index;
 	}
 
-	private handleOutput(data: HearLog) {
+	private handleOutput(data: EventStream) {
 		var isFirstLine: boolean = true;
 
 		//console.debug("Handling output:", data);
@@ -126,11 +126,11 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			}
 			else {
 				switch(log.type) {
-				case HearLogItem.TypeCommand: // echoed command
+				case EventStreamItem.TypeCommand: // echoed command
 					// If this command hasn't already been locally echoed,
 					// it either came from a previous session or other
 					// simultaneously connected session. Display it.
-					if (log.tag != this.terminalCommandService.tag) {
+					if (log.tag != this.terminalEventService.tag) {
 						chunks.push(new ScrollbackChunk("command", this.prompt + log.items[0]));
 					}
 					// Skip processing this line (i.e. don't display a
@@ -140,9 +140,9 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 						return;
 					}
 					break;
-				case HearLogItem.TypeError: // data error
+				case EventStreamItem.TypeError: // data error
 					lineType = "text-warning";
-				case HearLogItem.TypeOutput: // generic output
+				case EventStreamItem.TypeOutput: // generic output
 					log.items.forEach((item) => {
 						var type: string;
 						var interactive: any;
@@ -167,7 +167,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			}
 
 			// Show a timestmap on this line if:
-			//  - It is the first line in the HearLog (e.g. new message or
+			//  - It is the first line in the EventStream (e.g. new message or
 			//    response to newly entered command
 			//  - A timestamp has never been shown in this session (i.e. the
 			//    user just logged in on this session and a backog is being
@@ -498,7 +498,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			if (this.localExec(command)) {
 				// If the command was not consumed by local execution, attempt
 				// to execute it on the server
-				this.terminalCommandService.exec(command)
+				this.terminalEventService.exec(command)
 					.catch((error) => {
 						this.appendLine("text-danger", error);
 					});

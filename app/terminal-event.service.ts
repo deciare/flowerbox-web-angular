@@ -3,20 +3,20 @@ import { Headers, Http, Response } from "@angular/http";
 import { Observable } from "rxjs/observable";
 import { Observer } from "rxjs/observer";
 import "rxjs/add/operator/toPromise";
-import { HearLog, HearLogItem, WobRef } from "./hear-log";
+import { EventStream, EventStreamItem, WobRef } from "./event-stream";
 import { SessionService } from "./session.service";
 import { TagService } from "./tag.service";
 import { Urls } from "./urls";
 
 
 @Injectable()
-export class TerminalCommandService {
+export class TerminalEventService {
 	private interval: any;
 	private lastCheckTime: number;
 
 	tag: string;
 
-	output: Observable<HearLog>;
+	output: Observable<EventStream>;
 
 	constructor(
 		private http: Http,
@@ -54,13 +54,13 @@ export class TerminalCommandService {
 
 	awaitOutput(observer: Observer<any>) {
 		return this.getOutput()
-			.then((data: HearLog) => {
+			.then((data: EventStream) => {
 				// If data.log.length is 0, then it's an empty array signifying
 				// that no new lines have been output since the last check for
 				// new output
 				if (data.log.length) {
 					// Set lastCheckTime based on the timestamp of the last
-					// HearLog
+					// EventStream
 					this.lastCheckTime = Math.max(this.lastCheckTime, data.log[data.log.length - 1].timestamp);
 				}
 
