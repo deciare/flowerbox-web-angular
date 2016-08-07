@@ -2,8 +2,6 @@
 
 A client for [flowerbox-server](https://github.com/kayateia/flowerbox-server), written in Angular 2.
 
-At this time, the Flowerbox server must be running on port 3001 on the same host as the Flowerbox client. This will be configurable in the future.
-
 ## Installation
 
 npm is required for installation.
