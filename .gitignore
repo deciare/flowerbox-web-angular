@@ -7,7 +7,7 @@ app/*.js
 app/*.js.map
 
 # Local changes only
-config.js
+app/config.ts
 
 # Finder metadata
 .DS_Store

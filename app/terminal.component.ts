@@ -1,4 +1,5 @@
 import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
+import { Config } from "./config";
 import { EventStream, EventStreamItem, WobRef } from "./event-stream";
 import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
 import { AutocompleteService } from "./autocomplete.service";
@@ -116,7 +117,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 
 		data.log.forEach((log) => {
 			var chunks: ScrollbackChunk[] = [];
-			var lineType: string = "output";
+			var lineType: string;
 			var timestamp: Date = new Date(log.timestamp);
 
 			// If a hear log entry exists, but it has no items, then the Server
@@ -140,9 +141,19 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 						return;
 					}
 					break;
+				case EventStreamItem.TypeDebug: // debug message
+					if (Config.debug) {
+						lineType = lineType ? lineType : "text-info";
+					}
+					else {
+						break;
+					}
+				case EventStreamItem.TypeParseError: // parsing error
+				case EventStreamItem.TypeScriptError: // scripting error
 				case EventStreamItem.TypeError: // data error
-					lineType = "text-warning";
+					lineType = lineType ? lineType : "text-warning";
 				case EventStreamItem.TypeOutput: // generic output
+					lineType = lineType ? lineType : "output";
 					log.items.forEach((item) => {
 						var type: string;
 						var interactive: any;
@@ -468,14 +479,14 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			// First match is login, second match is password
 			this.sessionService.login(matches[1], matches[2])
 				.then((msg) => {
-					this.appendLine("text-information", msg);
+					this.appendLine("text-info", msg);
 				});
 			// This command should be consumed (not executed on server)
 			processOnServer = false;
 		}
 		else if (matches = command.match(/^logout$/)) {
 			this.sessionService.logout();
-			this.appendLine("text-information", "Logged out");
+			this.appendLine("text-info", "Logged out");
 			processOnServer = false;
 		}
 

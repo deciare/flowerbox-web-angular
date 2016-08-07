@@ -21,6 +21,11 @@ Transpile TypeScript to JavaScript:
 npm run tsc
 ```
 
+Create configuration file:
+```bash
+cp app/config.template.ts app/config.ts
+```
+
 ## Usage
 
 Start the server and monitor TypeScript files for changes:
