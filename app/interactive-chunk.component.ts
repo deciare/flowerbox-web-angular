@@ -29,6 +29,7 @@ import { TagService } from "./tag.service";
 })
 export class InteractiveChunkComponent {
 	private content: string;
+	private title: string;
 	private popoverShown: boolean;
 	private tag: string;
 
@@ -62,52 +63,71 @@ export class InteractiveChunkComponent {
 		// because it hasn't yet been populated by server).
 		this.popoverShown = true;
 
+		// If content for this popover has never been loaded before, show a
+		// placeholder while making a request to the server.
+		if (!this.content) {
+			$(`#${this.tag}`).popover({
+				content: "Loading..."
+			}).popover("show");
+		}
+		// Otherwise, show a popover using cached content, plus indicate that
+		// updated content is being loaded from the server
+		else {
+			$(`#${this.tag}`).data("bs.popover", null).popover({
+				content: this.content,
+				html: true,
+				title: this.title + " (updating...)",
+			}).popover("show");
+		}
+
 		switch(this.chunk.type) {
 		case "wob":
 			// Once a Bootstrap popover's content is set for the first time,
 			// it can no longer be changed, so there's no point in getting new
 			// data from the server each time; reuse cached value
-			if (!this.content) {
-				this.http.get(
-						Urls.worldWob + this.chunk.interactive.id + " /info",
-						{ headers: headers }
-					)
-					.toPromise()
-					.then((response: Response) => {
-						var data = response.json();
-						if (data.verbs) {
-							verbs = data.verbs.filter((verb) => {
-								if (verb.value.charAt(0) != "$") {
-									return true;
-								}
-							})
-							.map((verb) => {
-								return verb.value;
-							});
-						}
-
-						// Cache response
-						this.content = `
-							<p>${data.desc}</p>
-							<p><b>Verbs:</b> ${verbs.join(", ")}</p>
-						`;
-
-						// Set popover content
-						$(`#${this.tag}`).popover({
-							html: true,
-							content: this.content,
-							title: `${data.name} (#${data.id})`
+			this.http.get(
+					Urls.worldWob + this.chunk.interactive.id + " /info",
+					{ headers: headers }
+				)
+				.toPromise()
+				.then((response: Response) => {
+					var data = response.json();
+					if (data.verbs) {
+						verbs = data.verbs.filter((verb) => {
+							if (verb.value.charAt(0) != "$") {
+								return true;
+							}
+						})
+						.map((verb) => {
+							return verb.value;
 						});
+					}
 
-						// If this popover should still be shown, show it now.
-						if (this.popoverShown) {
-							$(`#${this.tag}`).popover("show");
-						}
+					// Cache response
+					this.content = `
+						<p>${data.desc}</p>
+						<p><b>Verbs:</b> ${verbs.join(", ")}</p>
+					`;
+					this.title = `${data.name} (#${data.id})`;
+
+					// Hide the previous popover. We won't be able to hide it
+					// after re-initialisation because we will no longer have
+					// a reference to that instance of the popover.
+					$(`#${this.tag}`).popover("hide");
+
+					// Create a new popover and initialise it with updated
+					// content.
+					$(`#${this.tag}`).data("bs.popover", null).popover({
+						content: this.content,
+						html: true,
+						title: this.title
 					});
-			}
-			else {
-				$(`#${this.tag}`).popover("show");
-			}
+
+					// If this popover should still be shown, show it now.
+					if (this.popoverShown) {
+						$(`#${this.tag}`).popover("show");
+					}
+				});
 			break;
 		}
 	}
