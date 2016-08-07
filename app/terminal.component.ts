@@ -81,28 +81,14 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 
 	ngOnInit() {
 		if (!this.sessionService.isLoggedIn()) {
-			var username, password;
-
-			this.promptInput("Username:")
+			this.loginPrompt()
 				.then((response: string) => {
-					username = response;
-					return this.promptInput("Password:", "*");
-				})
-				.then((response: string) => {
-					password = response;
-					return this.sessionService.login(username, password);
-				})
-				.then((response: string) => {
-					this.appendLine("text-info", response);
-
-					// Subscribe to output from the TerminalEventService
+					// When login successful,
+					// subscribe to output from the TerminalEventService
 					this.terminalEventService.output.subscribe(
 						this.handleOutput.bind(this)
 					);
-				},
-				(error: string) => {
-					this.appendLine("text-danger", error);
-				})
+				});
 		}
 		else {
 			// Subscribe to output from the TerminalEventService
@@ -248,6 +234,28 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		if (data.log.length) {
 			this.scrollToBottom();
 		}
+	}
+
+	private loginPrompt(): Promise<string> {
+		var username, password;
+
+		return this.promptInput("Username:")
+			.then((response: string) => {
+				username = response;
+				return this.promptInput("Password:", "*");
+			})
+			.then((response: string) => {
+				password = response;
+				return this.sessionService.login(username, password);
+			})
+			.then((response: string) => {
+				this.appendLine("text-info", response);
+				return response;
+			},
+			(error: string) => {
+				this.appendLine("text-danger", error);
+				return this.loginPrompt();
+			})
 	}
 
 	private indexOfLeftWordBoundary(): number {
