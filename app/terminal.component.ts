@@ -95,8 +95,14 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			// Log detailed error to console
 			console.log("Error received by TerminalComponent.handleOutput():", data.error);
 
+			if (data.error.match(/Missing bearer token/) || data.error.match(/Token validation error/)) {
+				this.appendLine("text-info", "You are not logged in, or your session is invalid. To login, type:")
+				this.appendLine("text-info", "  login <username> <password>");
+				this.appendLine("text-info", "To log out afterward, type:");
+				this.appendLine("text-info", "  logout");
+			}
 			// Show friendly error message on terminal
-			if (!this.hasServerError) {
+			else if (!this.hasServerError) {
 				this.appendLine(new ScrollbackLine(new ScrollbackChunk("text-danger", "The server or network is experiencing technical issues. You will not be able to submit commands or interact with the world."), new Date()));
 				this.appendLine("text-danger", "This session will automatically keep trying to reconnect you.");
 			}
