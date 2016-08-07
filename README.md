@@ -36,4 +36,4 @@ npm start
 
 ## Licence
 
-GPLv3
+[GPLv3](https://github.com/deciare/flowerbox-web-angular/blob/master/LICENCE)

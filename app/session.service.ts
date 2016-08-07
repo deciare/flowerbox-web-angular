@@ -1,3 +1,8 @@
+/*
+	flowerbox-web-angular
+	Copyright (C) 2016 Deciare
+	For licensing info, please see LICENCE file.
+*/
 import { Injectable } from "@angular/core";
 import { Http, Response } from "@angular/http";
 import { Cookie } from "ng2-cookies/ng2-cookies";

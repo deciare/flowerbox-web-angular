@@ -1,3 +1,8 @@
+/*
+	flowerbox-web-angular
+	Copyright (C) 2016 Deciare
+	For licensing info, please see LICENCE file.
+*/
 import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
 import { Config } from "./config";
 import { EventStream, EventStreamItem, WobRef } from "./event-stream";
