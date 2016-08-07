@@ -20,7 +20,7 @@ import { TagService } from "./tag.service";
 	styleUrls: [
 		"./interactive-chunk.component.css"
 	],
-	template: `<span id="{{tag}}" [ngSwitch]="chunk.type" class="pre-container" data-toggle="popover" data-placement="top" data-trigger="hover" (mouseover)="getContent()">
+	template: `<span id="{{tag}}" [ngSwitch]="chunk.type" class="pre-container" data-toggle="popover" data-placement="top" data-trigger="manual" (mouseover)="showPopover()" (mouseout)="hidePopover()">
 		<span *ngSwitchCase="'wob'" class="{{chunk.type}} pre">{{chunk.text}}</span>
 	</span>`,
 	providers: [
@@ -29,6 +29,7 @@ import { TagService } from "./tag.service";
 })
 export class InteractiveChunkComponent {
 	private content: string;
+	private popoverShown: boolean;
 	private tag: string;
 
 	@Input()
@@ -42,12 +43,24 @@ export class InteractiveChunkComponent {
 		this.tag = "InteractiveChunk_" + this.tagService.makeTag(4);
 	}
 
-	getContent() {
+	hidePopover() {
+		// Indicate that this popover should be hidden.
+		this.popoverShown = false;
+		// Hide the popover.
+		$(`#${this.tag}`).popover("hide");
+	}
+
+	showPopover() {
 		var headers = new Headers({
 			"Authorization": this.sessionService.token,
 			"Content-Type": "application/json"
 		});
 		var verbs: string[] = [];
+
+		// Indicate that the popover should be shown, even though it may not
+		// necessarily be visible at this time (i.e. if content is blank
+		// because it hasn't yet been populated by server).
+		this.popoverShown = true;
 
 		switch(this.chunk.type) {
 		case "wob":
@@ -86,11 +99,14 @@ export class InteractiveChunkComponent {
 							title: `${data.name} (#${data.id})`
 						});
 
-						// Show the popover. It didn't auto-show the first time
-						// it was hovered because the content was blank at
-						// the time.
-						$(`#${this.tag}`).popover("show");
+						// If this popover should still be shown, show it now.
+						if (this.popoverShown) {
+							$(`#${this.tag}`).popover("show");
+						}
 					});
+			}
+			else {
+				$(`#${this.tag}`).popover("show");
 			}
 			break;
 		}
