@@ -3,13 +3,14 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Component, Input } from "@angular/core";
+import { AfterViewInit, Component, Input } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 import { Urls } from "./urls";
 import { ScrollbackChunk } from "./scrollback";
 import { SessionService } from "./session.service";
 import { TagService } from "./tag.service";
+import { EmbedMediaComponent } from "./embed-media.component";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
@@ -22,16 +23,23 @@ import { TagService } from "./tag.service";
 	],
 	template: `<span id="{{tag}}" [ngSwitch]="chunk.type" class="pre-container" data-toggle="popover" data-placement="top" data-trigger="manual" (mouseover)="showPopover()" (mouseout)="hidePopover()">
 		<span *ngSwitchCase="'wob'" class="{{chunk.type}} pre">{{chunk.text}}</span>
+		<embed-media [hidden]="true" [type]="'image'" [url]="imageUrl" (onData)="onImageData($event)"></embed-media>
 	</span>`,
+	directives: [
+		EmbedMediaComponent
+	],
 	providers: [
 		TagService
 	]
 })
-export class InteractiveChunkComponent {
+export class InteractiveChunkComponent implements AfterViewInit{
 	private content: string;
 	private title: string;
 	private popoverShown: boolean;
 	private tag: string;
+	private element: JQuery;
+	private imageUrl: string;
+	private imageData: string;
 
 	@Input()
 	chunk: ScrollbackChunk;
@@ -44,11 +52,25 @@ export class InteractiveChunkComponent {
 		this.tag = "InteractiveChunk_" + this.tagService.makeTag(4);
 	}
 
+	ngAfterViewInit() {
+		this.element = $(`#${this.tag}`);
+	}
+
 	hidePopover() {
 		// Indicate that this popover should be hidden.
 		this.popoverShown = false;
 		// Hide the popover.
-		$(`#${this.tag}`).popover("hide");
+		this.element.popover("hide");
+	}
+
+	replacePopover(options: PopoverOptions) {
+		// Hide the previous popover. We won't be able to hide it
+		// after re-initialisation because we will no longer have
+		// a reference to that instance of the popover.
+		this.element.popover("hide");
+
+		// Create a new popover and initialise it with updated content.
+		this.element.data("bs.popover", null).popover(options);
 	}
 
 	showPopover() {
@@ -66,14 +88,14 @@ export class InteractiveChunkComponent {
 		// If content for this popover has never been loaded before, show a
 		// placeholder while making a request to the server.
 		if (!this.content) {
-			$(`#${this.tag}`).popover({
+			this.element.popover({
 				content: "Loading..."
 			}).popover("show");
 		}
 		// Otherwise, show a popover using cached content, plus indicate that
 		// updated content is being loaded from the server
 		else {
-			$(`#${this.tag}`).data("bs.popover", null).popover({
+			this.element.data("bs.popover", null).popover({
 				content: this.content,
 				html: true,
 				title: this.title + " (updating...)",
@@ -86,12 +108,22 @@ export class InteractiveChunkComponent {
 			// it can no longer be changed, so there's no point in getting new
 			// data from the server each time; reuse cached value
 			this.http.get(
-					Urls.worldWob + this.chunk.interactive.id + " /info",
+					Urls.wobInfo(this.chunk.interactive.id),
 					{ headers: headers }
 				)
 				.toPromise()
 				.then((response: Response) => {
 					var data = response.json();
+					var imageProperty = data.properties.find((element) => {
+						return element.value == "image";
+					});
+
+					// If object has images, fetch the image.
+					if (imageProperty !== undefined) {
+						this.imageUrl = Urls.wobProperty(data.id, "image");
+					}
+
+					// If object has verbs, list non-system verbs.
 					if (data.verbs) {
 						verbs = data.verbs.filter((verb) => {
 							if (verb.value.charAt(0) != "$") {
@@ -103,6 +135,7 @@ export class InteractiveChunkComponent {
 						});
 					}
 
+
 					// Cache response
 					this.content = `
 						<p>${data.desc}</p>
@@ -110,14 +143,16 @@ export class InteractiveChunkComponent {
 					`;
 					this.title = `${data.name} (#${data.id})`;
 
-					// Hide the previous popover. We won't be able to hide it
-					// after re-initialisation because we will no longer have
-					// a reference to that instance of the popover.
-					$(`#${this.tag}`).popover("hide");
+					// If an image was previously cached for this element,
+					// reuse it.
+					if (this.imageData) {
+						this.content = `
+							<img src="${this.imageData}" />
+						` + this.content;
+					}
 
-					// Create a new popover and initialise it with updated
-					// content.
-					$(`#${this.tag}`).data("bs.popover", null).popover({
+					// Replace popover withupdated content.
+					this.replacePopover({
 						content: this.content,
 						html: true,
 						title: this.title
@@ -125,10 +160,30 @@ export class InteractiveChunkComponent {
 
 					// If this popover should still be shown, show it now.
 					if (this.popoverShown) {
-						$(`#${this.tag}`).popover("show");
+						this.element.popover("show");
 					}
 				});
 			break;
+		}
+	}
+
+	onImageData(data: string) {
+		// Cache image data.
+		this.imageData = data;
+
+		// Prepend the image to the popover's content.
+		this.content = `
+			<img src="${this.imageData}" />
+		` + this.content;
+		this.replacePopover({
+			content: this.content,
+			html: true,
+			title: this.title
+		});
+
+		// Show the popover if it is supposed to be visible.
+		if (this.popoverShown) {
+			this.element.popover("show");
 		}
 	}
 }

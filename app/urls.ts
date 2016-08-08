@@ -11,4 +11,12 @@ export class Urls {
 	static userLogin: string = Config.server + "user/login/";
 	static userPlayerInfo: string = Config.server + "user/player-info/";
 	static worldWob: string = Config.server + "world/wob/";
+
+	static wobInfo(id: number): string {
+		return Urls.worldWob + id + "/info";
+	}
+
+	static wobProperty(id: number, property: string): string {
+		return Urls.worldWob + id + "/property/" + property;
+	}
 }
