@@ -6,13 +6,14 @@
 import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
 import { Subscription } from "rxjs/subscription";
 import { Config } from "./config";
-import { EventStream, EventStreamItem, WobRef } from "./event-stream";
+import { EventStream, EventStreamItem } from "./event-stream";
 import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
 import { AutocompleteService } from "./autocomplete.service";
 import { SessionService } from "./session.service";
 import { TerminalEventService } from "./terminal-event.service";
 import { MaskPipe } from "./mask.pipe";
 import { InteractiveChunkComponent } from "./interactive-chunk.component";
+import { Urls } from "./urls";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
@@ -98,6 +99,34 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		$('[data-toggle="tooltip"]').tooltip();
 	}
 
+	private createInteractiveChunk(item: any): ScrollbackChunk {
+		// Metadata passed to InteractiveChunkComponent
+		//   (as ScrollbackChunk.interactive)
+		// in addition to item.rich
+		//   (as ScrollbackChunk.type)
+		var interactive: any;
+
+		// Text to be dislayed in terminal for this chunk
+		var text: string = "";
+
+		switch(item.rich) {
+		case "image":
+			interactive = {
+				id: item.id,
+				url: Urls.wobProperty(item.id, item.property),
+				alt: item.text
+			};
+			break;
+		case "wob":
+			interactive = {
+				id: item.id
+			};
+			text = item.text;
+			break;
+		}
+		return new ScrollbackChunk(item.rich, text, interactive);
+	}
+
 	private handleOutput(data: EventStream) {
 		var isFirstLine: boolean = true;
 
@@ -177,19 +206,8 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 				case EventStreamItem.TypeOutput: // generic output
 					lineType = lineType ? lineType : "output";
 					log.items.forEach((item) => {
-						var type: string;
-						var interactive: any;
-
 						if (typeof(item) === "object") {
-							switch(item.rich) {
-							case "wob":
-								type = "wob";
-								interactive = {
-									id: item.id
-								};
-								break;
-							}
-							chunks.push(new ScrollbackChunk(type, item.text, interactive));
+							chunks.push(this.createInteractiveChunk(item));
 						}
 						else {
 							chunks.push(new ScrollbackChunk(lineType, item));

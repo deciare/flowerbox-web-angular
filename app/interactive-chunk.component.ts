@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { AfterViewInit, Component, Input } from "@angular/core";
+import { AfterViewInit, Component, Input, ViewEncapsulation } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 import { Urls } from "./urls";
@@ -18,13 +18,11 @@ import { EmbedMediaComponent } from "./embed-media.component";
 @Component({
 	moduleId: module.id,
 	selector: "interactive-chunk",
+	encapsulation: ViewEncapsulation.None, // styles from this component also apply to child components
 	styleUrls: [
 		"./interactive-chunk.component.css"
 	],
-	template: `<span id="{{tag}}" [ngSwitch]="chunk.type" class="pre-container" data-toggle="popover" data-placement="top" data-trigger="manual" (mouseover)="showPopover()" (mouseout)="hidePopover()">
-		<span *ngSwitchCase="'wob'" class="{{chunk.type}} pre">{{chunk.text}}</span>
-		<embed-media [hidden]="true" [type]="'image'" [url]="imageUrl" (onData)="onImageData($event)"></embed-media>
-	</span>`,
+	templateUrl: "./interactive-chunk.component.html",
 	directives: [
 		EmbedMediaComponent
 	],
@@ -38,7 +36,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 	private popoverShown: boolean;
 	private tag: string;
 	private element: JQuery;
-	private imageUrl: string;
+	private popoverImageUrl: string;
 	private imageData: string;
 
 	@Input()
@@ -120,7 +118,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 
 					// If object has images, fetch the image.
 					if (imageProperty !== undefined) {
-						this.imageUrl = Urls.wobProperty(data.id, "image");
+						this.popoverImageUrl = Urls.wobProperty(data.id, "image");
 					}
 
 					// If object has verbs, list non-system verbs.
@@ -167,7 +165,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 		}
 	}
 
-	onImageData(data: string) {
+	setPopoverImage(data: string) {
 		// Cache image data.
 		this.imageData = data;
 

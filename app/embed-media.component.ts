@@ -11,7 +11,7 @@ import { Urls } from "./urls";
 		<span *ngIf="!hidden">
 			<span [ngSwitch]="type">
 				<span *ngSwitchCase="'image'">
-					<img *ngIf="data" [src]="data" />
+					<img *ngIf="data" [src]="data" [alt]="alt" />
 				</span>
 			</span>
 		</span>
@@ -19,6 +19,9 @@ import { Urls } from "./urls";
 })
 export class EmbedMediaComponent implements OnInit, OnChanges {
 	private data: string;
+
+	@Input()
+	alt: string;
 
 	@Input()
 	hidden: boolean;

@@ -1,3 +1,13 @@
+.image {
+    display: inline-block;
+    width: 50%;
+}
+.image img {
+    /* <img> tag ignores the width of the containing block by default. Here, we
+     * want the image to be 100% the width of the containing block.
+     */
+    width: 100%;
+}
 .wob {
    color: #55aaaa !important;
    text-decoration: underline;
