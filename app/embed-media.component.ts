@@ -33,13 +33,13 @@ export class EmbedMediaComponent implements OnInit, OnChanges {
 	url: string;
 
 	@Output()
-	onData: EventEmitter<string>;
+	load: EventEmitter<string>;
 
 	constructor(
 		private http: Http,
 		private sessionService: SessionService
 	) {
-		this.onData = new EventEmitter<string>();
+		this.load = new EventEmitter<string>();
 	}
 
 	ngOnInit() {
@@ -111,13 +111,13 @@ export class EmbedMediaComponent implements OnInit, OnChanges {
 					this.toDataUrl(response.response)
 						.then((response: string) => {
 							this.data = response;
-							this.onData.emit(this.data);
+							this.load.emit(this.data);
 						});
 				}
 			},
 			(errorResponse: any) => {
 				this.data = "";
-				this.onData.emit(this.data);
+				this.load.emit(this.data);
 			});
 	}
 }

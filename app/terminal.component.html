@@ -7,7 +7,7 @@
 				</td>
 				<td class="main-content">
 					<span *ngFor="let chunk of line.chunks" class="pre-container">
-						<interactive-chunk *ngIf="chunk.interactive" [chunk]="chunk"></interactive-chunk>
+						<interactive-chunk *ngIf="chunk.interactive" [chunk]="chunk" (layout)="scrollToBottom()"></interactive-chunk>
 						<span class="{{chunk.type}} pre" *ngIf="!chunk.interactive">{{chunk.text}}</span>
 					</span>
 				</td>

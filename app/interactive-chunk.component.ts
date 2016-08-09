@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { AfterViewInit, Component, Input, ViewEncapsulation } from "@angular/core";
+import { AfterViewInit, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 import { Urls } from "./urls";
@@ -42,16 +42,31 @@ export class InteractiveChunkComponent implements AfterViewInit{
 	@Input()
 	chunk: ScrollbackChunk;
 
+	@Output()
+	layout: EventEmitter<any>;
+
 	constructor(
 		private http: Http,
 		private sessionService: SessionService,
 		private tagService: TagService
 	) {
 		this.tag = "InteractiveChunk_" + this.tagService.makeTag(4);
+		this.layout = new EventEmitter<any>();
 	}
 
 	ngAfterViewInit() {
 		this.element = $(`#${this.tag}`);
+	}
+
+	/**
+	 * Emits the "layout" event, to indicate that this chunk's impact on the
+	 * document layout may have changed since the chunk was first inserted into
+	 * the DOM. For example, if this chunk contained an image that was loaded
+	 * asynchronously, the image may have made this chunk taller than it
+	 * initially was.
+	 */
+	onLayout(event: any) {
+		this.layout.emit(event);
 	}
 
 	hidePopover() {
