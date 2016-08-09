@@ -1,5 +1,5 @@
 <span [ngSwitch]="chunk.type"><!--
---><span id="{{tag}}" *ngSwitchCase="'image'" class="{{chunk.type}}"><!--
+	--><span id="{{tag}}" *ngSwitchCase="'image'" class="{{chunk.type}}" [style.float]="chunk.interactive.float"><!--
 		--><embed-media [type]="'image'" [url]="chunk.interactive.url" [alt]="chunk.interactive.alt" (load)="onLayout($event)"></embed-media><!--
 	--></span><!--
 	--><span id="{{tag}}" *ngSwitchCase="'wob'" class="{{chunk.type}} pre" data-toggle="popover" data-placement="top" data-trigger="manual" (mouseover)="showPopover()" (mouseout)="hidePopover()">{{chunk.text}}</span><!--

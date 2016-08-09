@@ -18,6 +18,14 @@ import { Urls } from "./urls";
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
 
+class ChunkWrapper {
+	chunk: ScrollbackChunk;
+	placement: string;
+
+	// Possible values for placement
+	static PlacementStart = "start";
+	static PlacementEnd = "end";
+}
 
 @Component({
 	moduleId: module.id,
@@ -98,12 +106,15 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		$('[data-toggle="tooltip"]').tooltip();
 	}
 
-	private createInteractiveChunk(item: any): ScrollbackChunk {
+	private createInteractiveChunk(item: any, index: number, arr: Array<EventStreamItem>): ChunkWrapper {
 		// Metadata passed to InteractiveChunkComponent
 		//   (as ScrollbackChunk.interactive)
 		// in addition to item.rich
 		//   (as ScrollbackChunk.type)
 		var interactive: any;
+
+		// Where in the current line the created chunk should be inserted
+		var placement = ChunkWrapper.PlacementEnd;
 
 		// Text to be dislayed in terminal for this chunk
 		var text: string = "";
@@ -115,6 +126,20 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 				url: Urls.wobProperty(item.id, item.property),
 				alt: item.text
 			};
+
+			// If an image is the first chunk on a line, float it left
+			if (index == 0) {
+				interactive.float = "left";
+			}
+			// If an image is the last chunk on a line, float it right
+			else if (index == arr.length - 1) {
+				interactive.float = "right";
+				// To ensure that floating image is displayed on the same line
+				// as other content on this line, it must be inserted before
+				// other content.
+				placement = ChunkWrapper.PlacementStart;
+			}
+
 			break;
 		case "wob":
 			interactive = {
@@ -123,7 +148,10 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			text = item.text;
 			break;
 		}
-		return new ScrollbackChunk(item.rich, text, interactive);
+		return {
+			chunk: new ScrollbackChunk(item.rich, text, interactive),
+			placement: placement
+		}
 	}
 
 	private handleOutput(data: EventStream) {
@@ -204,9 +232,20 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 					lineType = lineType ? lineType : "text-warning";
 				case EventStreamItem.TypeOutput: // generic output
 					lineType = lineType ? lineType : "output";
-					log.items.forEach((item) => {
+					log.items.forEach((item, index, arr) => {
 						if (typeof(item) === "object") {
-							chunks.push(this.createInteractiveChunk(item));
+							// If item is not plain text, create an interactive
+							// chunk based on item's object properties
+							let wrappedChunk = this.createInteractiveChunk(item, index, arr);
+
+							// Check whether the resultant chunk should be
+							// placed at the start or end of the current line
+							if (wrappedChunk.placement == ChunkWrapper.PlacementStart) {
+								chunks.unshift(wrappedChunk.chunk);
+							}
+							else if (wrappedChunk.placement == ChunkWrapper.PlacementEnd) {
+								chunks.push(wrappedChunk.chunk);
+							}
 						}
 						else {
 							chunks.push(new ScrollbackChunk(lineType, item));
