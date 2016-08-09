@@ -18,7 +18,6 @@ import { Urls } from "./urls";
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
 
-// TODO: Implement input masking using a custom implementation of Pipe()
 
 @Component({
 	moduleId: module.id,
@@ -75,7 +74,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		this.inputHistoryIndex = 0; // 0-based index of currently shown input history
 		this.scrollback = []; // Scrollback buffer
 		this.scrollbackMaxLength = 5000; // Max number of scrollback lines
-		this.defaultPrompt = "fb>"; // Default command prompt
+		this.defaultPrompt = "fb> "; // Default command prompt
 		this.prompt = this.defaultPrompt; // Current command prompt
 
 		// Initialise empty command line
@@ -247,10 +246,10 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	private loginPrompt(): Promise<string> {
 		var username, password;
 
-		return this.promptInput("Username:")
+		return this.promptInput("Username: ")
 			.then((response: string) => {
 				username = response;
-				return this.promptInput("Password:", "*");
+				return this.promptInput("Password: ", "*");
 			})
 			.then((response: string) => {
 				password = response;

@@ -7,15 +7,15 @@ import { Urls } from "./urls";
 @Component({
 	moduleId: module.id,
 	selector: "embed-media",
-	template: `
-		<span *ngIf="!hidden">
+	template: `<!--
+		--><span *ngIf="!hidden">
 			<span [ngSwitch]="type">
 				<span *ngSwitchCase="'image'">
 					<img *ngIf="data" [src]="data" [alt]="alt" />
 				</span>
 			</span>
-		</span>
-	`
+		</span><!--
+	-->`
 })
 export class EmbedMediaComponent implements OnInit, OnChanges {
 	private data: string;
