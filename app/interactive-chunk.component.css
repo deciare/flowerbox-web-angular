@@ -6,7 +6,7 @@
     /* <img> tag ignores the width of the containing block by default. Here, we
      * want the image to be 100% the width of the containing block.
      */
-    width: 100%;
+    max-width: 100%;
 }
 .wob {
    color: #55aaaa !important;
