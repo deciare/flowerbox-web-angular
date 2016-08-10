@@ -18,6 +18,8 @@ import { Urls } from "./urls";
 export class TerminalEventService {
 	private interval: any;
 	private lastCheckTime: number;
+	private observer: Observer<any>;
+	private retryTimer: NodeJS.Timer;
 
 	tag: string;
 
@@ -34,6 +36,10 @@ export class TerminalEventService {
 	}
 
 	handleResponse(response: Response): Promise<any> {
+		// If we're here, that means we received a successful response from the
+		// server. Retry checking the event stream immediately.
+		this.retryOutput();
+
 		//console.debug("handleResponse", response);
 		var data = response.json();
 		if (!data.success) {
@@ -58,6 +64,9 @@ export class TerminalEventService {
 	}
 
 	awaitOutput(observer: Observer<any>) {
+		// Allow awaitOutput() to be called with same observer later
+		this.observer = observer;
+
 		return this.getOutput()
 			.then((data: EventStream) => {
 				// If data.log.length is 0, then it's an empty array signifying
@@ -81,10 +90,20 @@ export class TerminalEventService {
 
 				// To avoid spamming the server while it is down, wait a while
 				// before sending the next request
-				setTimeout(() => {
-					this.awaitOutput(observer)
+				this.retryTimer = setTimeout(() => {
+					this.retryOutput();
 				}, 15000);
 			});
+	}
+
+	retryOutput() {
+		// If waiting to retry after a server error, clear the timer and retry
+		// immediately
+		if (this.retryTimer) {
+			clearTimeout(this.retryTimer);
+			this.retryTimer = undefined;
+			this.awaitOutput(this.observer);
+		}
 	}
 
 	getOutput() {
