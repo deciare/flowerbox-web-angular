@@ -50,17 +50,32 @@ export class TerminalEventService {
 
 	handleDataError(data: any): Promise<void> {
 		//console.debug("handleDataError", data);
+		var error: string = `Data error: ${data.error}`;
+
+		// Notify observer about error
+		if (this.observer) {
+			this.observer.next({ error: error });
+		}
+
 		return Promise.reject(`Data error: ${data.error}`);
 	}
 
 	handleServerError(response: Response): Promise<void> {
 		//console.debug("handleServerError", response);
+		var error: string;
 		if (response.status) {
-			return Promise.reject(`Server error: ${response.status} ${response.statusText}`);
+			error = `Server error: ${response.status} ${response.statusText}`;
 		}
 		else {
-			return Promise.reject("Could not connect to server.");
+			error = "Could not connect to server.";
 		}
+
+		// Notify observer about error
+		if (this.observer) {
+			this.observer.next({ error: error });
+		}
+
+		return Promise.reject(error);
 	}
 
 	awaitOutput(observer: Observer<any>) {
@@ -85,9 +100,6 @@ export class TerminalEventService {
 				this.awaitOutput(observer);
 			})
 			.catch((error) => {
-				// Notify observer about server error or data error
-				observer.next({ error: error });
-
 				// To avoid spamming the server while it is down, wait a while
 				// before sending the next request
 				this.retryTimer = setTimeout(() => {

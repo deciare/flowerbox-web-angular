@@ -162,18 +162,25 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			// Log detailed error to console
 			console.log("Error received by TerminalComponent.handleOutput():", data.error);
 
-			if (data.error.match(/Missing bearer token/) || data.error.match(/Token validation error/)) {
-				this.appendLine("text-info", "You are not logged in, or your session is invalid. To login, type:")
-				this.appendLine("text-info", "  login");
-				this.appendLine("text-info", "To log out afterward, type:");
-				this.appendLine("text-info", "  logout");
-			}
 			// Show friendly error message on terminal
-			else if (!this.hasServerError) {
-				this.appendLine(new ScrollbackLine(new ScrollbackChunk("text-danger", "The server or network is experiencing technical issues. You will not be able to submit commands or interact with the world."), new Date()));
-				this.appendLine("text-danger", "This session will automatically keep trying to reconnect you.");
+			if (!this.hasServerError) {
+				// If session error
+				if (data.error.match(/Missing bearer token/) || data.error.match(/Token validation error/)) {
+					// Clear locally-stored session data, as it is invalid
+					this.sessionService.logout();
+
+					// Provide user with instructions
+					this.appendLine("text-info", "You are not logged in, or your session is invalid. To log in, type:")
+					this.appendLine("text-info", "  login");
+					this.appendLine("text-info", "To log out afterward, type:");
+					this.appendLine("text-info", "  logout");
+				}
+				else {
+					this.appendLine(new ScrollbackLine(new ScrollbackChunk("text-danger", "Connection to server was interrupted. Until the connection is restored, you will not be able to interact with the world."), new Date()));
+					this.appendLine(new ScrollbackLine(new ScrollbackChunk("text-danger", "Trying to reconnect...")));
+				}
+				this.scrollToBottom();
 			}
-			this.scrollToBottom();
 
 			// Indicate that an error is currently happening
 			this.hasServerError = true;
@@ -183,14 +190,18 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		}
 		else {
 			// If we were in an error state, notify the user that we have
-			// recovered
-			if (this.hasServerError) {
+			// recovered.
+			//
+			// DON'T notify the user about recovery if we're not currently
+			// logged in, as the apparent recovery may be a response to the
+			// last new-event check submitted before a session error.
+			if (this.hasServerError && this.sessionService.isLoggedIn()) {
 				this.appendLine(new ScrollbackLine(new ScrollbackChunk("text-success", "Reconnected!"), new Date()));
 				this.scrollToBottom();
-			}
 
-			// Indicate that no error is currently happening
-			this.hasServerError = false;
+				// Indicate that no error is currently happening
+				this.hasServerError = false;
+			}
 		}
 
 		data.log.forEach((log) => {
@@ -598,12 +609,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		var processOnServer: boolean = true; // whether to exec on server
 
 		if (matches = command.match(/^login$/)) {
-			// Calling subscribeToEventStream() without a valid session will
-			// automatically trigger a login prompt
-			this.subscribeToEventStream()
-			.then((subscription: Subscription) => {
-				this.eventStreamSubscription = subscription;
-			});
+			this.loginPrompt();
 
 			// This command should be consumed (not executed on server)
 			processOnServer = false;
@@ -615,10 +621,6 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			// Tell the user they've been logged out
 			this.appendLine("text-info", "Logged out. To log back in, type:");
 			this.appendLine("text-info", "  login");
-
-			// Unsubscribe from the event stream to repeated errors about not
-			// being logged in
-			this.eventStreamSubscription.unsubscribe();
 
 			// This command should be consumed (not executed on server)
 			processOnServer = false;
@@ -680,10 +682,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 				if (this.localExec(command)) {
 					// If the command was not consumed by local execution,
 					// attempt to execute it on the server
-					this.terminalEventService.exec(command)
-						.catch((error) => {
-							this.appendLine("text-danger", error);
-						});
+					this.terminalEventService.exec(command);
 				}
 			}
 		}
