@@ -4,7 +4,7 @@
 	For licensing info, please see LICENCE file.
 */
 import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
-import { Subscription } from "rxjs/subscription";
+import { Subscription } from "rxjs/Subscription";
 import { Config } from "./config";
 import { EventStream, EventStreamItem } from "./event-stream";
 import { ScrollbackChunk, ScrollbackLine } from "./scrollback";

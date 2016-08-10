@@ -5,8 +5,8 @@
 */
 import { Injectable } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
-import { Observable } from "rxjs/observable";
-import { Observer } from "rxjs/observer";
+import { Observable } from "rxjs/Observable";
+import { Observer } from "rxjs/Observer";
 import "rxjs/add/operator/toPromise";
 import { EventStream, EventStreamItem, WobRef } from "./event-stream";
 import { SessionService } from "./session.service";
