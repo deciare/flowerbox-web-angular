@@ -35,7 +35,7 @@ export class TerminalEventService {
 		this.tag = this.tagService.makeTag(); // Random tag for identifying commands submitted from this session
 	}
 
-	handleResponse(response: Response): Promise<any> {
+	private handleResponse(response: Response): Promise<any> {
 		// If we're here, that means we received a successful response from the
 		// server. Retry checking the event stream immediately.
 		this.retryOutput();
@@ -48,7 +48,7 @@ export class TerminalEventService {
 		return Promise.resolve(data);
 	}
 
-	handleDataError(data: any): Promise<void> {
+	private handleDataError(data: any): Promise<void> {
 		//console.debug("handleDataError", data);
 		var error: string = `Data error: ${data.error}`;
 
@@ -60,7 +60,7 @@ export class TerminalEventService {
 		return Promise.reject(`Data error: ${data.error}`);
 	}
 
-	handleServerError(response: Response): Promise<void> {
+	private handleServerError(response: Response): Promise<void> {
 		//console.debug("handleServerError", response);
 		var error: string;
 		if (response.status) {
@@ -78,7 +78,29 @@ export class TerminalEventService {
 		return Promise.reject(error);
 	}
 
+	private retryOutputLater() {
+		this.retryTimer = setTimeout(() => {
+			this.retryOutput();
+		}, 15000);
+	}
+
+	retryOutput() {
+		// If waiting to retry after a server error, clear the timer and retry
+		// immediately
+		if (this.retryTimer && this.observer) {
+			clearTimeout(this.retryTimer);
+			this.retryTimer = undefined;
+			this.awaitOutput(this.observer);
+		}
+	}
+
 	awaitOutput(observer: Observer<any>) {
+		// If not currently logged in, don't bother to contact the server.
+		if (!this.sessionService.isLoggedIn()) {
+			this.retryOutputLater();
+			return;
+		}
+
 		// Allow awaitOutput() to be called with same observer later
 		this.observer = observer;
 
@@ -102,20 +124,8 @@ export class TerminalEventService {
 			.catch((error) => {
 				// To avoid spamming the server while it is down, wait a while
 				// before sending the next request
-				this.retryTimer = setTimeout(() => {
-					this.retryOutput();
-				}, 15000);
+				this.retryOutputLater();
 			});
-	}
-
-	retryOutput() {
-		// If waiting to retry after a server error, clear the timer and retry
-		// immediately
-		if (this.retryTimer) {
-			clearTimeout(this.retryTimer);
-			this.retryTimer = undefined;
-			this.awaitOutput(this.observer);
-		}
 	}
 
 	getOutput() {
