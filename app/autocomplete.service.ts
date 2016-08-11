@@ -139,13 +139,8 @@ export class AutocompleteService {
 	}
 
 	getWobs(locationId: number) {
-		var headers = new Headers({
-			"Authorization": this.sessionService.token
-		});
-
 		return this.http.get(
-				Urls.worldWob + locationId + "/contents",
-				{ headers: headers}
+				Urls.worldWob + locationId + "/contents"
 			)
 			.toPromise()
 			.then((response: Response) => {

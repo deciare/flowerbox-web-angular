@@ -56,7 +56,7 @@ export class SessionHttp extends Http {
 		});
 
 		return new Observable<Response>((observer: Observer<Response>) => {
-			observer.next(new Response(responseOptions));
+			observer.error(new Response(responseOptions));
 		});
 	}
 

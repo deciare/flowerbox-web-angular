@@ -98,17 +98,12 @@ export class TerminalEventService {
 	}
 
 	awaitOutput(observer: Observer<any>) {
-		// If not currently logged in, don't bother to contact the server.
-		if (!this.sessionService.isLoggedIn()) {
-			this.retryOutputLater();
-			return;
-		}
-
 		// Allow awaitOutput() to be called with same observer later
 		this.observer = observer;
 
 		return this.getOutput()
 			.then((data: EventStream) => {
+				// console.debug("awaitOutput data:", data);
 				// If data.log.length is 0, then it's an empty array signifying
 				// that no new lines have been output since the last check for
 				// new output
@@ -125,6 +120,7 @@ export class TerminalEventService {
 				this.awaitOutput(observer);
 			})
 			.catch((error) => {
+				// console.debug("awaitOutput error:", error);
 				// To avoid spamming the server while it is down, wait a while
 				// before sending the next request
 				this.retryOutputLater();
@@ -132,14 +128,9 @@ export class TerminalEventService {
 	}
 
 	getOutput() {
-		var headers = new Headers({
-			"Authorization": this.sessionService.token
-		});
-
 		//console.debug("Getting output from", Urls.termOutput + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers);
 		return this.http.get(
-				Urls.termEvents + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(),
-				{ headers: headers }
+				Urls.termEvents + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime()
 			)
 			.toPromise()
 			.then(
@@ -148,13 +139,8 @@ export class TerminalEventService {
 	}
 
 	exec(command: string) {
-		var headers = new Headers({
-			"Authorization": this.sessionService.token
-		});
-
 		return this.http.get(
-				Urls.termExec + encodeURIComponent(command) + "?tag=" + this.tag,
-				{ headers: headers }
+				Urls.termExec + encodeURIComponent(command) + "?tag=" + this.tag
 			)
 			.toPromise()
 			.then(

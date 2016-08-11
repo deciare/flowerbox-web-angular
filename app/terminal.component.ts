@@ -157,7 +157,10 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			// Show friendly error message on terminal
 			if (!this.hasServerError) {
 				// If session error
-				if (data.error.match(/Missing bearer token/) || data.error.match(/Token validation error/)) {
+				if (data.error.match(/Missing bearer token/) ||
+					data.error.match(/Token validation error/) ||
+					data.error.match(/Not logged in/)
+				) {
 					// Clear locally-stored session data, as it is invalid
 					this.sessionService.logout();
 

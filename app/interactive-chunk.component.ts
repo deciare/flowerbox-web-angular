@@ -91,9 +91,6 @@ export class InteractiveChunkComponent implements AfterViewInit{
 	}
 
 	showPopover() {
-		var headers = new Headers({
-			"Authorization": this.sessionService.token
-		});
 		var verbs: string[] = [];
 
 		// Indicate that the popover should be shown, even though it may not
@@ -124,8 +121,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 			// it can no longer be changed, so there's no point in getting new
 			// data from the server each time; reuse cached value
 			this.http.get(
-					Urls.wobInfo(this.chunk.interactive.id),
-					{ headers: headers }
+					Urls.wobInfo(this.chunk.interactive.id)
 				)
 				.toPromise()
 				.then((response: Response) => {
