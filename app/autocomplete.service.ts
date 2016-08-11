@@ -4,24 +4,26 @@
 	For licensing info, please see LICENCE file.
 */
 import { Injectable } from "@angular/core";
-import { Headers, Http, Response } from "@angular/http";
+import { Headers, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 
 import { Urls } from "./urls";
 import { AttachedItem, Info, InfoList } from "./wob";
 
+import { SessionHttp } from "./session-http.service";
 import { SessionService } from "./session.service";
 
 @Injectable()
 export class AutocompleteService {
 	constructor(
-		private http: Http,
+		private http: SessionHttp,
 		private sessionService: SessionService
 	) {
 		// Dependency injection only; no code
 	}
 
 	private handleServerError(response: Response): Promise<void> {
+		// console.debug("AutocompleteService.handleServerError:", response);
 		if (response.status) {
 			return Promise.reject(`Server error: ${response.status} ${response.statusText}`);
 		}

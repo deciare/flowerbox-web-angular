@@ -4,7 +4,7 @@
 	For licensing info, please see LICENCE file.
 */
 import { AfterViewInit, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
-import { Headers, Http, Response } from "@angular/http";
+import { Headers, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 
 import { Urls } from "./urls";
@@ -12,6 +12,7 @@ import { ScrollbackChunk } from "./scrollback";
 
 import { EmbedMediaComponent } from "./embed-media.component";
 
+import { SessionHttp } from "./session-http.service";
 import { SessionService } from "./session.service";
 import { TagService } from "./tag.service";
 
@@ -49,7 +50,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 	layout: EventEmitter<any>;
 
 	constructor(
-		private http: Http,
+		private http: SessionHttp,
 		private sessionService: SessionService,
 		private tagService: TagService
 	) {
@@ -104,7 +105,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 		// placeholder while making a request to the server.
 		if (!this.content) {
 			this.element.popover({
-				content: "Loading..."
+				content: this.sessionService.isLoggedIn() ? "Loading..." : "Log in to view details"
 			}).popover("show");
 		}
 		// Otherwise, show a popover using cached content, plus indicate that
@@ -113,7 +114,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 			this.element.data("bs.popover", null).popover({
 				content: this.content,
 				html: true,
-				title: this.title + " (updating...)",
+				title: this.title + (this.sessionService.isLoggedIn() ? " (updating...)" : " (cached)"),
 			}).popover("show");
 		}
 

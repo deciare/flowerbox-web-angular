@@ -4,7 +4,7 @@
 	For licensing info, please see LICENCE file.
 */
 import { Injectable } from "@angular/core";
-import { Headers, Http, Response } from "@angular/http";
+import { Headers, Response } from "@angular/http";
 import { Observable } from "rxjs/Observable";
 import { Observer } from "rxjs/Observer";
 import "rxjs/add/operator/toPromise";
@@ -12,6 +12,7 @@ import "rxjs/add/operator/toPromise";
 import { EventStream, EventStreamItem, WobRef } from "./event-stream";
 import { Urls } from "./urls";
 
+import { SessionHttp } from "./session-http.service";
 import { SessionService } from "./session.service";
 import { TagService } from "./tag.service";
 
@@ -28,7 +29,7 @@ export class TerminalEventService {
 	output: Observable<EventStream>;
 
 	constructor(
-		private http: Http,
+		private http: SessionHttp,
 		private sessionService: SessionService,
 		private tagService: TagService
 	) {
@@ -63,7 +64,7 @@ export class TerminalEventService {
 	}
 
 	private handleServerError(response: Response): Promise<void> {
-		//console.debug("handleServerError", response);
+		// console.debug("TerminalEventService.handleServerError:", response);
 		var error: string;
 		if (response.status) {
 			error = `Server error: ${response.status} ${response.statusText}`;
