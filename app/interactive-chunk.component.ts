@@ -4,17 +4,16 @@
 	For licensing info, please see LICENCE file.
 */
 import { AfterViewInit, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
-import { Headers, Response } from "@angular/http";
-import "rxjs/add/operator/toPromise";
 
-import { Urls } from "./urls";
 import { ScrollbackChunk } from "./scrollback";
+import { Urls } from "./urls";
+import { WobInfo } from "./wob";
 
 import { EmbedMediaComponent } from "./embed-media.component";
 
-import { SessionHttp } from "./session-http.service";
 import { SessionService } from "./session.service";
 import { TagService } from "./tag.service";
+import { WobService } from "./wob.service";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
@@ -27,12 +26,6 @@ import { TagService } from "./tag.service";
 		"./interactive-chunk.component.css"
 	],
 	templateUrl: "./interactive-chunk.component.html",
-	directives: [
-		EmbedMediaComponent
-	],
-	providers: [
-		TagService
-	]
 })
 export class InteractiveChunkComponent implements AfterViewInit{
 	private content: string;
@@ -50,9 +43,9 @@ export class InteractiveChunkComponent implements AfterViewInit{
 	layout: EventEmitter<any>;
 
 	constructor(
-		private http: SessionHttp,
 		private sessionService: SessionService,
-		private tagService: TagService
+		private tagService: TagService,
+		private wobService: WobService
 	) {
 		this.tag = "InteractiveChunk_" + this.tagService.makeTag(4);
 		this.layout = new EventEmitter<any>();
@@ -120,12 +113,8 @@ export class InteractiveChunkComponent implements AfterViewInit{
 			// Once a Bootstrap popover's content is set for the first time,
 			// it can no longer be changed, so there's no point in getting new
 			// data from the server each time; reuse cached value
-			this.http.get(
-					Urls.wobInfo(this.chunk.interactive.id)
-				)
-				.toPromise()
-				.then((response: Response) => {
-					var data = response.json();
+			this.wobService.getInfo(this.chunk.interactive.id)
+				.then((data: WobInfo) => {
 					var imageProperty = data.properties.find((element) => {
 						return element.value == "image";
 					});

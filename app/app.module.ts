@@ -15,6 +15,7 @@ import { MaskPipe} from "./mask.pipe";
 import { AutocompleteService } from "./autocomplete.service";
 import { TagService } from "./tag.service";
 import { TerminalEventService } from "./terminal-event.service";
+import { WobService } from "./wob.service";
 
 @NgModule({
 	imports: [
@@ -32,7 +33,8 @@ import { TerminalEventService } from "./terminal-event.service";
 	providers: [
 		AutocompleteService,
 		TagService,
-		TerminalEventService
+		TerminalEventService,
+		WobService
 	],
 	bootstrap: [
 		AppComponent

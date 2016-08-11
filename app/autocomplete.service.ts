@@ -4,32 +4,21 @@
 	For licensing info, please see LICENCE file.
 */
 import { Injectable } from "@angular/core";
-import { Headers, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 
 import { Urls } from "./urls";
-import { AttachedItem, Info, InfoList } from "./wob";
+import { AttachedItem, WobInfo, WobInfoList } from "./wob";
 
-import { SessionHttp } from "./session-http.service";
 import { SessionService } from "./session.service";
+import { WobService } from "./wob.service";
 
 @Injectable()
 export class AutocompleteService {
 	constructor(
-		private http: SessionHttp,
-		private sessionService: SessionService
+		private sessionService: SessionService,
+		private wobService: WobService
 	) {
 		// Dependency injection only; no code
-	}
-
-	private handleServerError(response: Response): Promise<void> {
-		// console.debug("AutocompleteService.handleServerError:", response);
-		if (response.status) {
-			return Promise.reject(`Server error: ${response.status} ${response.statusText}`);
-		}
-		else {
-			return Promise.reject("Could not connect to server (AutocompleteService).");
-		}
 	}
 
 	private progressiveWordList(command: string): string[] {
@@ -61,8 +50,8 @@ export class AutocompleteService {
 
 		// TODO: Cache data for locations. For now, simply query the server
 		// anew for each attempted auto-completion.
-		return this.getWobs(locationId)
-			.then((data: InfoList) => {
+		return this.wobService.getContents(locationId)
+			.then((data: WobInfoList) => {
 				// Start by looking for matches against the last word in the
 				// command, then for matches against the last 2 words in the
 				// command, and so on. Continue until matches have been
@@ -79,7 +68,7 @@ export class AutocompleteService {
 					matches = [];
 					word = wordList[i];
 
-					data.list.forEach((wob: Info) => {
+					data.list.forEach((wob: WobInfo) => {
 						// If including verbs in the search...
 						if (includeVerbs) {
 							wob.verbs.forEach((verb: AttachedItem) => {
@@ -135,18 +124,7 @@ export class AutocompleteService {
 				}
 
 				return matches;
-			});
-	}
-
-	getWobs(locationId: number) {
-		return this.http.get(
-				Urls.worldWob + locationId + "/contents"
-			)
-			.toPromise()
-			.then((response: Response) => {
-				var data: InfoList = response.json();
-				return data;
-			},
-			this.handleServerError.bind(this));
+			}
+		);
 	}
 }

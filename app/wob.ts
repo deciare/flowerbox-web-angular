@@ -6,7 +6,7 @@
 
 import { ModelBase } from "./model-base";
 
-// For returning properties on a wob.
+// For returning one property on a wob.
 export class Property extends ModelBase {
 	constructor(id: number, property: string, value: any) {
 		super(true);
@@ -20,8 +20,32 @@ export class Property extends ModelBase {
 	public value: any;
 }
 
+export class PropertyList {
+	public properties: Property[];
+}
+
+// For returning one verb on a wob.
+export class Verb extends ModelBase {
+	constructor(id: number, verb: string, sigs: string[], code: string) {
+		super(true);
+		this.id = id;
+		this.verb = verb;
+		this.sigs = sigs;
+		this.code = code;
+	}
+
+	public id: number;
+	public verb: string;
+	public sigs: string[];
+	public code: string;
+}
+
+export class VerbList {
+	public verbs: Verb[];
+}
+
 // For returning the basic info about a wob.
-export class Info extends ModelBase {
+export class WobInfo extends ModelBase {
 	constructor(id: number, base: number, container: number,
 			name: string, desc: string, globalid: string,
 			properties?: AttachedItem[], verbs?: AttachedItem[]) {
@@ -72,10 +96,10 @@ export class IdList {
 	public list: number[];
 }
 
-export class InfoList {
-	constructor(list: Info[]) {
+export class WobInfoList {
+	constructor(list: WobInfo[]) {
 		this.list = list;
 	}
 
-	public list: Info[];
+	public list: WobInfo[];
 }
