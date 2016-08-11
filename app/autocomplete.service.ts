@@ -53,6 +53,7 @@ export class AutocompleteService {
 		var wordList: string[] = this.progressiveWordList(command);
 		var completions: any;
 		var includeVerbs: boolean;
+		var includeWobs: boolean;
 		var matches: string[];
 		var prevMatches: string[];
 		var prevMatchesIndex: number;
@@ -73,6 +74,7 @@ export class AutocompleteService {
 				prevMatches = [];
 				for (let i = 0; i < wordList.length; i++) {
 					includeVerbs = i == wordList.length - 1; // include verbs if this is the first word in the command
+					includeWobs = i < wordList.length - 1; // include wobs if this is not the first word in the command
 					completions = {};
 					matches = [];
 					word = wordList[i];
@@ -82,8 +84,10 @@ export class AutocompleteService {
 						if (includeVerbs) {
 							wob.verbs.forEach((verb: AttachedItem) => {
 								// For each verb, check whether the verb starts
-								// with the same characters as the current word
-								if (verb.value.toLowerCase().match("^" + word)) {
+								// with the same characters as the current
+								// word. Exclude $verbs (which are not intended
+								// to be used on the command line).
+								if (!verb.value.startsWith("$") && verb.value.toLowerCase().match("^" + word)) {
 									// Assign matches to object properties, to
 									// ensure each value is distinct
 									completions[verb.value] = true;
@@ -91,12 +95,15 @@ export class AutocompleteService {
 							});
 						}
 
-						// Check whether this wob's aname starts with the same
-						// characters as the current word
-						if (wob.name.toLowerCase().match("^" + word)) {
-							// Assign matches to object properties, to
-							// ensure each value is distinct
-							completions[wob.name] = true;
+						// If including wobs in the search...
+						if (includeWobs) {
+							// Check whether this wob's aname starts with the
+							// same characters as the current word
+							if (wob.name.toLowerCase().match("^" + word)) {
+								// Assign matches to object properties, to
+								// ensure each value is distinct
+								completions[wob.name] = true;
+							}
 						}
 					});
 
