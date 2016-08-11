@@ -5,15 +5,17 @@
 */
 import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
 import { Subscription } from "rxjs/Subscription";
+
 import { Config } from "./config";
 import { EventStream, EventStreamItem } from "./event-stream";
 import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
+import { Urls } from "./urls";
+
 import { AutocompleteService } from "./autocomplete.service";
 import { SessionService } from "./session.service";
 import { TerminalEventService } from "./terminal-event.service";
+
 import { MaskPipe } from "./mask.pipe";
-import { InteractiveChunkComponent } from "./interactive-chunk.component";
-import { Urls } from "./urls";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
@@ -33,17 +35,7 @@ class ChunkWrapper {
 	styleUrls: [
 		"./terminal.component.css"
 	],
-	templateUrl: "./terminal.component.html",
-	directives: [
-		InteractiveChunkComponent
-	],
-	pipes: [
-		MaskPipe
-	],
-	providers: [
-		AutocompleteService,
-		TerminalEventService
-	]
+	templateUrl: "./terminal.component.html"
 })
 export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnInit {
 	private cursorAtEnd: boolean;

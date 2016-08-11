@@ -7,6 +7,7 @@ import { Injectable } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
 import { Cookie } from "ng2-cookies/ng2-cookies";
 import "rxjs/add/operator/toPromise";
+
 import { Urls } from "./urls";
 
 @Injectable()
@@ -22,12 +23,12 @@ export class SessionService {
 	}
 
 	handleServerError(response: Response): Promise<void> {
-		//console.debug("handleServerError", response);
+		// console.debug("handleServerError", response);
 		if (response.status) {
 			return Promise.reject(`Server error: ${response.status} ${response.statusText}`);
 		}
 		else {
-			return Promise.reject("Could not connect to server.");
+			return Promise.reject("Could not connect to server (SessionService).");
 		}
 	}
 
@@ -37,8 +38,7 @@ export class SessionService {
 
 	getPlayerInfo(): Promise<any> {
 		var headers = new Headers({
-			"Authorization": this.token,
-			"Content-Type": "application/json"
+			"Authorization": this.token
 		});
 
 		return this.http.get(

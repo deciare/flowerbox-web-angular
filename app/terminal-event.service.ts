@@ -8,10 +8,12 @@ import { Headers, Http, Response } from "@angular/http";
 import { Observable } from "rxjs/Observable";
 import { Observer } from "rxjs/Observer";
 import "rxjs/add/operator/toPromise";
+
 import { EventStream, EventStreamItem, WobRef } from "./event-stream";
+import { Urls } from "./urls";
+
 import { SessionService } from "./session.service";
 import { TagService } from "./tag.service";
-import { Urls } from "./urls";
 
 
 @Injectable()
@@ -31,7 +33,7 @@ export class TerminalEventService {
 		private tagService: TagService
 	) {
 		this.lastCheckTime = 0; // UNIX timestamp of most recent query to new-output
-		this.output = Observable.create(this.awaitOutput.bind(this));
+		this.output = new Observable<EventStream>(this.awaitOutput.bind(this));
 		this.tag = this.tagService.makeTag(); // Random tag for identifying commands submitted from this session
 	}
 
@@ -40,7 +42,7 @@ export class TerminalEventService {
 		// server. Retry checking the event stream immediately.
 		this.retryOutput();
 
-		//console.debug("handleResponse", response);
+		// console.debug("handleResponse", response);
 		var data = response.json();
 		if (!data.success) {
 			return this.handleDataError(data);
@@ -67,7 +69,7 @@ export class TerminalEventService {
 			error = `Server error: ${response.status} ${response.statusText}`;
 		}
 		else {
-			error = "Could not connect to server.";
+			error = "Could not connect to server (TerminalEventService).";
 		}
 
 		// Notify observer about error
@@ -130,8 +132,7 @@ export class TerminalEventService {
 
 	getOutput() {
 		var headers = new Headers({
-			"Authorization": this.sessionService.token,
-			"Content-Type": "application/json"
+			"Authorization": this.sessionService.token
 		});
 
 		//console.debug("Getting output from", Urls.termOutput + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers);
@@ -147,8 +148,7 @@ export class TerminalEventService {
 
 	exec(command: string) {
 		var headers = new Headers({
-			"Authorization": this.sessionService.token,
-			"Content-Type": "application/json"
+			"Authorization": this.sessionService.token
 		});
 
 		return this.http.get(

@@ -6,11 +6,14 @@
 import { AfterViewInit, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
+
 import { Urls } from "./urls";
 import { ScrollbackChunk } from "./scrollback";
+
+import { EmbedMediaComponent } from "./embed-media.component";
+
 import { SessionService } from "./session.service";
 import { TagService } from "./tag.service";
-import { EmbedMediaComponent } from "./embed-media.component";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
@@ -88,8 +91,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 
 	showPopover() {
 		var headers = new Headers({
-			"Authorization": this.sessionService.token,
-			"Content-Type": "application/json"
+			"Authorization": this.sessionService.token
 		});
 		var verbs: string[] = [];
 

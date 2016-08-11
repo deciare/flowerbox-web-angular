@@ -6,9 +6,11 @@
 import { Injectable } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
-import { SessionService } from "./session.service";
+
 import { Urls } from "./urls";
 import { AttachedItem, Info, InfoList } from "./wob";
+
+import { SessionService } from "./session.service";
 
 @Injectable()
 export class AutocompleteService {
@@ -24,7 +26,7 @@ export class AutocompleteService {
 			return Promise.reject(`Server error: ${response.status} ${response.statusText}`);
 		}
 		else {
-			return Promise.reject("Could not connect to server.");
+			return Promise.reject("Could not connect to server (AutocompleteService).");
 		}
 	}
 
@@ -129,8 +131,7 @@ export class AutocompleteService {
 
 	getWobs(locationId: number) {
 		var headers = new Headers({
-			"Authorization": this.sessionService.token,
-			"Content-Type": "application/json"
+			"Authorization": this.sessionService.token
 		});
 
 		return this.http.get(
