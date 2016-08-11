@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from "@angular/core";
+import { AfterViewChecked, AfterViewInit, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { Subscription } from "rxjs/Subscription";
 
 import { Config } from "./config";
@@ -13,6 +13,7 @@ import { Urls } from "./urls";
 
 import { AutocompleteService } from "./autocomplete.service";
 import { SessionService } from "./session.service";
+import { TagService } from "./tag.service";
 import { TerminalEventService } from "./terminal-event.service";
 
 import { MaskPipe } from "./mask.pipe";
@@ -37,11 +38,12 @@ class ChunkWrapper {
 	],
 	templateUrl: "./terminal.component.html"
 })
-export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnInit {
+export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDestroy, OnInit {
 	private cursorAtEnd: boolean;
 	private cursorPosition: number;
 	private cursorSpeed: number;
 	private element: JQuery;
+	private tag: string;
 	private inputCursor: string;
 	private inputLeft: string;
 	private inputRight: string;
@@ -60,12 +62,10 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 	private hasServerError: boolean;
 	private eventStreamSubscription: Subscription;
 
-	@Input()
-	domId: string;
-
 	constructor(
 		private autocompleteService: AutocompleteService,
 		private sessionService: SessionService,
+		private tagService: TagService,
 		private terminalEventService: TerminalEventService
 	) {
 		this.cursorSpeed = 500; // Cursor blink rate in milliseconds
@@ -76,6 +76,9 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 		this.scrollbackMaxLength = 5000; // Max number of scrollback lines
 		this.defaultPrompt = "fb> "; // Default command prompt
 		this.prompt = this.defaultPrompt; // Current command prompt
+
+		// Uniquely identify this terminal
+		this.tag = "TerminalComponent_" + this.tagService.makeTag(4);
 
 		// Initialise empty command line
 		this.deleteLine();
@@ -88,9 +91,13 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnIni
 			});
 	}
 
+	ngOnDestroy() {
+		this.eventStreamSubscription.unsubscribe();
+	}
+
 	ngAfterViewInit() {
 		// Initialise jQuery reference to this component's toplevel element.
-		this.element = $(`#${this.domId}`);
+		this.element = $(`#${this.tag}`);
 	}
 
 	ngAfterViewChecked() {

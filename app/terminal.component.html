@@ -1,4 +1,4 @@
-<div [id]="domId" class="terminal" (window:keydown)="onKey($event)">
+<div id="{{tag}}" class="terminal" (window:keydown)="onKey($event)">
 	<table>
 		<tbody>
 			<tr class="history" *ngFor="let line of scrollback">

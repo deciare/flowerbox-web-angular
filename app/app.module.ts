@@ -4,6 +4,8 @@ import { BrowserModule } from "@angular/platform-browser";
 import { SessionModule } from "./session.module";
 
 import { AppComponent } from "./app.component";
+import { appRouting } from "./app.routing";
+
 import { EmbedMediaComponent } from "./embed-media.component";
 import { InteractiveChunkComponent } from "./interactive-chunk.component";
 import { TerminalComponent } from "./terminal.component";
@@ -17,7 +19,8 @@ import { TerminalEventService } from "./terminal-event.service";
 @NgModule({
 	imports: [
 		BrowserModule,
-		SessionModule
+		SessionModule,
+		appRouting
 	],
 	declarations: [
 		AppComponent,
