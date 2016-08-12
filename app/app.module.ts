@@ -1,6 +1,7 @@
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 
+import { EditorModule } from "./editor.module";
 import { SessionModule } from "./session.module";
 
 import { AppComponent } from "./app.component";
@@ -20,6 +21,7 @@ import { WobService } from "./wob.service";
 @NgModule({
 	imports: [
 		BrowserModule,
+		EditorModule,
 		SessionModule,
 		appRouting
 	],

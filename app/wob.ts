@@ -103,3 +103,27 @@ export class WobInfoList {
 
 	public list: WobInfo[];
 }
+
+export class WobEditState {
+	constructor(id: number) {
+		this.id = id;
+		this.server = {
+			properties: [],
+			verbs: []
+		};
+		this.draft = {
+			properties: [],
+			verbs: []
+		}
+	}
+
+	id: number;
+	server: {
+		properties: Property[],
+		verbs: Verb[]
+	};
+	draft: {
+		properties: Property[],
+		verbs: Verb[]
+	};
+}

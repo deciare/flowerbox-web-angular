@@ -3,7 +3,7 @@ import { Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 
 import { Urls } from "./urls";
-import { WobInfo, WobInfoList } from "./wob.ts";
+import { WobEditState, WobInfo, WobInfoList } from "./wob";
 
 import { SessionHttp } from "./session-http.service";
 
@@ -48,8 +48,101 @@ export class WobService {
 			);
 	}
 
+	/*
+	WobEditState {
+		id: number,
+		server: [
+			properties: [
+				{
+					sourceId: number,
+					name: string,
+					value: any
+				},
+				...
+			],
+			verbs: [
+				{
+					sourceId: number,
+					name: string,
+					sigs: [
+						string,
+						...
+					],
+					code: string
+				},
+				...
+			]
+		],
+		draft: [
+			properties: [
+				{
+					sourceId: number,
+					name: string,
+					value: any
+				},
+				...
+			],
+			verbs: [
+				{
+					sourceId: number,
+					name: string,
+					sigs: [
+						string,
+						...
+					],
+					code: string
+				},
+				...
+			]
+		]
+	}
+	*/
+	getEditState(id: number): Promise<any /**/> {
+		var state: WobEditState = new WobEditState(id);
+		var propertyPromises: Promise<any>[] = [];
+		var verbPromises: Promise<any>[] = [];
+
+		return this.getInfo(id)
+			.then((data: WobInfo) => {
+				// Expect a promise to resolve with info about each property
+				data.properties.forEach((property) => {
+					propertyPromises.push(this.getProperty(id, property.value));
+				});
+				// TODO: Pending server-side API implementation
+				//Expect a promise to resolve with info about each verb
+
+				// Return a promise that resolves after all properties and
+				// verbs have been retrieved
+				return Promise.all([
+						Promise.all(propertyPromises),
+						Promise.all(verbPromises)
+					])
+					.then((values) => {
+						// Iterate through properties
+						values[0].forEach((property) => {
+							state.server.properties.push(property);
+						});
+						// Iterate through verbs
+						values[1].forEach((verb) => {
+							state.server.verbs.push(verb);
+						});
+
+						return state;
+					});
+			});
+	}
+
 	getInfo(id: number): Promise<any /* WobInfo | string */> {
 		return this.http.get(Urls.wobInfo(id))
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	getProperty(id: number, name: string): Promise<any> {
+		return this.http.get(Urls.wobProperty(id, name))
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
