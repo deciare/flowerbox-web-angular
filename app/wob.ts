@@ -8,16 +8,22 @@ import { ModelBase } from "./model-base";
 
 // For returning one property on a wob.
 export class Property extends ModelBase {
-	constructor(id: number, property: string, value: any) {
+	constructor(id: number, property: string, value: any, sub?: string) {
 		super(true);
 		this.id = id;
-		this.property = property;
+		this.name = name;
 		this.value = value;
 	}
 
 	public id: number;
-	public property: string;
+	public name: string;
 	public value: any;
+	public sub: string;
+	public status: string;
+
+	// Possible values for status
+	public static StatusApplied = "applied";
+	public static StatusDraft = "draft";
 }
 
 export class PropertyList {
@@ -26,16 +32,16 @@ export class PropertyList {
 
 // For returning one verb on a wob.
 export class Verb extends ModelBase {
-	constructor(id: number, verb: string, sigs: string[], code: string) {
+	constructor(id: number, name: string, sigs: string[], code: string) {
 		super(true);
 		this.id = id;
-		this.verb = verb;
+		this.name = name;
 		this.sigs = sigs;
 		this.code = code;
 	}
 
 	public id: number;
-	public verb: string;
+	public name: string;
 	public sigs: string[];
 	public code: string;
 }
@@ -107,7 +113,7 @@ export class WobInfoList {
 export class WobEditState {
 	constructor(id: number) {
 		this.id = id;
-		this.server = {
+		this.applied = {
 			properties: [],
 			verbs: []
 		};
@@ -118,7 +124,7 @@ export class WobEditState {
 	}
 
 	id: number;
-	server: {
+	applied: {
 		properties: Property[],
 		verbs: Verb[]
 	};

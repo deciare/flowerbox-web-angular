@@ -1,3 +1,8 @@
+/*
+	flowerbox-web-angular
+	Copyright (C) 2016 Deciare
+	For licensing info, please see LICENCE file.
+*/
 import { Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, Router, Resolve } from "@angular/router";
 import { Observable } from "rxjs/Observable";

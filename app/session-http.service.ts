@@ -1,3 +1,8 @@
+/*
+	flowerbox-web-angular
+	Copyright (C) 2016 Deciare
+	For licensing info, please see LICENCE file.
+*/
 import { Injectable } from "@angular/core";
 import { ConnectionBackend, Headers, Http, Request, RequestOptions, RequestOptionsArgs, Response, ResponseOptions, ResponseType } from "@angular/http";
 import { Observable } from "rxjs/Observable";

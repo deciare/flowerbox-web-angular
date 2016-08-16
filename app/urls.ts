@@ -19,4 +19,8 @@ export class Urls {
 	static wobProperty(id: number, property: string): string {
 		return Urls.worldWob + id + "/property/" + property;
 	}
+
+	static wobVerb(id: number, verb?: string): string {
+		return Urls.worldWob + id + "/verb" + (verb ? "/" + verb : "");
+	}
 }

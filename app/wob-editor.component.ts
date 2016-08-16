@@ -1,3 +1,8 @@
+/*
+	flowerbox-web-angular
+	Copyright (C) 2016 Deciare
+	For licensing info, please see LICENCE file.
+*/
 import { Component, ViewEncapsulation } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs/Subscription";

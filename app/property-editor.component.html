@@ -1,0 +1,12 @@
+<form class="container form-horizontal">
+	<div *ngFor="let property of properties" class="form-group">
+		<label class="control-label col-sm-2">{{property.name}}</label>
+		<div class="input-group col-sm-10">
+			<input class="form-control" type="text" [name]="property.name" [(ngModel)]="property.value" />
+			<span class="input-group-btn">
+				<button class="btn btn-default" type="button" (click)="save(property)">Save</button>
+			</span>
+		</div>
+	</div>
+</form>
+{{wobEditState | json}}
