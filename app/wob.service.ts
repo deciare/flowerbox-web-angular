@@ -149,4 +149,15 @@ export class WobService {
 				this.handleServerError.bind(this)
 			);
 	}
+
+	setProperty(id: number, name: string, value: string): Promise<any> {
+		return this.http.putFormData(Urls.wobProperty(id), {
+				[name]: JSON.stringify(value)
+			})
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
 }
