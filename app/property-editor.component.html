@@ -4,6 +4,7 @@
 		<div class="input-group col-sm-10">
 			<input class="form-control" type="text" [name]="property.name" [(ngModel)]="property.value" />
 			<span class="input-group-btn">
+				<button class="btn btn-default" type="button" (click)="saveDraft(property)">Save Draft</button>
 				<button class="btn btn-default" type="button" (click)="save(property)">Save</button>
 			</span>
 		</div>

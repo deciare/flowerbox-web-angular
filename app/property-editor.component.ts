@@ -45,6 +45,7 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		this.wobEditState.draft.properties.forEach((property) => {
 			// Check whether a corresponding applied property exists in
 			// array.
+			property.status = Property.StatusDraft;
 			if ((foundIndex = this.properties.findIndex((value: Property) => {
 					return value.name == property.name;
 				})) != -1
@@ -54,7 +55,6 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 			}
 			else {
 				// If not, append draft property to end of array
-				property.status = Property.StatusDraft;
 				this.properties.push(property);
 			}
 		});
@@ -70,5 +70,9 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 
 	save(property: Property): Promise<any> {
 		return this.wobService.setProperty(this.wobEditState.id, property.name, property.value);
+	}
+
+	saveDraft(property: Property): Promise<any> {
+		return this.wobService.setPropertyDraft(this.wobEditState.id, property.name, property.value);
 	}
 }
