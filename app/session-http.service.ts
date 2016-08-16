@@ -18,7 +18,7 @@ export class SessionHttp extends Http {
 	private logoutIfSessionError(response: Response) {
 		var data = response.json();
 		// If response indicates session is not valid...
-		if (!data.success &&
+		if (!data.success && typeof data.error === "string" &&
 			(
 				data.error.match(/Missing bearer token/) ||
 				data.error.match(/Token validation error/)
