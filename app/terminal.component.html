@@ -7,8 +7,10 @@
 				</td>
 				<td class="main-content">
 					<span *ngFor="let chunk of line.chunks"><!--
-					--><interactive-chunk *ngIf="chunk.interactive" [chunk]="chunk" (layout)="scrollToBottom()"></interactive-chunk><!--
-					--><span class="{{chunk.type}} pre" *ngIf="!chunk.interactive">{{chunk.text}}</span><!--
+						--><span [ngSwitch]="isInteractiveChunk(chunk)"><!--
+							--><interactive-chunk *ngSwitchCase="true" [chunk]="chunk" (layout)="scrollToBottom()"></interactive-chunk><!--
+							--><span *ngSwitchCase="false" class="{{chunk.type}} pre">{{chunk.text}}</span><!--
+						--></span><!--
 					--></span>
 				</td>
 			</tr>

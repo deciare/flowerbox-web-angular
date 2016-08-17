@@ -8,7 +8,7 @@ import { Subscription } from "rxjs/Subscription";
 
 import { Config } from "./config";
 import { EventStream, EventStreamItem } from "./event-stream";
-import { ScrollbackChunk, ScrollbackLine } from "./scrollback";
+import { InteractiveChunk } from "./interactive-chunk.component";
 import { Urls } from "./urls";
 
 import { AutocompleteService } from "./autocomplete.service";
@@ -22,12 +22,48 @@ import { MaskPipe } from "./mask.pipe";
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
 
 class ChunkWrapper {
-	chunk: ScrollbackChunk;
+	chunk: InteractiveChunk | ScrollbackChunk;
 	placement: string;
+
+	constructor(chunk: ScrollbackChunk | InteractiveChunk, placement?: string) {
+		this.chunk = chunk;
+		this.placement = placement ? placement : ChunkWrapper.PlacementEnd;
+	}
 
 	// Possible values for placement
 	static PlacementStart = "start";
 	static PlacementEnd = "end";
+}
+
+class ScrollbackChunk {
+	text: string;
+	type: string;
+
+	constructor(type: string, text: string) {
+		this.type = type;
+		this.text = text;
+	}
+}
+
+class ScrollbackLine {
+	chunks: ScrollbackChunk[];
+	timestamp: Date;
+
+	constructor(chunk: ScrollbackChunk | ScrollbackChunk[] | InteractiveChunk | InteractiveChunk[], timestamp?: Date) {
+		if (chunk instanceof Array) {
+			this.chunks = chunk;
+		}
+		else if (chunk instanceof ScrollbackChunk ||
+			chunk instanceof InteractiveChunk
+		) {
+			this.chunks = [ chunk ];
+		}
+		else {
+			console.error("ScrollbackLine constructor: invaild chunk", chunk);
+		}
+
+		this.timestamp = timestamp;
+	}
 }
 
 @Component({
@@ -106,11 +142,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	}
 
 	private createInteractiveChunk(item: any, index: number, arr: Array<EventStreamItem>): ChunkWrapper {
-		// Metadata passed to InteractiveChunkComponent
-		//   (as ScrollbackChunk.interactive)
-		// in addition to item.rich
-		//   (as ScrollbackChunk.type)
-		var interactive: any;
+		var interactive: InteractiveChunk;
 
 		// Where in the current line the created chunk should be inserted
 		var placement = ChunkWrapper.PlacementEnd;
@@ -120,43 +152,46 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 
 		switch(item.rich) {
 		case "image":
-			interactive = {
-				id: item.id,
-				url: Urls.wobGetProperty(item.id, item.property),
-				alt: item.text
-			};
-
+			var float;
 			// If an image is the first chunk on a line, float it left
 			if (index == 0) {
-				interactive.float = "left";
+				float = "left";
 			}
 			// If an image is the last chunk on a line, float it right
 			else if (index == arr.length - 1) {
-				interactive.float = "right";
+				float = "right";
 				// To ensure that floating image is displayed on the same line
 				// as other content on this line, it must be inserted before
 				// other content.
 				placement = ChunkWrapper.PlacementStart;
 			}
 
+			interactive = new InteractiveChunk(
+				item.id,
+				InteractiveChunk.TypeImage,
+				item.text,
+				{
+					float: float,
+					url: Urls.wobGetProperty(item.id, item.property)
+				});
+
 			break;
 		case "wob":
-			interactive = {
-				id: item.id
-			};
-			text = item.text;
+			interactive = new InteractiveChunk(
+				item.id,
+				InteractiveChunk.TypeWob,
+				item.text
+			);
 			break;
 		}
-		return {
-			chunk: new ScrollbackChunk(item.rich, text, interactive),
-			placement: placement
-		}
+
+		return new ChunkWrapper(interactive, placement);
 	}
 
 	private handleOutput(data: EventStream) {
 		var isFirstLine: boolean = true;
 
-		//console.debug("Handling output:", data);
+		// console.debug("Handling output:", data);
 		if (data.error) {
 			// Log detailed error to console
 			console.log("Error received by TerminalComponent.handleOutput():", data.error);
@@ -293,6 +328,10 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 		if (data.log.length) {
 			this.scrollToBottom();
 		}
+	}
+
+	private isInteractiveChunk(chunk: any): boolean {
+		return chunk instanceof InteractiveChunk;
 	}
 
 	private loginPrompt(): Promise<string> {

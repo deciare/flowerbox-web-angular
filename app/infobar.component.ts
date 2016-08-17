@@ -9,7 +9,7 @@ import { Subscription } from "rxjs/Subscription";
 import { EventStream, EventStreamItem } from "./event-stream";
 import { WobInfo } from "./wob";
 
-import { InteractiveChunkComponent } from "./interactive-chunk.component";
+import { InteractiveChunk, InteractiveChunkComponent } from "./interactive-chunk.component";
 
 import { SessionEvent, SessionService } from "./session.service";
 import { TerminalEventService } from "./terminal-event.service";
@@ -62,15 +62,7 @@ export class InfobarComponent implements OnDestroy, OnInit {
 	private handleSessionEvent(event: SessionEvent) {
 		switch(event.type) {
 		case SessionEvent.Login:
-			this.player = event.player;
-			this.playerChunk = {
-				text: this.player.name,
-				type: "wob",
-				interactive: {
-					id: this.player.id
-				}
-			};
-			this.getLocationInfo(this.player.container);
+			this.setPlayerInfo(event.player);
 			break;
 		case SessionEvent.Logout:
 			this.player = undefined;
@@ -97,16 +89,24 @@ export class InfobarComponent implements OnDestroy, OnInit {
 			.then((location: WobInfo) => {
 				// Cache location info
 				this.location = location;
-				this.locationChunk = {
-					type: "wob",
-					text: location.name,
-					interactive: {
-						id: location.id
-					}
-				};
+				this.locationChunk = new InteractiveChunk(
+					location.id,
+					InteractiveChunk.TypeWob,
+					location.name
+				);
 
 				return location;
 			});
+	}
+
+	private setPlayerInfo(player: WobInfo) {
+		this.player = player;
+		this.playerChunk = new InteractiveChunk(
+			this.player.id,
+			InteractiveChunk.TypeWob,
+			this.player.name
+		);
+		this.getLocationInfo(this.player.container);
 	}
 
 	ngOnInit() {
@@ -121,15 +121,7 @@ export class InfobarComponent implements OnDestroy, OnInit {
 		if (this.sessionService.isLoggedIn()) {
 			this.sessionService.getPlayerInfo()
 				.then((player: WobInfo) => {
-					this.player = player;
-					this.playerChunk = {
-						text: this.player.name,
-						type: "wob",
-						interactive: {
-							id: this.player.id
-						}
-					};
-					this.getLocationInfo(this.player.container);
+					this.setPlayerInfo(player);
 				});
 		}
 	}

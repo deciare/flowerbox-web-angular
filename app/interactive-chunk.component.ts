@@ -5,7 +5,6 @@
 */
 import { AfterViewInit, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
 
-import { ScrollbackChunk } from "./scrollback";
 import { Urls } from "./urls";
 import { WobInfo } from "./wob";
 
@@ -17,6 +16,39 @@ import { WobService } from "./wob.service";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
+
+export class InteractiveChunk {
+	id: number; // wob ID
+	command: string; // command to execute on click
+	float: string; // whether content should float to left or right of line
+	text: string; // text to display inside chunk
+	type: string; // type of chunk
+	url: string; // URL of related content to display
+
+	/**
+	 * Interactive chunk of text for displaying rich elements in the terminal,
+	 * such as wob references and images.
+	 *
+	 * @params id (number) Wob ID
+	 * @params type (string) Type of content (see static Type* properties)
+	 * @params text (string) Text to display inside chunk
+	 * @params extra (any) (optional) Content type-specific parameters
+	 */
+	constructor(id: number, type: string, text: string, extra?: any) {
+		this.id = id;
+		this.type = type;
+		this.text = text;
+		if (typeof extra === "object") {
+			this.command = extra.command;
+			this.float = extra.float;
+			this.url = extra.url;
+		}
+	}
+
+	// Possible values for type
+	static TypeImage = "image";
+	static TypeWob = "wob";
+}
 
 @Component({
 	moduleId: module.id,
@@ -37,7 +69,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 	private imageData: string;
 
 	@Input()
-	chunk: ScrollbackChunk;
+	chunk: InteractiveChunk;
 
 	@Output()
 	layout: EventEmitter<any>;
@@ -96,7 +128,6 @@ export class InteractiveChunkComponent implements AfterViewInit{
 	}
 
 	showPopover() {
-		console.log("show popover");
 		var verbs: string[] = [];
 
 		// Indicate that the popover should be shown, even though it may not
@@ -108,7 +139,8 @@ export class InteractiveChunkComponent implements AfterViewInit{
 		// placeholder while making a request to the server.
 		if (!this.content) {
 			this.element.popover({
-				content: this.sessionService.isLoggedIn() ? "Loading..." : "Log in to view details"
+				content: this.sessionService.isLoggedIn() ? "Loading..." : "Log in to view details",
+				placement: this.popoverPlacement()
 			}).popover("show");
 		}
 		// Otherwise, show a popover using cached content, plus indicate that
@@ -123,11 +155,11 @@ export class InteractiveChunkComponent implements AfterViewInit{
 		}
 
 		switch(this.chunk.type) {
-		case "wob":
+		case InteractiveChunk.TypeWob:
 			// Once a Bootstrap popover's content is set for the first time,
 			// it can no longer be changed, so there's no point in getting new
 			// data from the server each time; reuse cached value
-			this.wobService.getInfo(this.chunk.interactive.id)
+			this.wobService.getInfo(this.chunk.id)
 				.then((data: WobInfo) => {
 					var imageProperty = data.properties.find((element) => {
 						return element.value == "image";
