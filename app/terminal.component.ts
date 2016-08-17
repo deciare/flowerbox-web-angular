@@ -122,7 +122,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 		case "image":
 			interactive = {
 				id: item.id,
-				url: Urls.wobProperty(item.id, item.property),
+				url: Urls.wobGetProperty(item.id, item.property),
 				alt: item.text
 			};
 

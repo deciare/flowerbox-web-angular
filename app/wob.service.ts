@@ -124,7 +124,7 @@ export class WobService {
 
 				// Obtain player's draft for this wob, if any
 				return this.sessionService.getPlayerInfo()
-					.then((player) => {
+					.then((player: WobInfo) => {
 						return this.getProperty(player.id, Urls.draftWob + id);
 					})
 					.then((draft: Property) => {
@@ -210,7 +210,7 @@ export class WobService {
 	}
 
 	getProperty(id: number, name: string): Promise<any> {
-		return this.http.get(Urls.wobProperty(id, name))
+		return this.http.get(Urls.wobGetProperty(id, name))
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
@@ -219,7 +219,7 @@ export class WobService {
 	}
 
 	setProperty(id: number, name: string, value: string): Promise<any> {
-		return this.http.putFormData(Urls.wobProperty(id), {
+		return this.http.putFormData(Urls.wobSetProperties(id), {
 				[name]: JSON.stringify(value)
 			})
 			.toPromise()
@@ -231,8 +231,8 @@ export class WobService {
 
 	getPropertyDraft(id: number, name: string): Promise<any> {
 		return this.sessionService.getPlayerInfo()
-			.then((player) => {
-				return this.http.get(Urls.worldWob + player.id + Urls.wobPropertyDraft(id, name)).toPromise();
+			.then((player: WobInfo) => {
+				return this.http.get(Urls.worldWob + player.id + Urls.wobGetPropertyDraft(id, name)).toPromise();
 			})
 			.then(
 				this.handleResponse.bind(this),
@@ -242,10 +242,10 @@ export class WobService {
 
 	setPropertyDraft(id: number, name: string, value: string): Promise<any> {
 		return this.sessionService.getPlayerInfo()
-			.then((player) => {
-				return this.http.put(Urls.worldWob + player.id +  Urls.wobPropertyDraft(id, name),
+			.then((player: WobInfo) => {
+				return this.http.put(Urls.worldWob + player.id +  Urls.wobSetDrafts(id),
 					{
-						value: value
+						[Urls.draftProperty + name]: value
 					})
 					.toPromise();
 			})
@@ -256,7 +256,7 @@ export class WobService {
 	}
 
 	getVerb(id: number, name: string): Promise<any> {
-		return this.http.get(Urls.wobVerb(id, name))
+		return this.http.get(Urls.wobGetVerb(id, name))
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
@@ -265,7 +265,7 @@ export class WobService {
 	}
 
 	setVerb(id: number, name: string, value: string): Promise<any> {
-		return this.http.putFormData(Urls.wobVerb(id), {
+		return this.http.putFormData(Urls.wobSetVerbs(id), {
 				[name]: JSON.stringify(value)
 			})
 			.toPromise()
@@ -277,8 +277,8 @@ export class WobService {
 
 	getVerbDraft(id: number, name: string): Promise<any> {
 		return this.sessionService.getPlayerInfo()
-			.then((player) => {
-				return this.http.get(Urls.worldWob + player.id + Urls.wobVerbDraft(id, name)).toPromise();
+			.then((player: WobInfo) => {
+				return this.http.get(Urls.worldWob + player.id + Urls.wobGetVerbDraft(id, name)).toPromise();
 			})
 			.then(
 				this.handleResponse.bind(this),
@@ -288,9 +288,9 @@ export class WobService {
 
 	setVerbDraft(id: number, name: string, sigs: string[], code: string): Promise<any> {
 		return this.sessionService.getPlayerInfo()
-			.then((player) => {
-				return this.http.put(Urls.worldWob + player.id + Urls.wobVerbDraft(id, name), {
-					value: {
+			.then((player: WobInfo) => {
+				return this.http.put(Urls.worldWob + player.id + Urls.wobSetDrafts(id), {
+					[Urls.draftVerb + name]: {
 						sigs: sigs,
 						code: code
 					}

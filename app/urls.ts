@@ -20,19 +20,31 @@ export class Urls {
 		return Urls.worldWob + id + "/info";
 	}
 
-	static wobProperty(id: number, name?: string, sub?: string): string {
-		return Urls.worldWob + id + "/property" + (name ? "/" + name : "") + (sub ? "/" + sub : "");
+	static wobGetProperty(id: number, name: string, sub?: string): string {
+		return Urls.worldWob + id + "/property/" + name + (sub ? "/" + sub : "");
 	}
 
-	static wobPropertyDraft(id: number, name: string) {
-		return "/property/" + Urls.draftWob + id + "/" + Urls.draftProperty + name;
+	static wobSetProperties(id: number) {
+		return Urls.worldWob + id + "/properties";
 	}
 
-	static wobVerb(id: number, name?: string): string {
-		return Urls.worldWob + id + "/verb" + (name ? "/" + name : "");
+	static wobGetPropertyDraft(id: number, name: string) {
+		return "/property/" + Urls.draftWob + id + "/sub/" + Urls.draftProperty + name;
 	}
 
-	static wobVerbDraft(id: number, name: string) {
-		return "/property/" + Urls.draftWob + id + "/" + Urls.draftVerb + name;
+	static wobGetVerb(id: number, name: string): string {
+		return Urls.worldWob + id + "/verb/" + name;
+	}
+
+	static wobSetVerbs(id: number): string {
+		return Urls.worldWob + id + "/verbs";
+	}
+
+	static wobGetVerbDraft(id: number, name: string) {
+		return "/property/" + Urls.draftWob + id + "/sub/" + Urls.draftVerb + name;
+	}
+
+	static wobSetDrafts(id: number) {
+		return "/property/" + Urls.draftWob + id + "/subs";
 	}
 }

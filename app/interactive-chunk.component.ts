@@ -121,7 +121,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 
 					// If object has images, fetch the image.
 					if (imageProperty !== undefined) {
-						this.popoverImageUrl = Urls.wobProperty(data.id, "image");
+						this.popoverImageUrl = Urls.wobGetProperty(data.id, "image");
 					}
 
 					// If object has verbs, list non-system verbs.
