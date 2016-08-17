@@ -13,7 +13,9 @@ import { AppComponent } from "./app.component";
 import { appRouting } from "./app.routing";
 
 import { EmbedMediaComponent } from "./embed-media.component";
+import { InfobarComponent } from "./infobar.component";
 import { InteractiveChunkComponent } from "./interactive-chunk.component";
+import { MainTerminalComponent } from "./main-terminal.component";
 import { TerminalComponent } from "./terminal.component";
 
 import { MaskPipe} from "./mask.pipe";
@@ -33,7 +35,9 @@ import { WobService } from "./wob.service";
 	declarations: [
 		AppComponent,
 		EmbedMediaComponent,
+		InfobarComponent,
 		InteractiveChunkComponent,
+		MainTerminalComponent,
 		TerminalComponent,
 		MaskPipe
 	],

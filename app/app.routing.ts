@@ -5,12 +5,12 @@
 */
 import { Routes, RouterModule } from "@angular/router";
 
-import { TerminalComponent } from "./terminal.component";
+import { MainTerminalComponent } from "./main-terminal.component";
 
 const appRoutes: Routes = [
 	{
 		path: "terminal",
-		component: TerminalComponent
+		component: MainTerminalComponent
 	},
 	{
 		path: "",

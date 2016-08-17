@@ -4,19 +4,27 @@ body {
 	color: #cccccc;
 	font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
 }
+.brand.primary {
+	color: #a299fc;
+	font-size: 1.2em;
+}
+.brand.secondary {
+	color: #6a5ed6;
+}
 .pre {
 	white-space: pre-wrap;
 }
 .popover {
 	background-color: #333333;
+	padding: 0;
 }
 .popover .arrow {
     background-color: black;
 }
 .popover .popover-title {
-    background-color: #555555;
-	border-bottom-color: #333333;
+    background-color: #494949;
 	color: white;
+	margin: 0;
 }
 .popover .popover-content {
     background-color: #333333;
@@ -27,6 +35,9 @@ body {
 }
 .popover.top > .arrow:after {
 	border-top-color: #333333;
+}
+.popover.bottom > .arrow:after {
+	border-bottom-color: #494949;
 }
 .tooltip .tooltip-inner {
 	background-color: #333333;

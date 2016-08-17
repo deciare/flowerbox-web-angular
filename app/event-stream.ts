@@ -32,6 +32,7 @@ export class EventStreamItem {
 	static TypeCommand = "command";
 	static TypeDebug = "debug";
 	static TypeError = "error";
+	static TypeMoveNotification = "move_notification";
 	static TypeOutput = "output";
 	static TypeParseError = "parse_error";
 	static TypeScriptError = "script_error";
