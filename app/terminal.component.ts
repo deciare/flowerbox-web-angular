@@ -759,9 +759,6 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	}
 
 	onKey(event: KeyboardEvent) {
-		// Disable browser keyboard shortcuts
-		event.preventDefault();
-
 		// Figure out what to do with the keypress
 		switch (event.key) {
 			case "Alt":
@@ -771,6 +768,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 				// Do nothing on modifier keys
 				break;
 			case "ArrowUp":
+				event.preventDefault(); // stop browser from scrolling
 				if (event.shiftKey) {
 					this.scroll(-0.15);
 				}
@@ -779,6 +777,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 				}
 				break;
 			case "ArrowDown":
+				event.preventDefault(); // stop browser from scrolling
 				if (event.shiftKey) {
 					this.scroll(+0.15);
 				}
@@ -787,6 +786,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 				}
 				break;
 			case "ArrowLeft":
+				event.preventDefault(); // stop browser from scrolling
 				if (event.ctrlKey || event.altKey) {
 					this.moveCursorLeftWord();
 				}
@@ -795,6 +795,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 				}
 				break;
 			case "ArrowRight":
+				event.preventDefault(); // stop browser from scrolling
 				if (event.ctrlKey || event.altKey) {
 					this.moveCursorRightWord();
 				}
@@ -803,6 +804,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 				}
 				break;
 			case "Backspace":
+				event.preventDefault(); // stop browser from going back
 				this.backspace();
 				break;
 			case "Delete":
@@ -812,48 +814,61 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 				this.submitInput();
 				break;
 			case "Escape":
+				event.preventDefault(); // don't stop loading page
 				// Unimplemented
 				break;
 			case "Home":
+				event.preventDefault(); // stop browser from scrolling
 				this.moveCursorToStart();
 				break;
 			case "End":
+				event.preventDefault(); // stop browser from scrolling
 				this.moveCursorToEnd();
 				break;
 			case "PageUp":
+				event.preventDefault(); // stop browser from scrolling
 				this.scroll(-0.9);
 				break;
 			case "PageDown":
+				event.preventDefault(); // stop browser from scrolling
 				this.scroll(+0.9);
 				break;
 			case "Tab":
+				event.preventDefault(); // stop browser from switching focus
 				this.autocompleteInput();
 				break;
 			case "a":
 				if (event.ctrlKey) {
+					event.preventDefault(); // stop browser shortcut
 					this.moveCursorToStart();
 					break;
 				}
 			case "e":
 				if (event.ctrlKey) {
+					event.preventDefault(); // stop browser shortcut
 					this.moveCursorToEnd();
 					break;
 				}
 			case "k":
 				if (event.ctrlKey) {
+					event.preventDefault(); // stop browser shortcut
 					this.deleteToEnd();
 					break;
 				}
 			case "u":
 				if (event.ctrlKey) {
+					event.preventDefault(); // don't view source
 					this.deleteToStart();
 					break;
 				}
 			case "w":
 				if (event.ctrlKey) {
+					event.preventDefault(); // don't close window/tab
 					this.deleteLeftWord();
 					break;
 				}
+			case "/":
+				event.preventDefault(); // don't begin type-ahead-find
 			default:
 				// Append character to command line
 				this.insertInput(event.key);
