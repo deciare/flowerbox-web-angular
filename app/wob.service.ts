@@ -7,8 +7,9 @@ import { Injectable } from "@angular/core";
 import { Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 
+import { ModelBase } from "./model-base";
 import { Urls } from "./urls";
-import { Property, Verb, WobEditState, WobInfo, WobInfoList } from "./wob";
+import { Property, Verb, InstanceOfList, WobEditState, WobInfo, WobInfoList } from "./wob";
 
 import { SessionHttp } from "./session-http.service";
 import { SessionService } from "./session.service";
@@ -47,7 +48,7 @@ export class WobService {
 		}
 	}
 
-	getContents(id: number): Promise<any /* WobInfoList | string */>{
+	getContents(id: number): Promise<WobInfoList>{
 		return this.http.get(Urls.worldWob + id + "/contents")
 			.toPromise()
 			.then(
@@ -105,7 +106,7 @@ export class WobService {
 		]
 	}
 	*/
-	getEditState(id: number): Promise<any> {
+	getEditState(id: number): Promise<WobEditState> {
 		var state: WobEditState = new WobEditState(id);
 		var propertyPromises: Promise<any>[] = [];
 		var verbPromises: Promise<any>[] = [];
@@ -200,7 +201,7 @@ export class WobService {
 			});
 	}
 
-	getInfo(id: number): Promise<any /* WobInfo | string */> {
+	getInfo(id: number): Promise<WobInfo> {
 		return this.http.get(Urls.wobInfo(id))
 			.toPromise()
 			.then(
@@ -209,7 +210,7 @@ export class WobService {
 			);
 	}
 
-	getProperty(id: number, name: string): Promise<any> {
+	getProperty(id: number, name: string): Promise<Property> {
 		return this.http.get(Urls.wobGetProperty(id, name))
 			.toPromise()
 			.then(
@@ -218,7 +219,7 @@ export class WobService {
 			);
 	}
 
-	setProperty(id: number, name: string, value: string): Promise<any> {
+	setProperty(id: number, name: string, value: string): Promise<ModelBase> {
 		return this.http.putFormData(Urls.wobSetProperties(id), {
 				[name]: JSON.stringify(value)
 			})
@@ -229,7 +230,7 @@ export class WobService {
 			);
 	}
 
-	getPropertyDraft(id: number, name: string): Promise<any> {
+	getPropertyDraft(id: number, name: string): Promise<Property> {
 		return this.sessionService.getPlayerInfo()
 			.then((player: WobInfo) => {
 				return this.http.get(Urls.worldWob + player.id + Urls.wobGetPropertyDraft(id, name)).toPromise();
@@ -240,7 +241,17 @@ export class WobService {
 			);
 	}
 
-	setPropertyDraft(id: number, name: string, value: string): Promise<any> {
+	instanceOf(ids: number | number[] | string | string[], ancestorId: number | string): Promise<InstanceOfList> {
+		var idStr = ids instanceof Array ? ids.join(",") : ids;
+		return this.http.get(Urls.wobInstanceOf(idStr, ancestorId))
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	setPropertyDraft(id: number, name: string, value: string): Promise<ModelBase> {
 		return this.sessionService.getPlayerInfo()
 			.then((player: WobInfo) => {
 				return this.http.put(Urls.worldWob + player.id +  Urls.wobSetDrafts(id),
@@ -255,7 +266,7 @@ export class WobService {
 			);
 	}
 
-	getVerb(id: number, name: string): Promise<any> {
+	getVerb(id: number, name: string): Promise<Verb> {
 		return this.http.get(Urls.wobGetVerb(id, name))
 			.toPromise()
 			.then(
@@ -264,7 +275,7 @@ export class WobService {
 			);
 	}
 
-	setVerb(id: number, name: string, value: string): Promise<any> {
+	setVerb(id: number, name: string, value: string): Promise<ModelBase> {
 		return this.http.putFormData(Urls.wobSetVerbs(id), {
 				[name]: JSON.stringify(value)
 			})
@@ -275,7 +286,7 @@ export class WobService {
 			);
 	}
 
-	getVerbDraft(id: number, name: string): Promise<any> {
+	getVerbDraft(id: number, name: string): Promise<Verb> {
 		return this.sessionService.getPlayerInfo()
 			.then((player: WobInfo) => {
 				return this.http.get(Urls.worldWob + player.id + Urls.wobGetVerbDraft(id, name)).toPromise();
@@ -286,7 +297,7 @@ export class WobService {
 			);
 	}
 
-	setVerbDraft(id: number, name: string, sigs: string[], code: string): Promise<any> {
+	setVerbDraft(id: number, name: string, sigs: string[], code: string): Promise<ModelBase> {
 		return this.sessionService.getPlayerInfo()
 			.then((player: WobInfo) => {
 				return this.http.put(Urls.worldWob + player.id + Urls.wobSetDrafts(id), {

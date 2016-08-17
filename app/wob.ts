@@ -118,6 +118,25 @@ export class WobInfoList {
 	public list: WobInfo[];
 }
 
+export class InstanceOfResult {
+	constructor(id: number, isInstance: boolean) {
+		this.id = id;
+		this.isInstance = isInstance;
+	}
+
+	public id: number;
+	public isInstance: boolean;
+}
+
+export class InstanceOfList extends ModelBase {
+	constructor(list: InstanceOfResult[]) {
+		super(true);
+		this.list = list;
+	}
+
+	public list: InstanceOfResult[];
+}
+
 export class WobEditState {
 	constructor(id: number) {
 		this.id = id;
