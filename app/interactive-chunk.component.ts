@@ -51,6 +51,18 @@ export class InteractiveChunkComponent implements AfterViewInit{
 		this.layout = new EventEmitter<any>();
 	}
 
+	private popoverPlacement(): string {
+		var posY = this.element.offset().top - $(window).scrollTop();
+		var viewHeight = $(window).height();
+
+		if (posY < viewHeight / 2) {
+			return "bottom";
+		}
+		else {
+			return "top";
+		}
+	}
+
 	ngAfterViewInit() {
 		this.element = $(`#${this.tag}`);
 	}
@@ -84,6 +96,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 	}
 
 	showPopover() {
+		console.log("show popover");
 		var verbs: string[] = [];
 
 		// Indicate that the popover should be shown, even though it may not
@@ -105,6 +118,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 				content: this.content,
 				html: true,
 				title: this.title + (this.sessionService.isLoggedIn() ? " (updating...)" : " (cached)"),
+				placement: this.popoverPlacement()
 			}).popover("show");
 		}
 
@@ -156,7 +170,8 @@ export class InteractiveChunkComponent implements AfterViewInit{
 					this.replacePopover({
 						content: this.content,
 						html: true,
-						title: this.title
+						title: this.title,
+						placement: this.popoverPlacement()
 					});
 
 					// If this popover should still be shown, show it now.
@@ -179,7 +194,8 @@ export class InteractiveChunkComponent implements AfterViewInit{
 		this.replacePopover({
 			content: this.content,
 			html: true,
-			title: this.title
+			title: this.title,
+			placement: this.popoverPlacement()
 		});
 
 		// Show the popover if it is supposed to be visible.
