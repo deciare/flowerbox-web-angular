@@ -188,7 +188,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 						<p>${data.desc}</p>
 						<p><b>Verbs:</b> ${verbs.join(", ")}</p>
 					`;
-					this.title = `${data.name} (#${data.id})`;
+					this.title = data.name + " (" + (data.globalid ? "@" + data.globalid + " · " : "") + "#" + data.id + ")";
 
 					// If an image was previously cached for this element,
 					// reuse it.
