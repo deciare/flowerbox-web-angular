@@ -210,6 +210,16 @@ export class WobService {
 			);
 	}
 
+	instanceOf(ids: number | number[] | string | string[], ancestorId: number | string): Promise<InstanceOfList> {
+		var idStr = ids instanceof Array ? ids.join(",") : ids;
+		return this.http.get(Urls.wobInstanceOf(idStr, ancestorId))
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
 	getProperty(id: number, name: string): Promise<Property> {
 		return this.http.get(Urls.wobGetProperty(id, name))
 			.toPromise()
@@ -219,9 +229,20 @@ export class WobService {
 			);
 	}
 
-	setProperty(id: number, name: string, value: string): Promise<ModelBase> {
-		return this.http.putFormData(Urls.wobSetProperties(id), {
+	setBinaryProperty(id: number, name: string, value: string): Promise<ModelBase> {
+		return this.http.putFormData(Urls.wobSetBinaryProperties(id), {
 				[name]: JSON.stringify(value)
+			})
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	setProperty(id: number, name: string, value: string): Promise<ModelBase> {
+		return this.http.put(Urls.wobSetProperties(id), {
+				[name]: value
 			})
 			.toPromise()
 			.then(
@@ -235,16 +256,6 @@ export class WobService {
 			.then((player: WobInfo) => {
 				return this.http.get(Urls.worldWob + player.id + Urls.wobGetPropertyDraft(id, name)).toPromise();
 			})
-			.then(
-				this.handleResponse.bind(this),
-				this.handleServerError.bind(this)
-			);
-	}
-
-	instanceOf(ids: number | number[] | string | string[], ancestorId: number | string): Promise<InstanceOfList> {
-		var idStr = ids instanceof Array ? ids.join(",") : ids;
-		return this.http.get(Urls.wobInstanceOf(idStr, ancestorId))
-			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
 				this.handleServerError.bind(this)

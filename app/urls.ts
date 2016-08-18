@@ -28,6 +28,10 @@ export class Urls {
 		return Urls.worldWob + id + "/property/" + name + (sub ? "/" + sub : "");
 	}
 
+	static wobSetBinaryProperties(id: number | string) {
+		return Urls.worldWob + id + "/properties/binary";
+	}
+
 	static wobSetProperties(id: number | string) {
 		return Urls.worldWob + id + "/properties";
 	}
