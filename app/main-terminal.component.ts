@@ -11,7 +11,7 @@ import { Component, ViewEncapsulation } from "@angular/core";
 	selector: "main-terminal",
 	styles: [`
 		terminal > .terminal {
-			padding-top: 1.4em;
+			padding-top: 1.6em;
 		}
 	`],
 	template: `

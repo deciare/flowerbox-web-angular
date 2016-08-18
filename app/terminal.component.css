@@ -22,9 +22,8 @@
 	color: black;
 }
 .terminal .left-margin {
-	border-right: 1px solid #666666;
-	padding-right: 10px;
+	padding-right: 0.5em;
 }
 .terminal .main-content {
-	padding-left: 10px;
+	padding-left: 0.5em;
 }
