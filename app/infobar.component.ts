@@ -33,13 +33,13 @@ import { WobService } from "./wob.service";
 			<span *ngIf="!player">&nbsp;Not logged in</span>
 			<span *ngIf="player">
 				&nbsp;{{player.name}}
-				<span *ngIf="location">
-					&nbsp;<span class="glyphicon glyphicon-screenshot"></span>
+				<span *ngIf="location" aria-label="Current location:">
+					&nbsp;<span class="glyphicon glyphicon-screenshot" title="Location" aria-hidden="true"></span>
 					{{location.name}} (#{{location.id}})
 				</span>
-				<span *ngIf="locationPlayers">
-					&nbsp;<span class="glyphicon glyphicon-user"></span>
-					{{locationPlayers.list.length}}
+				<span *ngIf="locationPlayers" aria-label="Number of other players here:">
+					&nbsp;<span class="glyphicon glyphicon-user" title="Other players here" aria-hidden="true"></span>
+					{{locationPlayers.list.length - 1}}
 				</span>
 			</span>
 		</header>
@@ -78,6 +78,15 @@ export class InfobarComponent implements OnDestroy, OnInit {
 	}
 
 	private handleTerminalEvent(event: EventStream) {
+		var hasPlayerMoved = false;
+		var hasOtherMoved = false;
+
+		// If player isn't yet available, then we aren't ready to
+		// process events
+		if (!this.player) {
+			return;
+		}
+
 		event.log.forEach((log) => {
 			switch(log.type) {
 			case EventStreamItem.TypeMoveNotification: // movement
@@ -85,25 +94,29 @@ export class InfobarComponent implements OnDestroy, OnInit {
 				var oldLocation = log.items[1];
 				var newLocation = log.items[2];
 
-				// If the player moved, get new information about the player,
-				// which will also cascade to get new information about the
-				// location and its contents.
 				if (movedWob.id == this.player.id) {
-					this.sessionService.getPlayerInfo()
-						.then((player: WobInfo) => {
-							this.setPlayerInfo(player);
-							this.getLocationInfo(this.player.container);
-							this.getLocationContents(this.player.container);
-						});
+					hasPlayerMoved = true;
 				}
-				// Otherwise, just update information about the location's
-				// contents.
 				else {
-					this.getLocationContents(newLocation.id);
+					hasOtherMoved = true;
 				}
 				break;
 			}
 		});
+
+		// If the player moved, update player and location info
+		if (hasPlayerMoved) {
+			this.sessionService.getPlayerInfo()
+				.then((player: WobInfo) => {
+					this.setPlayerInfo(player);
+					this.getLocationInfo(this.player.container);
+					this.getLocationContents(this.player.container);
+				});
+		}
+		// Otherwise, just update the current location's contents.
+		else if (hasOtherMoved) {
+			this.getLocationContents(this.player.container);
+		}
 	}
 
 	private getLocationInfo(id: number): Promise<WobInfo> {
@@ -160,10 +173,12 @@ export class InfobarComponent implements OnDestroy, OnInit {
 
 	ngOnInit() {
 		// Subscribe to session state change notifications
-		this.sessionEvents = this.sessionService.events.subscribe(this.handleSessionEvent.bind(this));
+		this.sessionEvents = this.sessionService.events
+			.subscribe(this.handleSessionEvent.bind(this));
 
 		// Subscribe to the server event stream
-		this.terminalEvents = this.terminalEventService.output.subscribe(this.handleTerminalEvent.bind(this));
+		this.terminalEvents = this.terminalEventService.output
+			.subscribe(this.handleTerminalEvent.bind(this));
 
 		// If player is already logged in, get player info manually since we
 		// won't be receiving it as part of a login event
@@ -178,6 +193,7 @@ export class InfobarComponent implements OnDestroy, OnInit {
 	}
 
 	ngOnDestroy() {
+		this.sessionEvents.unsubscribe();
 		this.terminalEvents.unsubscribe();
 	}
 }
