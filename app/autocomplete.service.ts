@@ -27,7 +27,9 @@ export class AutocompleteService {
 
 		// Create an array containing the last word in the command, then the
 		// last 2 words in the command, and so on.
-		while (lastWordBoundary != -1) {
+		while (lastWordBoundary > 0) {
+			// lastIndexOf searches cannot begin from a negative index, so if
+			// we reach lastWordBoundary == 0, the search is over.
 			lastWordBoundary = command.lastIndexOf(" ", lastWordBoundary - 1);
 			if (command.charAt(lastWordBoundary + 1) != " ") {
 				wordList.push(command.substring(lastWordBoundary + 1));
@@ -86,7 +88,7 @@ export class AutocompleteService {
 
 						// If including wobs in the search...
 						if (includeWobs) {
-							// Check whether this wob's aname starts with the
+							// Check whether this wob's name starts with the
 							// same characters as the current word
 							if (wob.name.toLowerCase().match("^" + word)) {
 								// Assign matches to object properties, to
@@ -116,10 +118,22 @@ export class AutocompleteService {
 					prevMatches = matches;
 				}
 
+				// If the last-known match was found before reaching the start
+				// of the command line...
 				if (matches.length && prevMatchesIndex < wordList.length - 1) {
 					matches = matches.map((match) => {
-						var start = command.indexOf(wordList[prevMatchesIndex]);
-						return command.substring(0,  command.indexOf(wordList[prevMatchesIndex])) + match;
+						// Prepend the command line up until the word(s) that
+						// resulted in the last-known match.
+						if (wordList[prevMatchesIndex] == "") {
+							// If the last-known match was found after a word
+							// boundary but before the start of the next word,
+							// that means it was found at the end of the command
+							// line. Simply prepend the entire command.
+							return command + match;
+						}
+						else {
+							return command.substring(0,  command.indexOf(wordList[prevMatchesIndex])) + match;
+						}
 					});
 				}
 
