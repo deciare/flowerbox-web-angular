@@ -57,55 +57,6 @@ export class WobService {
 			);
 	}
 
-	/*
-	WobEditState {
-		id: number,
-		applied: [
-			properties: [
-				{
-					sourceId: number,
-					name: string,
-					value: any
-				},
-				...
-			],
-			verbs: [
-				{
-					sourceId: number,
-					name: string,
-					sigs: [
-						string,
-						...
-					],
-					code: string
-				},
-				...
-			]
-		],
-		draft: [
-			properties: [
-				{
-					sourceId: number,
-					name: string,
-					value: any
-				},
-				...
-			],
-			verbs: [
-				{
-					sourceId: number,
-					name: string,
-					sigs: [
-						string,
-						...
-					],
-					code: string
-				},
-				...
-			]
-		]
-	}
-	*/
 	getEditState(id: number): Promise<WobEditState> {
 		var state: WobEditState = new WobEditState(id);
 		var propertyPromises: Promise<any>[] = [];
@@ -155,7 +106,7 @@ export class WobService {
 								// Sub-property
 								undefined,
 								// Draft status
-								Property.StatusDraft
+								true
 							));
 						}
 						else if (key.startsWith(Urls.draftVerb)) {

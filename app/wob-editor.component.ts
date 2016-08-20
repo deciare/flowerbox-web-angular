@@ -11,6 +11,9 @@ import { Subscription } from "rxjs/Subscription";
 	moduleId: module.id,
 	selector: "wob-editor",
 	encapsulation: ViewEncapsulation.None,
+	styleUrls: [
+		"./wob-editor.component.css"
+	],
 	template: `
 		<nav>
 			<a [routerLink]="['properties']" routerLinkActive="active">Properties</a>
