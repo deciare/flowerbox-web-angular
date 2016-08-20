@@ -1,6 +1,80 @@
-.draft {
-	color: orange;
+body {
+	background-color: #222222;
 }
 textarea {
 	resize: vertical;
+}
+.control-label {
+	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
+}
+.form-control[type=text],
+.btn {
+	background-color: #222222;
+	border: 1px solid #cccccc;
+	border-radius: 0;
+	box-shadow: 0.5em 1em 0 black;
+	color: #cccccc;
+	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
+	margin-bottom: 0.9em;
+}
+.form-control[type=text]:focus {
+	background-color: #cccccc;
+	color: black;
+}
+.btn {
+	margin-left: 12px;
+}
+.btn.btn-primary {
+	border-color: #0066ff;
+}
+.btn.btn-success {
+	border-color: #33cc00;
+}
+.form-control {
+	z-index: 0;
+}
+.input-group-btn {
+	z-index: 10;
+}
+.inherited label:after,
+.draft label:after {
+	font-size: 0.7em;
+	font-weight: normal;
+	white-space: pre-wrap;
+}
+.inherited {
+	color: #7F7F7F;
+}
+.inherited input.form-control[type=text],
+.inherited .input-group-btn button {
+	border-color: #7F7F7F;
+}
+.draft {
+	color: #e06e0b;
+}
+.draft input.form-control[type=text],
+.draft .input-group-btn button {
+	border-color: #e06e0b;
+}
+@media(max-width: 767px) {
+	.input-group {
+		padding: 0 1em !important;
+	}
+	.inherited label:after {
+		content: ' (inherited)';
+	}
+	.draft label:after {
+		content: ' (draft)';
+	}
+}
+@media(min-width: 768px) {
+	.input-group {
+		padding-right: 1em !important;
+	}
+	.inherited label:after {
+		content: '\A(inherited)';
+	}
+	.draft label:after {
+		content: '\A(draft)';
+	}
 }

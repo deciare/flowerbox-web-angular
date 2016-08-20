@@ -1,5 +1,5 @@
 <form class="container form-horizontal">
-	<div *ngFor="let property of properties" class="form-group" [class.draft]="property.isDraft">
+	<div *ngFor="let property of properties" class="form-group" [class.draft]="property.isDraft" [class.inherited]="property.id != wobId">
 		<label class="control-label col-sm-2" [attr.for]="property.name">{{property.name}}</label>
 		<div class="input-group col-sm-10">
 			<input class="form-control" type="text" [id]="property.name" [name]="property.name" [ngModel]="property.value" (ngModelChange)="onChange(property, $event)" />
@@ -18,8 +18,8 @@
 	</div>
 	<div class="form-group">
 		<div class="col-sm-12 text-right">
-			<button class="btn btn-default" type="button" (click)="newDraft()">New property</button>
-			<button class="btn btn-default" type="button" (click)="saveAll()">Save all properties</button>
+			<button class="btn btn-success" type="button" (click)="newDraft()">New property</button>
+			<button class="btn btn-primary" type="button" (click)="saveAll()">Save all properties</button>
 		</div>
 	</div>
 </form>
