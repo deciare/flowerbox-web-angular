@@ -10,6 +10,7 @@ body {
 }
 .brand.secondary {
 	color: #7FD039;
+	font-size: 0.9em;
 }
 .pre {
 	white-space: pre-wrap;
