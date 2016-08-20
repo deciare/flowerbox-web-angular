@@ -201,7 +201,27 @@ export class WobService {
 			});
 	}
 
-	getInfo(id: number): Promise<WobInfo> {
+	deleteProperty(id: number | string, name: string): Promise<ModelBase> {
+		return this.http.delete(Urls.wobGetProperty(id, name))
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	deletePropertyDraft(id: number | string, name: string): Promise<ModelBase> {
+		return this.sessionService.getPlayerInfo()
+			.then((player: WobInfo) => {
+				return this.http.delete(Urls.worldWob + player.id + Urls.wobGetPropertyDraft(id, name)).toPromise();
+			})
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	getInfo(id: number | string): Promise<WobInfo> {
 		return this.http.get(Urls.wobInfo(id))
 			.toPromise()
 			.then(
@@ -233,6 +253,32 @@ export class WobService {
 		return this.http.putFormData(Urls.wobSetBinaryProperties(id), {
 				[name]: JSON.stringify(value)
 			})
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	/**
+	 * Sets one or more properties based on an input object. The input object
+	 * has the form:
+	 *
+	 *   {
+	 *     nameOfProperty: valueOfProperty,
+	 *     nameOfOtherProperty: valueOfOtherProperty,
+	 *     ...
+	 *   }
+	 *
+	 * Where nameOfProperty is a string, and valueOfProperty is any object,
+	 * string, number, or boolean.
+	 *
+	 * @params id (number) ID of wob whose property to set
+	 * @params properties (any) As descibed above
+	 */
+	setProperties(id: number, properties: any): Promise<ModelBase> {
+		console.log(properties);
+		return this.http.put(Urls.wobSetProperties(id), properties)
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
