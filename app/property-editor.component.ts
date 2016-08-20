@@ -113,8 +113,9 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 			property = propertyDraft;
 
 			// Refocus the form field after the template change.
+			var pos = (<HTMLInputElement>$(`#${property.name}`).focus().get(0)).selectionStart;
 			setTimeout(() => {
-				$(`#${property.name}`).focus();
+				(<HTMLInputElement>$(`#${property.name}`).focus().get(0)).setSelectionRange(pos, pos);
 			}, 0);
 		}
 
