@@ -65,9 +65,12 @@ export class TerminalEventService {
 
 	private handleServerError(response: Response): Promise<void> {
 		// console.debug("TerminalEventService.handleServerError:", response);
-		var error: string;
+		var error = "";
 		if (response.status) {
-			error = `Server error: ${response.status} ${response.statusText}`;
+			if (response.json) {
+				error = "(" + response.json().error + ")";
+			}
+			error = `Server error: ${response.status} ${response.statusText} ` + error;
 		}
 		else {
 			error = "Could not connect to server (TerminalEventService).";

@@ -41,7 +41,11 @@ export class WobService {
 	private handleServerError(response: Response): Promise<void> {
 		// console.debug("WobService.handleServerError:", response);
 		if (response.status) {
-			return Promise.reject(`Server error: ${response.status} ${response.statusText}`);
+			var error = "";
+			if (response.json) {
+				error = "(" + response.json().error + ")";
+			}
+			return Promise.reject(`Server error: ${response.status} ${response.statusText} ${error}`);
 		}
 		else {
 			return Promise.reject("Could not connect to server (WobService).");
