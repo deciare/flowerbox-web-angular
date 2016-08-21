@@ -300,6 +300,16 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 						}
 					});
 					break;
+				default:
+					// If debugging, print all unhandled message types.
+					if (Config.debug) {
+						lineType = "text-info";
+						chunks.push(new ScrollbackChunk(lineType, "Unhandled event stream output: " + JSON.stringify(log)));
+					}
+					else {
+						// Avoid printing blank line
+						return;
+					}
 				}
 			}
 
