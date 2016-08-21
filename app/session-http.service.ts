@@ -39,12 +39,7 @@ export class SessionHttp extends Http {
 	private logoutIfSessionError(response: Response, options: SessionRequestOptionsArgs) {
 		var data = response.json();
 		// If response indicates session is not valid...
-		if (!data.success && typeof data.error === "string" &&
-			(
-				data.error.match(/Missing bearer token/) ||
-				data.error.match(/Token validation error/)
-			)
-		) {
+		if (response.status == 401) {
 			// Invalidate our session
 			this.sessionService.logout(options.admin);
 		}
@@ -115,7 +110,7 @@ export class SessionHttp extends Http {
 			// Return an Observable that notifies on XHR events
 			return observable
 				// Intercept server response without observer
-				.do((response: Response) => {
+				.do(undefined, (response: Response) => {
 					this.logoutIfSessionError(response, options);
 				});
 		}
@@ -171,7 +166,7 @@ export class SessionHttp extends Http {
 			// Call corresponding superclass method
 			return super.delete(url, options)
 				// Intercept server response without observer
-				.do((response: Response) => {
+				.do(undefined, (response: Response) => {
 					this.logoutIfSessionError(response, options);
 				});
 		}
@@ -189,7 +184,7 @@ export class SessionHttp extends Http {
 			// Call corresponding superclass method
 			return super.get(url, options)
 				// Intercept server response without observer
-				.do((response: Response) => {
+				.do(undefined, (response: Response) => {
 					this.logoutIfSessionError(response, options);
 				});
 		}
@@ -206,7 +201,7 @@ export class SessionHttp extends Http {
 			// Call corresponding superclass method
 			return super.post(url, body, options)
 				// Intercept server response without observer
-				.do((response: Response) => {
+				.do(undefined, (response: Response) => {
 					this.logoutIfSessionError(response, options);
 				});
 		}
@@ -227,7 +222,7 @@ export class SessionHttp extends Http {
 			// Call corresponding superclass method
 			return super.put(url, body, options)
 				// Intercept server response without observer
-				.do((response: Response) => {
+				.do(undefined, (response: Response) => {
 					this.logoutIfSessionError(response, options);
 				});
 		}
