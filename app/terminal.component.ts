@@ -203,9 +203,6 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 					data.error.match(/Token validation error/) ||
 					data.error.match(/Not logged in/)
 				) {
-					// Clear locally-stored session data, as it is invalid
-					this.sessionService.logout();
-
 					// Provide user with instructions
 					this.appendLine("text-info", "You are not logged in, or your session is invalid. To log in, type:")
 					this.appendLine("text-info", "  login");
@@ -344,8 +341,10 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 		return chunk instanceof InteractiveChunk;
 	}
 
-	private loginPrompt(): Promise<string> {
+	private loginPrompt(admin?: boolean): Promise<string> {
 		var username, password;
+
+		admin = admin === undefined ? false : admin;
 
 		return this.promptInput("Username: ")
 			.then((response: string) => {
@@ -354,7 +353,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 			})
 			.then((response: string) => {
 				password = response;
-				return this.sessionService.login(username, password);
+				return this.sessionService.login(username, password, admin);
 			})
 			.then((response: string) => {
 				this.appendLine("text-info", response);
@@ -655,9 +654,11 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	 *
 	 * @returns (boolean) true if command should be forwarded to server
 	 */
-	localExec(command: string): boolean {
+	localExec(command: string, admin?: boolean): boolean {
 		var matches: string[]; // results of regex matching
-		var processOnServer: boolean = true; // whether to exec on server
+		var processOnServer: boolean = true; // whether to pass through the command to the server
+
+		admin = admin === undefined ? false : admin;
 
 		if (matches = command.match(/^login$/)) {
 			this.loginPrompt();
@@ -676,8 +677,35 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 			// This command should be consumed (not executed on server)
 			processOnServer = false;
 		}
+		else if (matches = command.match(/^sudo (.*)/)) {
+			var realCommand = matches[1];
+			this.exec(realCommand, true);
+
+			// The real command may be processed on server, but the sudo
+			// pre-command shouldn't be.
+			processOnServer = false;
+		}
 
 		return processOnServer;
+	}
+
+	exec(command: string, admin?: boolean) {
+		admin = admin === undefined ? false : admin;
+
+		// Attempt to execute this as a local command
+		if (this.localExec(command, admin)) {
+			// If the command was not consumed by local execution,
+			// attempt to execute it on the server
+			this.terminalEventService.exec(command, admin)
+				.catch((error: string) => {
+					if (admin && !this.sessionService.isLoggedInAsAdmin()) {
+						this.loginPrompt(admin)
+							.then((response: string) => {
+								this.exec(command, admin);
+							});
+					}
+				});
+		}
 	}
 
 	promptInput(prompt: string, mask?: string): Promise<string> {
@@ -729,12 +757,8 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 				this.inputHistory.push(command);
 				this.inputHistoryIndex = this.inputHistory.length;
 
-				// Attempt to execute this as a local command
-				if (this.localExec(command)) {
-					// If the command was not consumed by local execution,
-					// attempt to execute it on the server
-					this.terminalEventService.exec(command);
-				}
+				// Execute the command
+				this.exec(command);
 			}
 		}
 		else {

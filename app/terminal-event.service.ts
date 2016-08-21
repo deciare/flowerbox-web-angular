@@ -141,13 +141,16 @@ export class TerminalEventService {
 			);
 	}
 
-	exec(command: string) {
+	exec(command: string, admin?: boolean) {
+		admin = admin === undefined ? false : admin;
 		return this.http.get(
-				Urls.termExec + encodeURIComponent(command) + "?tag=" + this.tag
+				Urls.termExec + encodeURIComponent(command) + "?tag=" + this.tag,
+				{ admin: admin }
 			)
 			.toPromise()
 			.then(
-				this.handleResponse.bind(this), this.handleServerError.bind(this)
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
 			);
 	}
 }

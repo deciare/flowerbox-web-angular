@@ -23,6 +23,8 @@ export class SessionEvent {
 	}
 
 	// Possible values for type
+	static AdminLogin = "adminLogin";
+	static AdminLogout = "adminLogout";
 	static Login = "login";
 	static Logout = "logout";
 }
@@ -32,6 +34,7 @@ export class SessionService {
 	private observer: Observer<any>;
 
 	events: Observable<any>;
+	adminToken: string;
 	token: string;
 
 	constructor(
@@ -57,6 +60,10 @@ export class SessionService {
 		else {
 			return Promise.reject("Could not connect to server (SessionService).");
 		}
+	}
+
+	isLoggedInAsAdmin() {
+		return this.adminToken !== undefined;
 	}
 
 	isLoggedIn() {
@@ -86,21 +93,30 @@ export class SessionService {
 			this.handleServerError.bind(this))
 	}
 
-	login(username: string, password: string): Promise<any> {
-		return this.http.post(Urls.userLogin + username, {
+	login(username: string, password: string, admin?: boolean): Promise<any> {
+		admin = admin === undefined ? false : admin;
+
+		return this.http.post(Urls.userLogin + username + (admin ? "?admin=true" : ""), {
 				password: password
 			})
 			.toPromise()
 			.then((response: Response): Promise<any> => {
 				var data = response.json();
+				var token = "Bearer " + data.token;
+
 				if (data.success) {
-					this.token = "Bearer " + data.token;
-					Cookie.set("authorization", "Bearer " + data.token);
+					if (admin) {
+						this.adminToken = token;
+					}
+					else {
+						this.token = token;
+						Cookie.set("authorization", token);
+					}
 
 					// Inform observers this session is logged in
 					this.getPlayerInfo()
 						.then((player: WobInfo) => {
-							this.observer.next(new SessionEvent(SessionEvent.Login, player));
+							this.observer.next(new SessionEvent(admin ? SessionEvent.AdminLogin : SessionEvent.Login, player));
 						});
 
 					return Promise.resolve("Login successful");
@@ -112,11 +128,18 @@ export class SessionService {
 			this.handleServerError.bind(this));
 	}
 
-	logout() {
-		this.token = undefined;
-		Cookie.delete("authorization");
+	logout(admin?: boolean) {
+		admin = admin === undefined ? false : admin;
+
+		if (admin) {
+			this.adminToken = undefined;
+		}
+		else {
+			this.token = undefined;
+			Cookie.delete("authorization");
+		}
 
 		// Inform observers this session is logged out
-		this.observer.next(new SessionEvent(SessionEvent.Logout));
+		this.observer.next(new SessionEvent(admin ? SessionEvent.AdminLogout : SessionEvent.Logout));
 	}
 }

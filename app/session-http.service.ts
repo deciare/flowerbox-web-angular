@@ -10,6 +10,10 @@ import { Observer } from "rxjs/Observer";
 import "rxjs/add/operator/do";
 import { SessionService } from "./session.service";
 
+export interface SessionRequestOptionsArgs extends RequestOptionsArgs {
+	admin?: boolean;
+}
+
 @Injectable()
 export class SessionHttp extends Http {
 	constructor(
@@ -32,7 +36,7 @@ export class SessionHttp extends Http {
 		return formData;
 	}
 
-	private logoutIfSessionError(response: Response) {
+	private logoutIfSessionError(response: Response, options: SessionRequestOptionsArgs) {
 		var data = response.json();
 		// If response indicates session is not valid...
 		if (!data.success && typeof data.error === "string" &&
@@ -42,15 +46,25 @@ export class SessionHttp extends Http {
 			)
 		) {
 			// Invalidate our session
-			this.sessionService.logout();
+			this.sessionService.logout(options.admin);
 		}
 	}
 
-	private mergeAuthorizationHeader(options: RequestOptionsArgs): RequestOptionsArgs {
+	private mergeAuthorizationHeader(options: SessionRequestOptionsArgs): SessionRequestOptionsArgs {
 		// If options have already been set, overwrite Authorization header
 		// with our token
 		if (options) {
-			options.headers.set("Authorization", this.sessionService.token);
+			if (options.headers) {
+				options.headers.set("Authorization", options.admin ? this.sessionService.adminToken : this.sessionService.token);
+			}
+			else {
+				options = {
+					headers: new Headers({
+						"Authorization": options.admin ? this.sessionService.adminToken : this.sessionService.token
+					}),
+					admin: options.admin
+				}
+			}
 		}
 		// Otherwise, create a new options object with our token
 		else {
@@ -101,7 +115,9 @@ export class SessionHttp extends Http {
 			// Return an Observable that notifies on XHR events
 			return observable
 				// Intercept server response without observer
-				.do(this.logoutIfSessionError.bind(this));
+				.do((response: Response) => {
+					this.logoutIfSessionError(response, options);
+				});
 		}
 		else {
 			return this.notLoggedInResponse();
@@ -147,7 +163,7 @@ export class SessionHttp extends Http {
 		});
 	}
 
-	delete(url: string, options?: RequestOptionsArgs): Observable<Response> {
+	delete(url: string, options?: SessionRequestOptionsArgs): Observable<Response> {
 		// Contact server only if session is valid
 		if (this.sessionService.isLoggedIn()) {
 			// Insert authorization header into the request
@@ -155,7 +171,9 @@ export class SessionHttp extends Http {
 			// Call corresponding superclass method
 			return super.delete(url, options)
 				// Intercept server response without observer
-				.do(this.logoutIfSessionError.bind(this));
+				.do((response: Response) => {
+					this.logoutIfSessionError(response, options);
+				});
 		}
 		else {
 			return this.notLoggedInResponse();
@@ -163,7 +181,7 @@ export class SessionHttp extends Http {
 	}
 
 
-	get(url: string, options?: RequestOptionsArgs): Observable<Response> {
+	get(url: string, options?: SessionRequestOptionsArgs): Observable<Response> {
 		// Contact server only if session is valid
 		if (this.sessionService.isLoggedIn()) {
 			// Insert authorization header into the request
@@ -171,14 +189,16 @@ export class SessionHttp extends Http {
 			// Call corresponding superclass method
 			return super.get(url, options)
 				// Intercept server response without observer
-				.do(this.logoutIfSessionError.bind(this));
+				.do((response: Response) => {
+					this.logoutIfSessionError(response, options);
+				});
 		}
 		else {
 			return this.notLoggedInResponse();
 		}
 	}
 
-	post(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
+	post(url: string, body: any, options?: SessionRequestOptionsArgs): Observable<Response> {
 		// Contact server only if session is valid
 		if (this.sessionService.isLoggedIn()) {
 			// Insert authorization header into the request
@@ -186,18 +206,20 @@ export class SessionHttp extends Http {
 			// Call corresponding superclass method
 			return super.post(url, body, options)
 				// Intercept server response without observer
-				.do(this.logoutIfSessionError.bind(this));
+				.do((response: Response) => {
+					this.logoutIfSessionError(response, options);
+				});
 		}
 		else {
 			return this.notLoggedInResponse();
 		}
 	}
 
-	postFormData(url: string, body: any, options?: RequestOptionsArgs) : Observable<Response> {
+	postFormData(url: string, body: any, options?: SessionRequestOptionsArgs) : Observable<Response> {
 		return this.sendFormData("POST", url, body, options);
 	}
 
-	put(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
+	put(url: string, body: any, options?: SessionRequestOptionsArgs): Observable<Response> {
 		// Contact server only if session is valid
 		if (this.sessionService.isLoggedIn()) {
 			// Insert authorization header into the request
@@ -205,14 +227,16 @@ export class SessionHttp extends Http {
 			// Call corresponding superclass method
 			return super.put(url, body, options)
 				// Intercept server response without observer
-				.do(this.logoutIfSessionError.bind(this));
+				.do((response: Response) => {
+					this.logoutIfSessionError(response, options);
+				});
 		}
 		else {
 			return this.notLoggedInResponse();
 		}
 	}
 
-	putFormData(url: string, body: any, options?: RequestOptionsArgs) : Observable<Response> {
+	putFormData(url: string, body: any, options?: SessionRequestOptionsArgs) : Observable<Response> {
 		return this.sendFormData("PUT", url, body, options);
 	}
 }
