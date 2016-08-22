@@ -10,6 +10,7 @@ import { Config } from "./config";
 import { EventStream, EventStreamItem } from "./event-stream";
 import { InteractiveChunk } from "./interactive-chunk.component";
 import { Urls } from "./urls";
+import { WobInfo } from "./wob";
 
 import { AutocompleteService } from "./autocomplete.service";
 import { SessionService } from "./session.service";
@@ -342,16 +343,28 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	}
 
 	private loginPrompt(admin?: boolean): Promise<string> {
-		var username, password;
+		var username, password, passwordPrompt;
 
 		admin = admin === undefined ? false : admin;
+		if (admin) {
+			// Auto-fill username and prompt only for password if this is a
+			// sudo prompt.
+			this.sessionService.getPlayerInfo()
+				.then((player: WobInfo) => {
+					username = player.globalid;
+				});
+			passwordPrompt = this.promptInput("[sudo] Password: ", "*");
+		}
+		else {
+			// Otherwise, prompt for both a username and password
+			passwordPrompt = this.promptInput("Username: ")
+				.then((response: string) => {
+					username = response;
+					return this.promptInput("Password: ", "*");
+				});
+		}
 
-		return this.promptInput("Username: ")
-			.then((response: string) => {
-				username = response;
-				return this.promptInput("Password: ", "*");
-			})
-			.then((response: string) => {
+		return passwordPrompt.then((response: string) => {
 				password = response;
 				return this.sessionService.login(username, password, admin);
 			})
@@ -660,11 +673,9 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	 *
 	 * @returns (boolean) true if command should be forwarded to server
 	 */
-	localExec(command: string, admin?: boolean): boolean {
+	localExec(command: string): boolean {
 		var matches: string[]; // results of regex matching
 		var processOnServer: boolean = true; // whether to pass through the command to the server
-
-		admin = admin === undefined ? false : admin;
 
 		if (matches = command.match(/^login$/)) {
 			this.loginPrompt();
@@ -699,11 +710,14 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 		admin = admin === undefined ? false : admin;
 
 		// Attempt to execute this as a local command
-		if (this.localExec(command, admin)) {
+		if (this.localExec(command)) {
 			// If the command was not consumed by local execution,
 			// attempt to execute it on the server
 			this.terminalEventService.exec(command, admin)
 				.catch((error: string) => {
+					// If sudo command execution is unsuccessful, and our
+					// admin token was invalidated by the failure, prompt the
+					// user for admin credentials.
 					if (admin && !this.sessionService.isLoggedInAsAdmin()) {
 						this.loginPrompt(admin)
 							.then((response: string) => {
