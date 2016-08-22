@@ -7,6 +7,7 @@ import { Injectable } from "@angular/core";
 import { Headers, Response } from "@angular/http";
 import { Observable } from "rxjs/Observable";
 import { Observer } from "rxjs/Observer";
+import "rxjs/add/operator/publishReplay";
 import "rxjs/add/operator/toPromise";
 
 import { EventStream, EventStreamItem, WobRef } from "../models/event-stream";
@@ -23,24 +24,22 @@ export class TerminalEventService {
 	private observer: Observer<any>;
 	private retryTimer: NodeJS.Timer;
 
-	tag: string;
-
 	output: Observable<EventStream>;
+	tag: string;
 
 	constructor(
 		private http: SessionHttp,
 		private sessionService: SessionService
 	) {
 		this.lastCheckTime = 0; // UNIX timestamp of most recent query to new-output
-		this.output = new Observable<EventStream>((observer) => {
-			this.observer = observer;
-		});
 		this.tag = Tag.makeTag(); // Random tag for identifying commands submitted from this session
 
-		// Begin checking for new-events in server
-		setTimeout(() => {
-			this.awaitOutput(this.observer);
-		}, 0);
+		// Create an observable stream of new-events responses from server.
+		var eventStream = new Observable<EventStream>(this.awaitOutput.bind(this));
+		// Reuse the same observable stream even if there are multiple
+		// subscribers, and immediately supply the last-known value to a new
+		// subscriber.
+		this.output = eventStream.publishReplay(1).refCount();
 	}
 
 	private handleResponse(response: Response): Promise<any> {
@@ -106,6 +105,8 @@ export class TerminalEventService {
 	}
 
 	awaitOutput(observer: Observer<any>) {
+		this.observer = observer;
+
 		return this.getOutput()
 			.then((data: EventStream) => {
 				// console.debug("awaitOutput data:", data);
