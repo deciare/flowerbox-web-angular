@@ -34,8 +34,15 @@ export class TerminalEventService {
 		private tagService: TagService
 	) {
 		this.lastCheckTime = 0; // UNIX timestamp of most recent query to new-output
-		this.output = new Observable<EventStream>(this.awaitOutput.bind(this));
+		this.output = new Observable<EventStream>((observer) => {
+			this.observer = observer;
+		});
 		this.tag = this.tagService.makeTag(); // Random tag for identifying commands submitted from this session
+
+		// Begin checking for new-events in server
+		setTimeout(() => {
+			this.awaitOutput(this.observer);
+		}, 0);
 	}
 
 	private handleResponse(response: Response): Promise<any> {
@@ -101,9 +108,6 @@ export class TerminalEventService {
 	}
 
 	awaitOutput(observer: Observer<any>) {
-		// Allow awaitOutput() to be called with same observer later
-		this.observer = observer;
-
 		return this.getOutput()
 			.then((data: EventStream) => {
 				// console.debug("awaitOutput data:", data);
@@ -131,7 +135,7 @@ export class TerminalEventService {
 	}
 
 	getOutput() {
-		//console.debug("Getting output from", Urls.termOutput + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime(), headers);
+		// console.debug("Getting output from", Urls.termEvents + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime());
 		return this.http.get(
 				Urls.termEvents + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime()
 			)

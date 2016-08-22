@@ -372,6 +372,12 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 				.then((response: string) => {
 					// When login successful,
 					// subscribe to output from the TerminalEventService
+					setTimeout(() => {
+						// Immediately retry checking for new output, as the
+						// server error resulting from the not being logged in
+						// would have temporarily suspended the check.
+						this.terminalEventService.retryOutput();
+					}, 0);
 					return this.terminalEventService.output.subscribe(
 						this.handleOutput.bind(this)
 					);
