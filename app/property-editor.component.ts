@@ -134,6 +134,9 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 					this.properties.splice(foundIndex, 1);
 				}
 				this.message = "Deleted property " + property.name;
+			},
+			(error) => {
+				this.message = "Could not delete property: " + error;
 			});
 	}
 
@@ -165,6 +168,7 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 					return value.name == property.name;
 				});
 				this.properties.splice(foundIndex, 1);
+				this.message = " Could not discard draft: " + error;
 			});
 	}
 
@@ -197,14 +201,20 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 			if (property.isDraft) {
 				toDelete.push(property);
 			}
+		},
+		(error) => {
+			this.message = error;
 		});
 
 		return this.wobService.setProperties(this.wobId, propertiesObj)
 			.then((data: ModelBase) => {
 				this.message = "All properties saved";
 				toDelete.forEach((property: Property) => {
-					this.deleteDraft(property);
+					return this.deleteDraft(property);
 				});
+			},
+			(error) => {
+				this.message = "Could not save all properties: " + error;
 			});
 	}
 
@@ -218,6 +228,9 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 			})
 			.then((data: ModelBase) => {
 				this.message += " and deleted draft";
+			},
+			(error) => {
+				this.message = "Could not save property: " + error;
 			});
 	}
 
@@ -225,6 +238,9 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		return this.wobService.setPropertyDraft(this.wobId, property.name, property.value)
 			.then((data: ModelBase) => {
 				this.message = "Saved draft of " + property.name;
+			},
+			(error) => {
+				this.message = "Could not save draft: " + error;
 			});
 	}
 }

@@ -12,7 +12,7 @@ textarea {
 	background-color: #222222;
 	border: 1px solid #cccccc;
 	border-radius: 0;
-	box-shadow: 0.5em 1em 0 black;
+	box-shadow: 0.75em 1em 0 black;
 	color: #cccccc;
 	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
 	margin-bottom: 0.9em;
@@ -24,11 +24,15 @@ textarea {
 .btn {
 	margin-left: 12px;
 }
+.btn.btn-default:focus,
+.btn.btn-default:hover {
+	background-color: #cccccc;
+}
 .btn.btn-primary {
-	border-color: #0066ff;
+	border-color: #2e6da4;
 }
 .btn.btn-success {
-	border-color: #33cc00;
+	border-color: #4cae4c;
 }
 .form-control {
 	z-index: 0;
