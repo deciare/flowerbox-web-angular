@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Config } from "./config";
+import { Config } from "../config";
 
 export class Urls {
 	static termExec: string = Config.server + "terminal/command/";

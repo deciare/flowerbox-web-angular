@@ -6,11 +6,11 @@
 import { Injectable } from "@angular/core";
 import "rxjs/add/operator/toPromise";
 
-import { Urls } from "./urls";
-import { AttachedItem, WobInfo, WobInfoList } from "./wob";
+import { Urls } from "../shared/urls";
+import { AttachedItem, WobInfo, WobInfoList } from "../models/wob";
 
-import { SessionService } from "./session.service";
-import { WobService } from "./wob.service";
+import { SessionService } from "../session/session.service";
+import { WobService } from "../api/wob.service";
 
 @Injectable()
 export class AutocompleteService {

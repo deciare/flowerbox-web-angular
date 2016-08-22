@@ -9,12 +9,12 @@ import { Observable } from "rxjs/Observable";
 import { Observer } from "rxjs/Observer";
 import "rxjs/add/operator/toPromise";
 
-import { EventStream, EventStreamItem, WobRef } from "./event-stream";
-import { Tag } from "./tag";
-import { Urls } from "./urls";
+import { EventStream, EventStreamItem, WobRef } from "../models/event-stream";
+import { Tag } from "../shared/tag";
+import { Urls } from "../shared/urls";
 
-import { SessionHttp } from "./session-http.service";
-import { SessionService } from "./session.service";
+import { SessionHttp } from "../session/session-http.service";
+import { SessionService } from "../session/session.service";
 
 @Injectable()
 export class TerminalEventService {

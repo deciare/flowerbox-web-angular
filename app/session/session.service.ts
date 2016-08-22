@@ -10,8 +10,8 @@ import { Observable } from "rxjs/Observable";
 import { Observer } from "rxjs/Observer";
 import "rxjs/add/operator/toPromise";
 
-import { WobInfo } from "./wob";
-import { Urls } from "./urls";
+import { WobInfo } from "../models/wob";
+import { Urls } from "../shared/urls";
 
 export class SessionEvent {
 	type: string;

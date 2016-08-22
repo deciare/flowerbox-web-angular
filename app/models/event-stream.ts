@@ -4,7 +4,7 @@
 	For license info, please see notes/gpl-3.0.txt under the project root.
 */
 
-import { ModelBase } from "./model-base";
+import { ModelBase } from "../models/base";
 
 export class EventStream extends ModelBase {
 	constructor(log: EventStreamItem[]) {

@@ -7,12 +7,12 @@ import { Injectable } from "@angular/core";
 import { Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 
-import { ModelBase } from "./model-base";
-import { Urls } from "./urls";
-import { Property, Verb, InstanceOfList, WobEditState, WobInfo, WobInfoList } from "./wob";
+import { ModelBase } from "../models/base";
+import { Urls } from "../shared/urls";
+import { Property, Verb, InstanceOfList, WobEditState, WobInfo, WobInfoList } from "../models/wob";
 
-import { SessionHttp } from "./session-http.service";
-import { SessionService } from "./session.service";
+import { SessionHttp } from "../session/session-http.service";
+import { SessionService } from "../session/session.service";
 
 @Injectable()
 export class WobService {

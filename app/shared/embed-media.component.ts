@@ -6,8 +6,8 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
 import "rxjs/add/operator/toPromise";
-import { SessionService } from "./session.service";
-import { Urls } from "./urls";
+import { SessionService } from "../session/session.service";
+import { Urls } from "../shared/urls";
 
 @Component({
 	moduleId: module.id,

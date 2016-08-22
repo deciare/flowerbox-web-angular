@@ -11,10 +11,10 @@ import { Subscription } from "rxjs/Subscription";
 import "rxjs/add/operator/debounceTime";
 import "rxjs/add/operator/distinctUntilChanged";
 
-import { ModelBase } from "./model-base";
-import { Property, WobEditState } from "./wob";
+import { ModelBase } from "../models/base";
+import { Property, WobEditState } from "../models/wob";
 
-import { WobService } from "./wob.service";
+import { WobService } from "../api/wob.service";
 
 @Component({
 	moduleId: module.id,

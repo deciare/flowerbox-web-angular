@@ -8,7 +8,7 @@ import { ConnectionBackend, Headers, Http, Request, RequestOptions, RequestOptio
 import { Observable } from "rxjs/Observable";
 import { Observer } from "rxjs/Observer";
 import "rxjs/add/operator/do";
-import { SessionService } from "./session.service";
+import { SessionService } from "../session/session.service";
 
 export interface SessionRequestOptionsArgs extends RequestOptionsArgs {
 	admin?: boolean;

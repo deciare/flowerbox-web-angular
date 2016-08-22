@@ -6,8 +6,8 @@
 import { NgModule } from "@angular/core";
 import { HttpModule, RequestOptions, XHRBackend } from "@angular/http";
 
-import { SessionHttp } from "./session-http.service";
-import { SessionService } from "./session.service";
+import { SessionHttp } from "../session/session-http.service";
+import { SessionService } from "../session/session.service";
 
 @NgModule({
 	imports: [

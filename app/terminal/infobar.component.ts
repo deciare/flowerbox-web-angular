@@ -6,14 +6,14 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Subscription } from "rxjs/Subscription";
 
-import { EventStream, EventStreamItem } from "./event-stream";
-import { InstanceOfList, InstanceOfResult, WobInfo, WobInfoList } from "./wob";
+import { EventStream, EventStreamItem } from "../models/event-stream";
+import { InstanceOfList, InstanceOfResult, WobInfo, WobInfoList } from "../models/wob";
 
-import { InteractiveChunk, InteractiveChunkComponent } from "./interactive-chunk.component";
+import { InteractiveChunk, InteractiveChunkComponent } from "../shared/interactive-chunk.component";
 
-import { SessionEvent, SessionService } from "./session.service";
-import { TerminalEventService } from "./terminal-event.service";
-import { WobService } from "./wob.service";
+import { SessionEvent, SessionService } from "../session/session.service";
+import { TerminalEventService } from "../api/terminal-event.service";
+import { WobService } from "../api/wob.service";
 
 @Component({
 	moduleId: module.id,

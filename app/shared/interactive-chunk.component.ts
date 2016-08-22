@@ -5,14 +5,14 @@
 */
 import { AfterViewInit, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
 
-import { Tag } from "./tag";
-import { Urls } from "./urls";
-import { WobInfo } from "./wob";
+import { Tag } from "../shared/tag";
+import { Urls } from "../shared/urls";
+import { WobInfo } from "../models/wob";
 
 import { EmbedMediaComponent } from "./embed-media.component";
 
-import { SessionService } from "./session.service";
-import { WobService } from "./wob.service";
+import { SessionService } from "../session/session.service";
+import { WobService } from "../api/wob.service";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />

@@ -1,8 +1,13 @@
+/*
+	flowerbox-web-angular
+	Copyright (C) 2016 Deciare
+	For licensing info, please see LICENCE file.
+*/
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs/Subscription";
 
-import { WobEditState } from "./wob";
+import { WobEditState } from "../models/wob";
 
 @Component({
 	selector: "verb-editor",

@@ -6,17 +6,17 @@
 import { AfterViewChecked, AfterViewInit, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { Subscription } from "rxjs/Subscription";
 
-import { Config } from "./config";
-import { EventStream, EventStreamItem } from "./event-stream";
-import { InteractiveChunk } from "./interactive-chunk.component";
-import { Tag } from "./tag";
-import { Urls } from "./urls";
-import { Property, WobInfo } from "./wob";
+import { Config } from "../config";
+import { EventStream, EventStreamItem } from "../models/event-stream";
+import { InteractiveChunk } from "../shared/interactive-chunk.component";
+import { Tag } from "../shared/tag";
+import { Urls } from "../shared/urls";
+import { Property, WobInfo } from "../models/wob";
 
 import { AutocompleteService } from "./autocomplete.service";
-import { SessionService } from "./session.service";
-import { TerminalEventService } from "./terminal-event.service";
-import { WobService } from "./wob.service";
+import { SessionService } from "../session/session.service";
+import { TerminalEventService } from "../api/terminal-event.service";
+import { WobService } from "../api/wob.service";
 
 import { MaskPipe } from "./mask.pipe";
 

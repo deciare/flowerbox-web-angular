@@ -6,23 +6,23 @@
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 
-import { EditorModule } from "./editor.module";
-import { SessionModule } from "./session.module";
+import { EditorModule } from "./editor/editor.module";
+import { SessionModule } from "./session/session.module";
 
 import { AppComponent } from "./app.component";
 import { appRouting } from "./app.routing";
 
-import { EmbedMediaComponent } from "./embed-media.component";
-import { InfobarComponent } from "./infobar.component";
-import { InteractiveChunkComponent } from "./interactive-chunk.component";
+import { EmbedMediaComponent } from "./shared/embed-media.component";
+import { InfobarComponent } from "./terminal/infobar.component";
+import { InteractiveChunkComponent } from "./shared/interactive-chunk.component";
 import { MainTerminalComponent } from "./main-terminal.component";
-import { TerminalComponent } from "./terminal.component";
+import { TerminalComponent } from "./terminal/terminal.component";
 
-import { MaskPipe} from "./mask.pipe";
+import { MaskPipe} from "./terminal/mask.pipe";
 
-import { AutocompleteService } from "./autocomplete.service";
-import { TerminalEventService } from "./terminal-event.service";
-import { WobService } from "./wob.service";
+import { AutocompleteService } from "./terminal/autocomplete.service";
+import { TerminalEventService } from "./api/terminal-event.service";
+import { WobService } from "./api/wob.service";
 
 @NgModule({
 	imports: [

@@ -5,6 +5,8 @@ typings/
 # (run tsc to create these files)
 app/*.js
 app/*.js.map
+app/*/*.js
+app/*/*.js.map
 
 # Local changes only
 app/config.ts
