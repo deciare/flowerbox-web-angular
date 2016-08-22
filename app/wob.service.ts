@@ -195,7 +195,7 @@ export class WobService {
 			);
 	}
 
-	getProperty(id: number, name: string): Promise<Property> {
+	getProperty(id: number | string, name: string): Promise<Property> {
 		return this.http.get(Urls.wobGetProperty(id, name))
 			.toPromise()
 			.then(

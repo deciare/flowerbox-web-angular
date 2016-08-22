@@ -10,12 +10,13 @@ import { Config } from "./config";
 import { EventStream, EventStreamItem } from "./event-stream";
 import { InteractiveChunk } from "./interactive-chunk.component";
 import { Urls } from "./urls";
-import { WobInfo } from "./wob";
+import { Property, WobInfo } from "./wob";
 
 import { AutocompleteService } from "./autocomplete.service";
 import { SessionService } from "./session.service";
 import { TagService } from "./tag.service";
 import { TerminalEventService } from "./terminal-event.service";
+import { WobService } from "./wob.service";
 
 import { MaskPipe } from "./mask.pipe";
 
@@ -103,7 +104,8 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 		private autocompleteService: AutocompleteService,
 		private sessionService: SessionService,
 		private tagService: TagService,
-		private terminalEventService: TerminalEventService
+		private terminalEventService: TerminalEventService,
+		private wobService: WobService
 	) {
 		this.cursorSpeed = 500; // Cursor blink rate in milliseconds
 		this.inputRight = ""; // User input string to right of cursor
@@ -690,6 +692,20 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 			// Tell the user they've been logged out
 			this.appendLine("text-info", "Logged out. To log back in, type:");
 			this.appendLine("text-info", "  login");
+
+			// This command should be consumed (not executed on server)
+			processOnServer = false;
+		}
+		else if (matches = command.match(/^edit (.*)/)) {
+			var id: number;
+			var name = matches[1];
+
+			// Get wob ID and popup editor window
+			this.wobService.getProperty(name, "name")
+				.then((property: Property) => {
+					id = property.id;
+					window.open("wob/" + id, "WobEditor");
+				});
 
 			// This command should be consumed (not executed on server)
 			processOnServer = false;
