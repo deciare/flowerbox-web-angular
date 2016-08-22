@@ -9,12 +9,12 @@ import { Subscription } from "rxjs/Subscription";
 import { Config } from "./config";
 import { EventStream, EventStreamItem } from "./event-stream";
 import { InteractiveChunk } from "./interactive-chunk.component";
+import { Tag } from "./tag";
 import { Urls } from "./urls";
 import { Property, WobInfo } from "./wob";
 
 import { AutocompleteService } from "./autocomplete.service";
 import { SessionService } from "./session.service";
-import { TagService } from "./tag.service";
 import { TerminalEventService } from "./terminal-event.service";
 import { WobService } from "./wob.service";
 
@@ -103,7 +103,6 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	constructor(
 		private autocompleteService: AutocompleteService,
 		private sessionService: SessionService,
-		private tagService: TagService,
 		private terminalEventService: TerminalEventService,
 		private wobService: WobService
 	) {
@@ -117,7 +116,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 		this.prompt = this.defaultPrompt; // Current command prompt
 
 		// Uniquely identify this terminal
-		this.tag = "TerminalComponent_" + this.tagService.makeTag(4);
+		this.tag = "TerminalComponent_" + Tag.makeTag(4);
 
 		// Initialise empty command line
 		this.deleteLine();

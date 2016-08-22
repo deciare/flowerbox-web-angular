@@ -10,12 +10,11 @@ import { Observer } from "rxjs/Observer";
 import "rxjs/add/operator/toPromise";
 
 import { EventStream, EventStreamItem, WobRef } from "./event-stream";
+import { Tag } from "./tag";
 import { Urls } from "./urls";
 
 import { SessionHttp } from "./session-http.service";
 import { SessionService } from "./session.service";
-import { TagService } from "./tag.service";
-
 
 @Injectable()
 export class TerminalEventService {
@@ -30,14 +29,13 @@ export class TerminalEventService {
 
 	constructor(
 		private http: SessionHttp,
-		private sessionService: SessionService,
-		private tagService: TagService
+		private sessionService: SessionService
 	) {
 		this.lastCheckTime = 0; // UNIX timestamp of most recent query to new-output
 		this.output = new Observable<EventStream>((observer) => {
 			this.observer = observer;
 		});
-		this.tag = this.tagService.makeTag(); // Random tag for identifying commands submitted from this session
+		this.tag = Tag.makeTag(); // Random tag for identifying commands submitted from this session
 
 		// Begin checking for new-events in server
 		setTimeout(() => {

@@ -21,7 +21,6 @@ import { TerminalComponent } from "./terminal.component";
 import { MaskPipe} from "./mask.pipe";
 
 import { AutocompleteService } from "./autocomplete.service";
-import { TagService } from "./tag.service";
 import { TerminalEventService } from "./terminal-event.service";
 import { WobService } from "./wob.service";
 
@@ -43,7 +42,6 @@ import { WobService } from "./wob.service";
 	],
 	providers: [
 		AutocompleteService,
-		TagService,
 		TerminalEventService,
 		WobService
 	],

@@ -3,11 +3,8 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Injectable } from "@angular/core";
-
-@Injectable()
-export class TagService {
-	makeTag(length?: number): string {
+export class Tag {
+	static makeTag(length?: number): string {
 		var text = "";
 	    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 

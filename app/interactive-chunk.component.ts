@@ -5,13 +5,13 @@
 */
 import { AfterViewInit, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
 
+import { Tag } from "./tag";
 import { Urls } from "./urls";
 import { WobInfo } from "./wob";
 
 import { EmbedMediaComponent } from "./embed-media.component";
 
 import { SessionService } from "./session.service";
-import { TagService } from "./tag.service";
 import { WobService } from "./wob.service";
 
 ///<reference path="../typings/globals/jquery/index.d.ts" />
@@ -76,10 +76,9 @@ export class InteractiveChunkComponent implements AfterViewInit{
 
 	constructor(
 		private sessionService: SessionService,
-		private tagService: TagService,
 		private wobService: WobService
 	) {
-		this.tag = "InteractiveChunk_" + this.tagService.makeTag(4);
+		this.tag = "InteractiveChunk_" + Tag.makeTag(4);
 		this.layout = new EventEmitter<any>();
 	}
 
