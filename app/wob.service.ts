@@ -71,7 +71,14 @@ export class WobService {
 			.then((data: WobInfo) => {
 				// Expect a promise to resolve with info about each property
 				data.properties.forEach((property) => {
-					propertyPromises.push(this.getProperty(id, property.value));
+					propertyPromises.push(
+						this.getProperty(id, property.value)
+							.catch((error) => {
+								// If a property cannot be fetched, it's a
+								// security error; move along
+								return null;
+							})
+					);
 				});
 				// Expect a promise to resolve with info about each verb
 				data.verbs.forEach((verb) => {
@@ -140,10 +147,19 @@ export class WobService {
 			.then((values) => {
 				// Add each applied property to the edit state
 				values[0].forEach((property: Property) => {
-					// Exclude drafts and the event stream from fields shown
-					// in the property editor
+					if (!property) {
+						// Some properties may be missing due to security
+						// constraints; simply skip those.
+						return;
+					}
+
+					// Exclude drafts, event stream, and administrative
+					// properties from being shown in the property editor
 					if (!property.name.startsWith(Urls.draftWob) &&
-						property.name != "eventstream") {
+						property.name != "eventstream" &&
+						property.name != "pwhash" &&
+						property.name != "admin"
+					) {
 						state.applied.properties.push(property);
 					}
 				});
