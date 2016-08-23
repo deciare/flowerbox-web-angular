@@ -6,14 +6,15 @@
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 
+import { ApiModule } from "./api/api.module";
 import { EditorModule } from "./editor/editor.module";
 import { SessionModule } from "./session/session.module";
+import { StatusModule } from "./status/status.module";
 
 import { AppComponent } from "./app.component";
 import { appRouting } from "./app.routing";
 
 import { EmbedMediaComponent } from "./shared/embed-media.component";
-import { InfobarComponent } from "./terminal/infobar.component";
 import { InteractiveChunkComponent } from "./shared/interactive-chunk.component";
 import { MainTerminalComponent } from "./main-terminal.component";
 import { TerminalComponent } from "./terminal/terminal.component";
@@ -21,29 +22,26 @@ import { TerminalComponent } from "./terminal/terminal.component";
 import { MaskPipe} from "./terminal/mask.pipe";
 
 import { AutocompleteService } from "./terminal/autocomplete.service";
-import { TerminalEventService } from "./api/terminal-event.service";
-import { WobService } from "./api/wob.service";
 
 @NgModule({
 	imports: [
+		ApiModule,
 		BrowserModule,
 		EditorModule,
 		SessionModule,
+		StatusModule,
 		appRouting
 	],
 	declarations: [
 		AppComponent,
 		EmbedMediaComponent,
-		InfobarComponent,
 		InteractiveChunkComponent,
 		MainTerminalComponent,
 		TerminalComponent,
 		MaskPipe
 	],
 	providers: [
-		AutocompleteService,
-		TerminalEventService,
-		WobService
+		AutocompleteService
 	],
 	bootstrap: [
 		AppComponent
