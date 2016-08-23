@@ -16,11 +16,31 @@
 	<script src="node_modules/systemjs/dist/system.src.js"></script>
 	<script src="systemjs.config.js"></script>
 	<script>
-		// SystemJS: Initialise application
-		System.import('app').catch(function(err){ console.error(err); });
+		// SystemJS: Initialise application and save the Promise that will
+		// inform us once initialisation is complete.
+		window.bootstrap = System.import('app').catch(function(err){ console.error(err); });
 	</script>
 </head>
 <body>
-	<my-app>Loading...</my-app>
+	<my-app></my-app>
+	<div id="splash">
+		<h1><span class="brand primary">Flower</span><span class="brand secondary">box</span></h1>
+		<h2>Loading...</h2>
+		<script>
+			// After bootstrapping is done...
+			window.bootstrap.then(function() {
+				var splash = document.getElementById("splash");
+
+				// Add a class that will begin the animation
+				splash.className = "remove";
+
+				// Remove the splash screen after the exit animation finishes.
+				setTimeout(function() {
+					console.log("Removing splash node");
+					splash.parentNode.removeChild(splash);
+				}, 3000);
+			});
+		</script>
+	</div>
 </body>
 </html>

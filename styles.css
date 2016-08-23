@@ -4,6 +4,33 @@ body {
 	color: #cccccc;
 	font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
 }
+#splash {
+	position: absolute;
+	top: calc(50% - 240px);
+	left: 0;
+	background-image: url("image/logo.png");
+	background-position: center top;
+	background-repeat: no-repeat;
+	color: #999999;
+	padding-top: 320px;
+	text-align: center;
+	width: 100%;
+}
+#splash.remove {
+	transition: all 2s ease-out 1s;
+	-webkit-filter: brightness(200%) contrast(400%);
+	filter: brightness(200%) contrast(400%);
+	opacity: 0;
+}
+#splash.remove h1 {
+	transition: all 2s ease-out 1s;
+	-webkit-filter: brightness(50%);
+	filter: brightness(50%);
+}
+#splash.remove h2 {
+	transition: all 1s;
+	opacity: 0;
+}
 .brand.primary {
 	color: #7F78C6;
 	font-size: 1.2em;
