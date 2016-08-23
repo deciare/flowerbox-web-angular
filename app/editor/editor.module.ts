@@ -4,7 +4,7 @@
 	For licensing info, please see LICENCE file.
 */
 import { NgModule } from "@angular/core";
-import { BrowserModule } from "@angular/platform-browser";
+import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 
 import { ApiModule } from "../api/api.module";
@@ -19,7 +19,7 @@ import { WobEditorResolve } from "./wob-editor-resolve.service";
 @NgModule({
 	imports: [
 		ApiModule,
-		BrowserModule,
+		CommonModule,
 		FormsModule,
 		editorRouting
 	],

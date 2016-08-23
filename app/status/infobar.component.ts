@@ -9,7 +9,7 @@ import { Subscription } from "rxjs/Subscription";
 import { EventStream, EventStreamItem } from "../models/event-stream";
 import { WobInfo, WobInfoList } from "../models/wob";
 
-import { InteractiveChunk, InteractiveChunkComponent } from "../shared/interactive-chunk.component";
+import { InteractiveChunk, InteractiveChunkComponent } from "../embed/interactive-chunk.component";
 
 import { StatusService } from "./status.service";
 

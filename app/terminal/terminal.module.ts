@@ -7,26 +7,32 @@ import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 
 import { ApiModule } from "../api/api.module";
+import { EmbedModule } from "../embed/embed.module";
 import { SessionModule } from "../session/session.module";
 
-import { InfobarComponent } from "./infobar.component";
-import { StatusService } from "./status.service";
+import { TerminalComponent } from "./terminal.component";
+
+import { MaskPipe } from "./mask.pipe";
+
+import { AutocompleteService } from "./autocomplete.service";
 
 @NgModule({
 	imports: [
 		ApiModule,
 		CommonModule,
+		EmbedModule,
 		SessionModule
 	],
 	exports: [
-		InfobarComponent
+		TerminalComponent
 	],
 	declarations: [
-		InfobarComponent
+		MaskPipe,
+		TerminalComponent
 	],
 	providers: [
-		StatusService
+		AutocompleteService
 	]
 })
-export class StatusModule {
+export class TerminalModule {
 }

@@ -8,7 +8,7 @@ import { Subscription } from "rxjs/Subscription";
 
 import { Config } from "../config";
 import { EventStream, EventStreamItem } from "../models/event-stream";
-import { InteractiveChunk } from "../shared/interactive-chunk.component";
+import { InteractiveChunk } from "../embed/interactive-chunk.component";
 import { Tag } from "../shared/tag";
 import { Urls } from "../shared/urls";
 import { Property, WobInfo } from "../models/wob";

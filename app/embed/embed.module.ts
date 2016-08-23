@@ -9,8 +9,8 @@ import { CommonModule } from "@angular/common";
 import { ApiModule } from "../api/api.module";
 import { SessionModule } from "../session/session.module";
 
-import { InfobarComponent } from "./infobar.component";
-import { StatusService } from "./status.service";
+import { EmbedMediaComponent } from "./embed-media.component";
+import { InteractiveChunkComponent } from "./interactive-chunk.component";
 
 @NgModule({
 	imports: [
@@ -19,14 +19,13 @@ import { StatusService } from "./status.service";
 		SessionModule
 	],
 	exports: [
-		InfobarComponent
+		EmbedMediaComponent,
+		InteractiveChunkComponent
 	],
 	declarations: [
-		InfobarComponent
-	],
-	providers: [
-		StatusService
+		EmbedMediaComponent,
+		InteractiveChunkComponent
 	]
 })
-export class StatusModule {
+export class EmbedModule {
 }
