@@ -10,6 +10,7 @@ import { ApiModule } from "../api/api.module";
 import { SessionModule } from "../session/session.module";
 
 import { InfobarComponent } from "./infobar.component";
+import { StatusService } from "./status.service";
 
 @NgModule({
 	imports: [
@@ -22,6 +23,9 @@ import { InfobarComponent } from "./infobar.component";
 	],
 	exports: [
 		InfobarComponent
+	],
+	providers: [
+		StatusService
 	]
 })
 export class StatusModule {

@@ -7,13 +7,11 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Subscription } from "rxjs/Subscription";
 
 import { EventStream, EventStreamItem } from "../models/event-stream";
-import { InstanceOfList, InstanceOfResult, WobInfo, WobInfoList } from "../models/wob";
+import { WobInfo, WobInfoList } from "../models/wob";
 
 import { InteractiveChunk, InteractiveChunkComponent } from "../shared/interactive-chunk.component";
 
-import { SessionEvent, SessionService } from "../session/session.service";
-import { TerminalEventService } from "../api/terminal-event.service";
-import { WobService } from "../api/wob.service";
+import { StatusService } from "./status.service";
 
 @Component({
 	moduleId: module.id,
@@ -51,8 +49,10 @@ import { WobService } from "../api/wob.service";
 	`
 })
 export class InfobarComponent implements OnDestroy, OnInit {
-	private sessionEvents: Subscription;
-	private terminalEvents: Subscription;
+	private locationSubscription: Subscription;
+	private locationContentsSubscription: Subscription;
+	private locationPlayersSubscription: Subscription;
+	private playerSubscription: Subscription;
 
 	location: WobInfo;
 	locationChunk: any;
@@ -62,143 +62,33 @@ export class InfobarComponent implements OnDestroy, OnInit {
 	playerChunk: any;
 
 	constructor(
-		private sessionService: SessionService,
-		private terminalEventService: TerminalEventService,
-		private wobService: WobService
+		private statusService: StatusService
 	) {
 		// Dependency injetion only; no code
 	}
 
-	private handleSessionEvent(event: SessionEvent) {
-		switch(event.type) {
-		case SessionEvent.Login:
-			this.setPlayerInfo(event.player);
-			this.getLocationInfo(this.player.container);
-			this.getLocationContents(this.player.container);
-			break;
-		case SessionEvent.Logout:
-			this.player = undefined;
-			break;
-		}
-	}
-
-	private handleTerminalEvent(event: EventStream) {
-		var hasPlayerMoved = false;
-		var hasOtherMoved = false;
-
-		// If player isn't yet available, then we aren't ready to
-		// process events
-		if (!this.player) {
-			return;
-		}
-
-		event.log.forEach((log) => {
-			switch(log.type) {
-			case EventStreamItem.TypeMoveNotification: // movement
-				var movedWob = log.items[0];
-				var oldLocation = log.items[1];
-				var newLocation = log.items[2];
-
-				if (movedWob.id == this.player.id) {
-					hasPlayerMoved = true;
-				}
-				else {
-					hasOtherMoved = true;
-				}
-				break;
-			}
+	ngOnInit() {
+		this.locationSubscription = this.statusService.location.subscribe((location) => {
+			this.location = location;
 		});
 
-		// If the player moved, update player and location info
-		if (hasPlayerMoved) {
-			this.sessionService.getPlayerInfo()
-				.then((player: WobInfo) => {
-					this.setPlayerInfo(player);
-					this.getLocationInfo(this.player.container);
-					this.getLocationContents(this.player.container);
-				});
-		}
-		// Otherwise, just update the current location's contents.
-		else if (hasOtherMoved) {
-			this.getLocationContents(this.player.container);
-		}
-	}
+		this.locationContentsSubscription = this.statusService.locationContents.subscribe((contents) => {
+			this.locationContents = contents;
+		});
 
-	private getLocationInfo(id: number): Promise<WobInfo> {
-		return this.wobService.getInfo(id)
-			.then((location: WobInfo) => {
-				// Cache location info
-				this.location = location;
-				this.locationChunk = new InteractiveChunk(
-					location.id,
-					InteractiveChunk.TypeWob,
-					location.name
-				);
+		this.locationPlayersSubscription = this.statusService.locationPlayers.subscribe((players) => {
+			this.locationPlayers = players;
+		});
 
-				return location;
-			});
-	}
-
-	private getLocationContents(id: number): Promise<WobInfoList> {
-		return this.wobService.getContents(id)
-			.then((contents: WobInfoList) => {
-				// Cache location contents
-				this.locationContents = contents;
-
-				var ids: number[] = [];
-				contents.list.forEach((wob) => {
-					ids.push(wob.id);
-				});
-
-				var players: WobInfo[] = [];
-				this.wobService.instanceOf(ids, "@player")
-					.then((results: InstanceOfList) => {
-						results.list.forEach((result) => {
-							if (result.isInstance) {
-								players.push(contents.list.find((value: WobInfo) =>  {
-									return value.id == result.id;
-								}));
-							}
-						});
-						this.locationPlayers = new WobInfoList(players);
-					});
-
-				return contents;
-			});
-	}
-
-	private setPlayerInfo(player: WobInfo) {
-		this.player = player;
-		this.playerChunk = new InteractiveChunk(
-			this.player.id,
-			InteractiveChunk.TypeWob,
-			this.player.name
-		);
-	}
-
-	ngOnInit() {
-		// Subscribe to session state change notifications
-		this.sessionEvents = this.sessionService.events
-			.subscribe(this.handleSessionEvent.bind(this));
-
-		// Subscribe to the server event stream
-		this.terminalEvents = this.terminalEventService.output
-			.subscribe(this.handleTerminalEvent.bind(this));
-
-		// If player is already logged in, get player info manually since we
-		// won't be receiving it as part of a login event
-		if (this.sessionService.isLoggedIn()) {
-			this.sessionService.getPlayerInfo()
-				.then((player: WobInfo) => {
-					this.setPlayerInfo(player);
-					this.getLocationInfo(this.player.container);
-					this.getLocationContents(this.player.container);
-				});
-		}
+		this.playerSubscription = this.statusService.player.subscribe((player) => {
+			this.player = player;
+		});
 	}
 
 	ngOnDestroy() {
-		this.sessionEvents.unsubscribe();
-		this.terminalEvents.unsubscribe();
+		this.locationSubscription.unsubscribe();
+		this.locationContentsSubscription.unsubscribe();
+		this.locationPlayersSubscription.unsubscribe();
+		this.playerSubscription.unsubscribe();
 	}
 }
