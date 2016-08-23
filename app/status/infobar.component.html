@@ -1,0 +1,15 @@
+<header>
+	<span class="brand primary">Flower</span><span class="brand secondary">box</span>
+	<span *ngIf="!player">&nbsp;Not logged in</span>
+	<span *ngIf="player">
+		&nbsp;{{player.name}}
+		<span *ngIf="location" aria-label="Current location:">
+			&nbsp;<span class="glyphicon glyphicon-screenshot" title="Location" aria-hidden="true"></span>
+			{{location.name}} (#{{location.id}})
+		</span>
+		<span *ngIf="locationPlayers" aria-label="Number of other players here:">
+			&nbsp;<span class="glyphicon glyphicon-user" title="Other players here" aria-hidden="true"></span>
+			{{locationPlayers.list.length - 1}}
+		</span>
+	</span>
+</header>

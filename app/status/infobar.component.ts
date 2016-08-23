@@ -16,37 +16,10 @@ import { StatusService } from "./status.service";
 @Component({
 	moduleId: module.id,
 	selector: "infobar",
-	styles: [`
-		header {
-			position: fixed;
-			background-color: #111111;
-			background-image: url(image/box8-icon.png);
-			background-position: -5px -3px;
-			background-repeat: no-repeat;
-			border-bottom: 1px solid #666666;
-			box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
-			font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
-			padding-left: 26px;
-			width: 100%;
-		}
-	`],
-	template: `
-		<header>
-			<span class="brand primary">Flower</span><span class="brand secondary">box</span>
-			<span *ngIf="!player">&nbsp;Not logged in</span>
-			<span *ngIf="player">
-				&nbsp;{{player.name}}
-				<span *ngIf="location" aria-label="Current location:">
-					&nbsp;<span class="glyphicon glyphicon-screenshot" title="Location" aria-hidden="true"></span>
-					{{location.name}} (#{{location.id}})
-				</span>
-				<span *ngIf="locationPlayers" aria-label="Number of other players here:">
-					&nbsp;<span class="glyphicon glyphicon-user" title="Other players here" aria-hidden="true"></span>
-					{{locationPlayers.list.length - 1}}
-				</span>
-			</span>
-		</header>
-	`
+	styleUrls: [
+		"./infobar.component.css"
+	],
+	templateUrl: "./infobar.component.html"
 })
 export class InfobarComponent implements OnDestroy, OnInit {
 	private locationSubscription: Subscription;
