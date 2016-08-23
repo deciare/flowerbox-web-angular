@@ -6,8 +6,8 @@
 import { Injectable } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
 import { Cookie } from "ng2-cookies/ng2-cookies";
-import { Observable } from "rxjs/Observable";
-import { Observer } from "rxjs/Observer";
+import { BehaviorSubject } from "rxjs/BehaviorSubject";
+import "rxjs/add/operator/publishReplay";
 import "rxjs/add/operator/toPromise";
 
 import { WobInfo } from "../models/wob";
@@ -31,9 +31,7 @@ export class SessionEvent {
 
 @Injectable()
 export class SessionService {
-	private observer: Observer<any>;
-
-	events: Observable<any>;
+	events: BehaviorSubject<SessionEvent>;
 	adminToken: string;
 	token: string;
 
@@ -43,9 +41,17 @@ export class SessionService {
 		// If authorization cookie exists, use that to initialise the token
 		var authorization = Cookie.get("authorization");
 		this.token = authorization ? authorization : undefined;
-		this.events = new Observable<any>((observer) => {
-			this.observer = observer;
-		});
+
+		// The observable stream should always begin in a logged-out state
+		this.events = new BehaviorSubject<SessionEvent>(new SessionEvent(SessionEvent.Logout));
+
+		// If player is already logged in, send login event
+		if (this.isLoggedIn()) {
+			this.getPlayerInfo()
+				.then((player: WobInfo) => {
+					this.events.next(new SessionEvent(SessionEvent.Login, player));
+				});
+		}
 	}
 
 	handleServerError(response: Response): Promise<void> {
@@ -116,7 +122,7 @@ export class SessionService {
 					// Inform observers this session is logged in
 					this.getPlayerInfo()
 						.then((player: WobInfo) => {
-							this.observer.next(new SessionEvent(admin ? SessionEvent.AdminLogin : SessionEvent.Login, player));
+							this.events.next(new SessionEvent(admin ? SessionEvent.AdminLogin : SessionEvent.Login, player));
 						});
 
 					return Promise.resolve("Login successful");
@@ -140,6 +146,6 @@ export class SessionService {
 		}
 
 		// Inform observers this session is logged out
-		this.observer.next(new SessionEvent(admin ? SessionEvent.AdminLogout : SessionEvent.Logout));
+		this.events.next(new SessionEvent(admin ? SessionEvent.AdminLogout : SessionEvent.Logout));
 	}
 }

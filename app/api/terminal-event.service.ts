@@ -5,8 +5,7 @@
 */
 import { Injectable } from "@angular/core";
 import { Headers, Response } from "@angular/http";
-import { Observable } from "rxjs/Observable";
-import { Observer } from "rxjs/Observer";
+import { BehaviorSubject } from "rxjs/BehaviorSubject";
 import "rxjs/add/operator/publishReplay";
 import "rxjs/add/operator/toPromise";
 
@@ -21,10 +20,9 @@ import { SessionService } from "../session/session.service";
 export class TerminalEventService {
 	private interval: any;
 	private lastCheckTime: number;
-	private observer: Observer<any>;
 	private retryTimer: NodeJS.Timer;
 
-	output: Observable<EventStream>;
+	output: BehaviorSubject<any>;
 	tag: string;
 
 	constructor(
@@ -34,12 +32,9 @@ export class TerminalEventService {
 		this.lastCheckTime = 0; // UNIX timestamp of most recent query to new-output
 		this.tag = Tag.makeTag(); // Random tag for identifying commands submitted from this session
 
-		// Create an observable stream of new-events responses from server.
-		var eventStream = new Observable<EventStream>(this.awaitOutput.bind(this));
-		// Reuse the same observable stream even if there are multiple
-		// subscribers, and immediately supply the last-known value to a new
-		// subscriber.
-		this.output = eventStream.publishReplay(1).refCount();
+		// Begin trying to get new-events from server.
+		this.output = new BehaviorSubject<any>(new EventStream([]));
+		this.awaitOutput();
 	}
 
 	private handleResponse(response: Response): Promise<any> {
@@ -60,9 +55,7 @@ export class TerminalEventService {
 		var error: string = `Data error: ${data.error}`;
 
 		// Notify observer about error
-		if (this.observer) {
-			this.observer.next({ error: error });
-		}
+		this.output.next({ error: error });
 
 		return Promise.reject(`Data error: ${data.error}`);
 	}
@@ -81,9 +74,7 @@ export class TerminalEventService {
 		}
 
 		// Notify observer about error
-		if (this.observer) {
-			this.observer.next({ error: error });
-		}
+		this.output.next({ error: error });
 
 		return Promise.reject(error);
 	}
@@ -97,16 +88,14 @@ export class TerminalEventService {
 	retryOutput() {
 		// If waiting to retry after a server error, clear the timer and retry
 		// immediately
-		if (this.retryTimer && this.observer) {
+		if (this.retryTimer) {
 			clearTimeout(this.retryTimer);
 			this.retryTimer = undefined;
-			this.awaitOutput(this.observer);
+			this.awaitOutput();
 		}
 	}
 
-	awaitOutput(observer: Observer<any>) {
-		this.observer = observer;
-
+	awaitOutput() {
 		return this.getOutput()
 			.then((data: EventStream) => {
 				// console.debug("awaitOutput data:", data);
@@ -120,10 +109,10 @@ export class TerminalEventService {
 				}
 
 				// Notify observer about new output available
-				observer.next(data);
+				this.output.next(data);
 
 				// Send next request
-				this.awaitOutput(observer);
+				this.awaitOutput();
 			})
 			.catch((error) => {
 				// console.debug("awaitOutput error:", error);
