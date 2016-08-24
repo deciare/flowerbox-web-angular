@@ -5,8 +5,7 @@
 */
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { Observable } from "rxjs/Observable";
-import { Observer } from "rxjs/Observer";
+import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
 import "rxjs/add/operator/debounceTime";
 import "rxjs/add/operator/distinctUntilChanged";
@@ -22,17 +21,21 @@ import { WobService } from "../api/wob.service";
 	templateUrl: "./property-editor.component.html"
 })
 export class PropertyEditorComponent implements OnDestroy, OnInit {
-	routeDataSubscription: Subscription;
+	private draftUpdate: Subject<Property>;
+	private draftUpdateSubscription: Subscription;
+	private routeDataSubscription: Subscription;
+	private routeParentParamsSubscription: Subscription;
+
+	asAdmin: boolean;
 	wobId: number;
 	properties: Property[];
 	message: string;
-	draftUpdateObserver: Observer<Property>;
-	draftUpdateSubscription: Subscription;
 
 	constructor(
 		private route: ActivatedRoute,
 		private wobService: WobService
 	) {
+		this.asAdmin = false;
 		this.properties = [];
 	}
 
@@ -71,11 +74,14 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 	ngOnInit() {
 		this.routeDataSubscription = this.route.data.subscribe(this.onWobEditStateChange.bind(this));
 
+		this.routeParentParamsSubscription = this.route.parent.params.subscribe((params) => {
+			this.asAdmin = params["admin"] == "true" ? true : false;
+		});
+
 		// Prepare Observable through which will be notified whenever a form
 		// field changes, and subscribe to it.
-		this.draftUpdateSubscription = new Observable<Property>((observer) => {
-				this.draftUpdateObserver = observer;
-			})
+		this.draftUpdate = new Subject<Property>();
+		this.draftUpdateSubscription = this.draftUpdate
 			.debounceTime(1000)
 			.distinctUntilChanged()
 			.subscribe(this.saveDraft.bind(this));
@@ -83,6 +89,7 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 
 	ngOnDestroy() {
 		this.routeDataSubscription.unsubscribe();
+		this.routeParentParamsSubscription.unsubscribe();
 		this.draftUpdateSubscription.unsubscribe();
 	}
 
@@ -108,8 +115,8 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 			});
 			this.properties[foundIndex] = propertyDraft;
 
-			// draftUpdateObserver should receive a copy of the draft instead
-			// of the applied property.
+			// draftUpdate should receive a copy of the draft instead of the
+			// applied property.
 			property = propertyDraft;
 
 			// Refocus the form field after the template change.
@@ -120,11 +127,11 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		}
 
 		// Notify observer that property has been changed.
-		this.draftUpdateObserver.next(property);
+		this.draftUpdate.next(property);
 	}
 
 	delete(property: Property): Promise<any> {
-		return this.wobService.deleteProperty(this.wobId, property.name)
+		return this.wobService.deleteProperty(this.wobId, property.name, this.asAdmin)
 			.then((data: ModelBase) => {
 				// Remove the property from the form.
 				var foundIndex = this.properties.findIndex((value) => {
@@ -146,7 +153,7 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 				this.message = "Discarded draft of " + property.name;
 				// Attempt to retrieve applied version of property whose draft
 				// was just deleted.
-				return this.wobService.getProperty(this.wobId, property.name);
+				return this.wobService.getProperty(this.wobId, property.name, this.asAdmin);
 			})
 			.then((property: Property) => {
 				// If draft successfully retrieved, replace the form field with
@@ -206,7 +213,7 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 			this.message = error;
 		});
 
-		return this.wobService.setProperties(this.wobId, propertiesObj)
+		return this.wobService.setProperties(this.wobId, propertiesObj, this.asAdmin)
 			.then((data: ModelBase) => {
 				this.message = "All properties saved";
 				toDelete.forEach((property: Property) => {
@@ -220,7 +227,7 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 
 	save(property: Property): Promise<any> {
 		// Save the current value of the form field as an applied property.
-		return this.wobService.setProperty(this.wobId, property.name, property.value)
+		return this.wobService.setProperty(this.wobId, property.name, property.value, this.asAdmin)
 			.then((data: ModelBase) => {
 				this.message = "Saved " + property.name;
 				// Delete the corresponding property draft, if any.

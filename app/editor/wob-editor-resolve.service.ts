@@ -22,6 +22,7 @@ export class WobEditorResolve implements Resolve<WobInfo> {
 
 	resolve(route: ActivatedRouteSnapshot): Observable<any> | Promise<any> | any {
 		var id = +route.parent.params["id"];
-		return this.wobService.getEditState(id);
+		var admin = route.parent.params["admin"] == "true" ? true : false;
+		return this.wobService.getEditState(id, admin);
 	}
 }
