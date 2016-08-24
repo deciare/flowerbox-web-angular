@@ -15,20 +15,21 @@ body {
 	padding-top: 320px;
 	text-align: center;
 	width: 100%;
+	z-index: 1000;
 }
 #splash.remove {
-	transition: all 2s ease-out 1s;
+	transition: all 1.5s ease-out 0.5s;
 	-webkit-filter: brightness(200%) contrast(400%);
 	filter: brightness(200%) contrast(400%);
 	opacity: 0;
 }
 #splash.remove h1 {
-	transition: all 2s ease-out 1s;
+	transition: all 1.5s ease-out 0.5s;
 	-webkit-filter: brightness(50%);
 	filter: brightness(50%);
 }
 #splash.remove h2 {
-	transition: all 1s;
+	transition: all 0.5s;
 	opacity: 0;
 }
 .brand.primary {
