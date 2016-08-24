@@ -52,8 +52,10 @@ export class WobService {
 		}
 	}
 
-	getContents(id: number): Promise<WobInfoList>{
-		return this.http.get(Urls.worldWob + id + "/contents")
+	getContents(id: number, admin?: boolean): Promise<WobInfoList>{
+		return this.http.get(Urls.worldWob + id + "/contents", {
+				admin: admin
+			})
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
@@ -61,7 +63,7 @@ export class WobService {
 			);
 	}
 
-	getEditState(id: number): Promise<WobEditState> {
+	getEditState(id: number, admin?: boolean): Promise<WobEditState> {
 		var state: WobEditState = new WobEditState(id);
 		var propertyPromises: Promise<any>[] = [];
 		var verbPromises: Promise<any>[] = [];
@@ -72,7 +74,7 @@ export class WobService {
 				// Expect a promise to resolve with info about each property
 				data.properties.forEach((property) => {
 					propertyPromises.push(
-						this.getProperty(id, property.value)
+						this.getProperty(id, property.value, admin)
 							.catch((error) => {
 								// If a property cannot be fetched, it's a
 								// security error; move along
@@ -82,7 +84,7 @@ export class WobService {
 				});
 				// Expect a promise to resolve with info about each verb
 				data.verbs.forEach((verb) => {
-					verbPromises.push(this.getVerb(id, verb.value));
+					verbPromises.push(this.getVerb(id, verb.value, admin));
 				});
 
 				// Obtain player's draft for this wob, if any
@@ -172,8 +174,10 @@ export class WobService {
 			});
 	}
 
-	deleteProperty(id: number | string, name: string): Promise<ModelBase> {
-		return this.http.delete(Urls.wobGetProperty(id, name))
+	deleteProperty(id: number | string, name: string, admin?: boolean): Promise<ModelBase> {
+		return this.http.delete(Urls.wobGetProperty(id, name), {
+				admin: admin
+			})
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
@@ -192,8 +196,10 @@ export class WobService {
 			);
 	}
 
-	getInfo(id: number | string): Promise<WobInfo> {
-		return this.http.get(Urls.wobInfo(id))
+	getInfo(id: number | string, admin?: boolean): Promise<WobInfo> {
+		return this.http.get(Urls.wobInfo(id), {
+				admin: admin
+			})
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
@@ -211,8 +217,10 @@ export class WobService {
 			);
 	}
 
-	getProperty(id: number | string, name: string): Promise<Property> {
-		return this.http.get(Urls.wobGetProperty(id, name))
+	getProperty(id: number | string, name: string, admin?: boolean): Promise<Property> {
+		return this.http.get(Urls.wobGetProperty(id, name), {
+				admin: admin
+			})
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
@@ -220,9 +228,11 @@ export class WobService {
 			);
 	}
 
-	setBinaryProperty(id: number, name: string, value: string): Promise<ModelBase> {
+	setBinaryProperty(id: number, name: string, value: string, admin?: boolean): Promise<ModelBase> {
 		return this.http.putFormData(Urls.wobSetBinaryProperties(id), {
 				[name]: JSON.stringify(value)
+			}, {
+				admin: admin
 			})
 			.toPromise()
 			.then(
@@ -247,9 +257,10 @@ export class WobService {
 	 * @params id (number) ID of wob whose property to set
 	 * @params properties (any) As descibed above
 	 */
-	setProperties(id: number, properties: any): Promise<ModelBase> {
-		console.log(properties);
-		return this.http.put(Urls.wobSetProperties(id), properties)
+	setProperties(id: number, properties: any, admin?: boolean): Promise<ModelBase> {
+		return this.http.put(Urls.wobSetProperties(id), properties, {
+				admin: admin
+			})
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
@@ -257,9 +268,11 @@ export class WobService {
 			);
 	}
 
-	setProperty(id: number, name: string, value: string): Promise<ModelBase> {
+	setProperty(id: number, name: string, value: string, admin?: boolean): Promise<ModelBase> {
 		return this.http.put(Urls.wobSetProperties(id), {
 				[name]: value
+			}, {
+				admin: admin
 			})
 			.toPromise()
 			.then(
@@ -294,8 +307,10 @@ export class WobService {
 			);
 	}
 
-	getVerb(id: number, name: string): Promise<Verb> {
-		return this.http.get(Urls.wobGetVerb(id, name))
+	getVerb(id: number, name: string, admin?: boolean): Promise<Verb> {
+		return this.http.get(Urls.wobGetVerb(id, name), {
+				admin: admin
+			})
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
@@ -303,9 +318,11 @@ export class WobService {
 			);
 	}
 
-	setVerb(id: number, name: string, value: string): Promise<ModelBase> {
+	setVerb(id: number, name: string, value: string, admin?: boolean): Promise<ModelBase> {
 		return this.http.putFormData(Urls.wobSetVerbs(id), {
 				[name]: JSON.stringify(value)
+			}, {
+				admin: admin
 			})
 			.toPromise()
 			.then(
