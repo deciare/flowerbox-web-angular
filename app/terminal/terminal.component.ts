@@ -701,8 +701,12 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 			// Get wob ID and popup editor window
 			this.wobService.getProperty(name, "name")
 				.then((property: Property) => {
+					this.appendLine("text-success", "Opening editor in new window");
 					id = property.id;
 					window.open("wob/" + id + (admin ? ";admin=true" : ""), "WobEditor");
+				},
+				(error) => {
+					this.appendLine("text-danger", error);
 				});
 
 			// This command should be consumed (not executed on server)
