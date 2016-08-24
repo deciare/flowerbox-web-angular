@@ -79,7 +79,7 @@ export class StatusService {
 
 		// If player isn't yet available, then we aren't ready to
 		// process events
-		if (!this.player) {
+		if (!this._player) {
 			return;
 		}
 
