@@ -1,9 +1,25 @@
-/* Master Styles */
+/* Site-wide look and feel */
 body {
 	background-color: black;
 	color: #cccccc;
 	font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
 }
+.brand {
+	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
+}
+.brand.primary {
+	color: #7F78C6;
+	font-size: 1.2em;
+}
+.brand.secondary {
+	color: #7FD039;
+	font-size: 0.9em;
+}
+.pre {
+	white-space: pre-wrap;
+}
+
+/* Splash screen */
 #splash {
 	position: absolute;
 	top: calc(50% - 240px);
@@ -32,17 +48,8 @@ body {
 	transition: all 0.5s;
 	opacity: 0;
 }
-.brand.primary {
-	color: #7F78C6;
-	font-size: 1.2em;
-}
-.brand.secondary {
-	color: #7FD039;
-	font-size: 0.9em;
-}
-.pre {
-	white-space: pre-wrap;
-}
+
+/* Bootstrap popovers */
 .popover {
 	background-color: #333333;
 	padding: 0;
@@ -68,6 +75,8 @@ body {
 .popover.bottom > .arrow:after {
 	border-bottom-color: #494949;
 }
+
+/* Bootstrap tooltips */
 .tooltip .tooltip-inner {
 	background-color: #333333;
 }
@@ -82,4 +91,66 @@ body {
 }
 .tooltip.left .tooltip-arrow {
 	border-left-color: #333333;
+}
+
+/* Form controls */
+.control-label {
+	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
+}
+.form-control[type=text],
+.form-control[type=password],
+.btn {
+	background-color: #222222;
+	border: 1px solid #cccccc;
+	border-radius: 0;
+	box-shadow: 0.75em 1em 0 black;
+	color: #cccccc;
+	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
+	margin-bottom: 0.9em;
+}
+.form-control[type=text]:disabled,
+.form-control[type=password]:disabled {
+	border-style: dashed;
+	box-shadow: none;
+}
+.form-control[type=text]:focus,
+.form-control[type=password]:focus {
+	background-color: #cccccc;
+	color: black;
+}
+.btn {
+	margin-left: 12px;
+}
+.btn.btn-default:focus,
+.btn.btn-default:hover {
+	background-color: #cccccc;
+	color: black;
+}
+.btn.btn-primary {
+	border-color: #2e6da4;
+	/*color: #4280b7;*/
+}
+.btn.btn-success {
+	border-color: #4cae4c;
+	/*color: #64c164;*/
+}
+.btn:hover,
+.btn:focus {
+	color: #cccccc;
+}
+.form-control {
+	z-index: 0;
+}
+.input-group-btn {
+	z-index: 10;
+}
+@media(max-width: 767px) {
+	.input-group {
+		padding: 0 1em !important;
+	}
+}
+@media(min-width: 768px) {
+	.input-group {
+		padding-right: 1em !important;
+	}
 }

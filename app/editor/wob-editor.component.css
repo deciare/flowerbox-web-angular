@@ -4,42 +4,6 @@ body {
 textarea {
 	resize: vertical;
 }
-.control-label {
-	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
-}
-.form-control[type=text],
-.btn {
-	background-color: #222222;
-	border: 1px solid #cccccc;
-	border-radius: 0;
-	box-shadow: 0.75em 1em 0 black;
-	color: #cccccc;
-	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
-	margin-bottom: 0.9em;
-}
-.form-control[type=text]:focus {
-	background-color: #cccccc;
-	color: black;
-}
-.btn {
-	margin-left: 12px;
-}
-.btn.btn-default:focus,
-.btn.btn-default:hover {
-	background-color: #cccccc;
-}
-.btn.btn-primary {
-	border-color: #2e6da4;
-}
-.btn.btn-success {
-	border-color: #4cae4c;
-}
-.form-control {
-	z-index: 0;
-}
-.input-group-btn {
-	z-index: 10;
-}
 .inherited label:after,
 .draft label:after {
 	font-size: 0.7em;
@@ -53,6 +17,9 @@ textarea {
 .inherited .input-group-btn button {
 	border-color: #7F7F7F;
 }
+/*.inherited .input-group-btn button {
+	color: #a8a8a8;
+}*/
 .draft {
 	color: #e06e0b;
 }
@@ -60,10 +27,10 @@ textarea {
 .draft .input-group-btn button {
 	border-color: #e06e0b;
 }
+/*.draft .input-group-btn button {
+	color: #f4831f;
+}*/
 @media(max-width: 767px) {
-	.input-group {
-		padding: 0 1em !important;
-	}
 	.inherited label:after {
 		content: ' (inherited)';
 	}
@@ -72,9 +39,6 @@ textarea {
 	}
 }
 @media(min-width: 768px) {
-	.input-group {
-		padding-right: 1em !important;
-	}
 	.inherited label:after {
 		content: '\A(inherited)';
 	}
