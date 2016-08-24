@@ -50,7 +50,7 @@ export class SessionHttp extends Http {
 		// with our token
 		if (options) {
 			if (options.headers) {
-				options.headers.set("Authorization", options.admin ? this.sessionService.adminToken : this.sessionService.token);
+				options.headers.set("Authorization", options.admin === true ? this.sessionService.adminToken : this.sessionService.token);
 			}
 			else {
 				options = {
