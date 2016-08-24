@@ -4,8 +4,7 @@ body {
 textarea {
 	resize: vertical;
 }
-.inherited label:after,
-.draft label:after {
+.status-label {
 	font-size: 0.7em;
 	font-weight: normal;
 	white-space: pre-wrap;
@@ -30,19 +29,8 @@ textarea {
 /*.draft .input-group-btn button {
 	color: #f4831f;
 }*/
-@media(max-width: 767px) {
-	.inherited label:after {
-		content: ' (inherited)';
-	}
-	.draft label:after {
-		content: ' (draft)';
-	}
-}
 @media(min-width: 768px) {
-	.inherited label:after {
-		content: '\A(inherited)';
-	}
-	.draft label:after {
-		content: '\A(draft)';
+	.status-label:before {
+		content: '\A';
 	}
 }

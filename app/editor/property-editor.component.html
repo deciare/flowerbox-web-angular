@@ -1,6 +1,10 @@
 <form class="container form-horizontal">
 	<div *ngFor="let property of properties" class="form-group" [class.draft]="property.isDraft" [class.inherited]="property.id != wobId">
-		<label class="control-label col-sm-2" [attr.for]="property.name">{{property.name}}</label>
+		<label class="control-label col-sm-2" [attr.for]="property.name">
+			{{property.name}}
+			<span *ngIf="property.id != wobId && !property.isDraft" class="status-label">(from #{{property.id}})</span>
+			<span *ngIf="property.isDraft" class="status-label">(draft)</span>
+		</label>
 		<div class="input-group col-sm-10">
 			<input class="form-control" type="text" [id]="property.name" [name]="property.name" [ngModel]="property.value" (ngModelChange)="onChange(property, $event)" />
 			<span class="input-group-btn">
