@@ -193,7 +193,6 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	private handleOutput(data: EventStream) {
 		var isFirstLine: boolean = true;
 
-		// console.debug("Handling output:", data);
 		if (data.error) {
 			// Log detailed error to console
 			console.log("Error received by TerminalComponent.handleOutput():", data.error);
@@ -674,7 +673,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	 *
 	 * @returns (boolean) true if command should be forwarded to server
 	 */
-	localExec(command: string): boolean {
+	localExec(command: string, admin?: boolean): boolean {
 		var matches: string[]; // results of regex matching
 		var processOnServer: boolean = true; // whether to pass through the command to the server
 
@@ -703,7 +702,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 			this.wobService.getProperty(name, "name")
 				.then((property: Property) => {
 					id = property.id;
-					window.open("wob/" + id, "WobEditor");
+					window.open("wob/" + id + (admin ? ";admin=true" : ""), "WobEditor");
 				});
 
 			// This command should be consumed (not executed on server)
@@ -725,7 +724,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 		admin = admin === undefined ? false : admin;
 
 		// Attempt to execute this as a local command
-		if (this.localExec(command)) {
+		if (this.localExec(command, admin)) {
 			// If the command was not consumed by local execution,
 			// attempt to execute it on the server
 			this.terminalEventService.exec(command, admin)
