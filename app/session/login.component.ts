@@ -25,6 +25,7 @@ export class LoginComponent implements OnDestroy, OnInit {
 	alert: any;
 	redirectUrl: string;
 	username: string;
+	usernameDisabled: boolean;
 	password: string;
 
 	constructor(
@@ -32,7 +33,7 @@ export class LoginComponent implements OnDestroy, OnInit {
 		private router: Router,
 		private sessionService: SessionService
 	) {
-		// Dependency injection only; no code
+		this.usernameDisabled = false;
 	}
 
 	private handleSessionEvent(event: SessionEvent) {
@@ -41,6 +42,7 @@ export class LoginComponent implements OnDestroy, OnInit {
 			// password field. This is the expected behaviour when this page
 			// was reached as a privilege escalation prompt.
 			this.username = event.player.globalid;
+			this.usernameDisabled = true;
 			$("#password").focus();
 
 			if (!this.admin) {
@@ -84,6 +86,13 @@ export class LoginComponent implements OnDestroy, OnInit {
 	}
 
 	onSubmit() {
+		if (this.admin && !this.sessionService.isLoggedIn()) {
+			// If this is a privilege escalation prompt and the user isn't
+			// currently logged in, obtain a regular token in addition to
+			// obtaining an admintoken.
+			this.sessionService.login(this.username, this.password, false);
+		}
+
 		this.sessionService.login(this.username, this.password, this.admin)
 			.catch((error) => {
 				this.alert = {
