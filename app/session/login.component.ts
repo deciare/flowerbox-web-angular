@@ -10,33 +10,12 @@ import { Subscription } from "rxjs/Subscription";
 import { SessionEvent, SessionService } from "./session.service";
 
 @Component({
+	moduleId: module.id,
 	selector: "login",
-	template: `
-		<form class="container form-horizontal" (ngSubmit)="onSubmit()">
-			<div class="row">
-				<h2 class="text-center">
-					<span *ngIf="!admin">Log in</span>
-					<span *ngIf="admin">Re-authenticate for administrator access</span>
-				</h2>
-			</div>
-			<div class="form-group">
-				<label for="username" class="control-label col-sm-offset-2 col-sm-2">Username</label>
-				<div class="col-sm-4">
-					<input id="username" name="username" [(ngModel)]="username" class="form-control" type="text" [disabled]="admin" autofocus required />
-				</div>
-			</div>
-			<div class="form-group">
-				<label for="password" class="control-label col-sm-offset-2 col-sm-2">Password</label>
-				<div class="col-sm-4">
-					<input id="password" name="password" [(ngModel)]="password" class="form-control" type="password" required />
-				</div>
-			</div>
-			<div class="form-group text-center">
-				<button class="btn btn-default" type="submit">Log in</button>
-			</div>
-		</form>
-		<div *ngIf="alert" class="alert alert-{{alert.type}}">{{alert.text}}</div>
-	`
+	styleUrls: [
+		"./login.component.css"
+	],
+	templateUrl: "./login.component.html"
 })
 export class LoginComponent implements OnDestroy, OnInit {
 	private routeParamsSubscription: Subscription;

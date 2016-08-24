@@ -1,0 +1,32 @@
+<div class="view-container">
+<form class="container form-horizontal" (ngSubmit)="onSubmit()">
+	<div class="row text-center">
+		<h1><span class="brand primary">Flower</span><span class="brand secondary">box</span></h1>
+	</div>
+	<div class="row">
+		<p class="prompt text-center">
+			<span *ngIf="!admin">Log in</span>
+			<span *ngIf="admin">Re-authenticate for administrator access</span>
+		</p>
+	</div>
+	<div class="form-group">
+		<label for="username" class="control-label col-sm-offset-2 col-sm-2">Username</label>
+		<div class="col-sm-4">
+			<input id="username" name="username" [(ngModel)]="username" class="form-control" type="text" [disabled]="usernameDisabled" autofocus required />
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="password" class="control-label col-sm-offset-2 col-sm-2">Password</label>
+		<div class="col-sm-4">
+			<input id="password" name="password" [(ngModel)]="password" class="form-control" type="password" required />
+		</div>
+	</div>
+	<div class="form-group text-center">
+		<button class="btn btn-primary" type="submit">Log in</button>
+	</div>
+</form>
+<div *ngIf="alert" class="alert alert-{{alert.type}}">{{alert.text}}</div>
+<div class="text-center">
+	<img class="logo" src="image/logo.png" />
+</div>
+</div>
