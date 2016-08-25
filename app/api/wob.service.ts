@@ -9,7 +9,7 @@ import "rxjs/add/operator/toPromise";
 
 import { ModelBase } from "../models/base";
 import { Urls } from "../shared/urls";
-import { Property, Verb, InstanceOfList, WobEditState, WobInfo, WobInfoList } from "../models/wob";
+import { Property, Verb, InstanceOfList, Intrinsic, WobEditState, WobInfo, WobInfoList } from "../models/wob";
 
 import { SessionHttp } from "../session/session-http.service";
 import { SessionService } from "../session/session.service";
@@ -71,6 +71,15 @@ export class WobService {
 		// Get info about this wob
 		return this.getInfo(id)
 			.then((data: WobInfo) => {
+				// Set intrinsic properties
+				state.applied.intrinsics = [
+					new Intrinsic("base", data.base),
+					new Intrinsic("container", data.container),
+					new Intrinsic("owner", data.owner),
+					new Intrinsic("group", data.group),
+					new Intrinsic("perms", data.perms)
+				];
+
 				// Expect a promise to resolve with info about each property
 				data.properties.forEach((property) => {
 					propertyPromises.push(
@@ -116,6 +125,8 @@ export class WobService {
 								key.substring(Urls.draftProperty.length),
 								// Value
 								draft.value[key],
+								// TODO: Permissions
+								undefined,
 								// Sub-property
 								undefined,
 								// Draft status
@@ -132,8 +143,18 @@ export class WobService {
 								draft.value[key].sigs,
 								// Code
 								draft.value[key].code,
+								// TODO: Permissions
+								undefined,
 								// Draft status
-								Verb.StatusDraft
+								false
+							));
+						}
+						else if (key.startsWith(Urls.draftIntrinsic)) {
+							state.draft.intrinsics.push(new Intrinsic(
+								// Intrinsic property name minus prefix
+								key.substring(Urls.draftIntrinsic.length),
+								// Value
+								draft.value[key]
 							));
 						}
 					}

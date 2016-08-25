@@ -8,18 +8,20 @@ import { ModelBase } from "../models/base";
 
 // For returning one property on a wob.
 export class Property extends ModelBase {
-	constructor(id: number, name: string, value: any, sub?: string, isDraft?: boolean) {
+	constructor(id: number, name: string, value: any, perms?: number, sub?: string, isDraft?: boolean) {
 		super(true);
 		this.id = id;
 		this.name = name;
 		this.value = value;
+		this.perms = perms;
 		this.sub = sub;
-		this.isDraft = isDraft ? isDraft : false;
+		this.isDraft = isDraft === undefined ? false : isDraft;
 	}
 
 	public id: number;
 	public name: string;
 	public value: any;
+	public perms: number;
 	public sub: string;
 	public isDraft: boolean;
 }
@@ -30,24 +32,22 @@ export class PropertyList {
 
 // For returning one verb on a wob.
 export class Verb extends ModelBase {
-	constructor(id: number, name: string, sigs: string[], code: string, status?: string) {
+	constructor(id: number, name: string, sigs: string[], code: string, perms?: number, isDraft?: boolean) {
 		super(true);
 		this.id = id;
 		this.name = name;
 		this.sigs = sigs;
 		this.code = code;
-		this.status = status ? status : Verb.StatusApplied;
+		this.perms = perms;
+		this.isDraft = isDraft === undefined ? false : isDraft;
 	}
 
 	public id: number;
 	public name: string;
 	public sigs: string[];
 	public code: string;
-	public status: string;
-
-	// Possible values for status
-	public static StatusApplied = "applied";
-	public static StatusDraft = "draft";
+	public perms: number;
+	public isDraft: boolean;
 }
 
 export class VerbList {
@@ -58,6 +58,7 @@ export class VerbList {
 export class WobInfo extends ModelBase {
 	constructor(id: number, base: number, container: number,
 			name: string, desc: string, globalid: string,
+			owner: number, group: number, perms: number,
 			properties?: AttachedItem[], verbs?: AttachedItem[]) {
 		super(true);
 
@@ -68,6 +69,9 @@ export class WobInfo extends ModelBase {
 		this.name = name;
 		this.desc = desc;
 		this.globalid = globalid;
+		this.owner = owner;
+		this.group = group;
+		this.perms = perms;
 
 		this.properties = properties;
 		this.verbs = verbs;
@@ -77,6 +81,9 @@ export class WobInfo extends ModelBase {
 	public id: number;
 	public base: number;
 	public container: number;
+	public owner: number;
+	public group: number;
+	public perms: number;
 
 	// Common named properties
 	public name: string;
@@ -114,6 +121,7 @@ export class WobInfoList {
 	public list: WobInfo[];
 }
 
+// For returning a result of whether one wob is descended from another.
 export class InstanceOfResult {
 	constructor(id: number, isInstance: boolean) {
 		this.id = id;
@@ -124,6 +132,7 @@ export class InstanceOfResult {
 	public isInstance: boolean;
 }
 
+// For returning a list of InstanceOfResults
 export class InstanceOfList extends ModelBase {
 	constructor(list: InstanceOfResult[]) {
 		super(true);
@@ -133,14 +142,30 @@ export class InstanceOfList extends ModelBase {
 	public list: InstanceOfResult[];
 }
 
+// For representing an intrinsic property in WobEditState,
+export class Intrinsic {
+	constructor(name: string, value: any, isDraft?: boolean) {
+		this.name = name;
+		this.value = value;
+		this.isDraft = isDraft === undefined ? false : isDraft;
+	}
+
+	name: string;
+	value: any;
+	isDraft: boolean;
+}
+
+// For storing the wob editor's initial state.
 export class WobEditState {
 	constructor(id: number) {
 		this.id = id;
 		this.applied = {
+			intrinsics: [],
 			properties: [],
 			verbs: []
 		};
 		this.draft = {
+			intrinsics: [],
 			properties: [],
 			verbs: []
 		}
@@ -148,10 +173,12 @@ export class WobEditState {
 
 	id: number;
 	applied: {
+		intrinsics: Intrinsic[],
 		properties: Property[],
 		verbs: Verb[]
 	};
 	draft: {
+		intrinsics: Intrinsic[],
 		properties: Property[],
 		verbs: Verb[]
 	};
