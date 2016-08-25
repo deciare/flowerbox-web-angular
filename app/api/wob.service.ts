@@ -176,12 +176,12 @@ export class WobService {
 						return;
 					}
 
-					// Exclude drafts, event stream, and administrative
-					// properties from being shown in the property editor
+					// Exclude drafts, event stream, and properties that are
+					// not meant to be edited directly from being shown in the
+					// property editor.
 					if (!property.name.startsWith(Urls.draftWob) &&
 						property.name != "eventstream" &&
-						property.name != "pwhash" &&
-						property.name != "admin"
+						property.name != "pwhash"
 					) {
 						state.applied.properties.push(property);
 					}
