@@ -321,6 +321,13 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 	save(property: Intrinsic | Property): Promise<any> {
 		var savePromise: Promise<ModelBase>;
 
+		// If the value is numeric, convert it to a number; the server is
+		// type-sensitive.
+		var numericValue = +property.value;
+		if (!Number.isNaN(numericValue) && Number.isFinite(numericValue)) {
+			property.value = numericValue;
+		}
+
 		if (this.isIntrinsic(property)) {
 			// Save the given value as an applied intrinsic property.
 			savePromise = this.wobService.setIntrinsic(this.wobId, property.name, property.value, this.asAdmin)

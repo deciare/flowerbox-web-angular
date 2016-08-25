@@ -310,7 +310,7 @@ export class WobService {
 			);
 	}
 
-	setBinaryProperty(id: number, name: string, value: string, admin?: boolean): Promise<ModelBase> {
+	setBinaryProperty(id: number, name: string, value: any, admin?: boolean): Promise<ModelBase> {
 		return this.http.putFormData(Urls.wobSetBinaryProperties(id), {
 				[name]: JSON.stringify(value)
 			}, {
@@ -350,7 +350,7 @@ export class WobService {
 			);
 	}
 
-	setProperty(id: number, name: string, value: string, admin?: boolean): Promise<ModelBase> {
+	setProperty(id: number, name: string, value: any, admin?: boolean): Promise<ModelBase> {
 		return this.http.put(Urls.wobSetProperties(id), {
 				[name]: value
 			}, {
@@ -374,7 +374,7 @@ export class WobService {
 			);
 	}
 
-	setPropertyDraft(id: number, name: string, value: string): Promise<ModelBase> {
+	setPropertyDraft(id: number, name: string, value: any): Promise<ModelBase> {
 		return this.sessionService.getPlayerInfo()
 			.then((player: WobInfo) => {
 				return this.http.put(Urls.worldWob + player.id +  Urls.wobSetDrafts(id),
