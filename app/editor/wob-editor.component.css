@@ -29,6 +29,10 @@ textarea {
 /*.draft .input-group-btn button {
 	color: #f4831f;
 }*/
+.type {
+	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
+	font-size: 1.4em;
+}
 @media(min-width: 768px) {
 	.status-label:before {
 		content: '\A';

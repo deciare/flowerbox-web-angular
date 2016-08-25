@@ -11,7 +11,7 @@ import "rxjs/add/operator/debounceTime";
 import "rxjs/add/operator/distinctUntilChanged";
 
 import { ModelBase } from "../models/base";
-import { Property, WobEditState } from "../models/wob";
+import { Intrinsic, Property, WobEditState, WobInfo } from "../models/wob";
 
 import { WobService } from "../api/wob.service";
 
@@ -21,13 +21,14 @@ import { WobService } from "../api/wob.service";
 	templateUrl: "./property-editor.component.html"
 })
 export class PropertyEditorComponent implements OnDestroy, OnInit {
-	private draftUpdate: Subject<Property>;
+	private draftUpdate: Subject<Intrinsic | Property>;
 	private draftUpdateSubscription: Subscription;
 	private routeDataSubscription: Subscription;
 	private routeParentParamsSubscription: Subscription;
 
 	asAdmin: boolean;
 	wobId: number;
+	intrinsics: Intrinsic[];
 	properties: Property[];
 	message: string;
 
@@ -36,14 +37,29 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		private wobService: WobService
 	) {
 		this.asAdmin = false;
+		this.intrinsics = [];
 		this.properties = [];
 	}
 
+	private isInherited(value: any): boolean {
+		return !this.isIntrinsic(value) && value.id !== this.wobId;
+	}
+
+	private isIntrinsic(value: any): boolean {
+		return value instanceof Intrinsic;
+	}
+
 	private onWobEditStateChange(data: WobEditState): void {
-		var foundIndex: number;
-		var wobEditState = data[0];
+		var wobEditState: WobEditState = data["wobEditState"];
 
 		this.wobId = wobEditState.id;
+
+		// Iterate through applied intrinsic properties
+		wobEditState.applied.intrinsics.forEach((intrinsic) => {
+			// Create array of properties that are currently applied
+			intrinsic.isDraft = false;
+			this.intrinsics.push(intrinsic);
+		});
 
 		// Iterate through applied properties
 		wobEditState.applied.properties.forEach((property) => {
@@ -52,23 +68,43 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 			this.properties.push(property);
 		});
 
-		// Iterate through draft properties
-		wobEditState.draft.properties.forEach((property) => {
-			// Check whether a corresponding applied property exists in
-			// array.
-			property.isDraft = true;
-			if ((foundIndex = this.properties.findIndex((value: Property) => {
-					return value.name == property.name;
-				})) != -1
-			) {
-				// If so, replace that property with draft version.
-				this.properties[foundIndex] = property;
-			}
-			else {
-				// If not, append draft property to end of array
-				this.properties.push(property);
-			}
+		// For each draft that exists for an intrinsic or property, overwrite
+		// what's displayed on the form with the draft version.
+		wobEditState.draft.intrinsics.forEach((intrinsic) => {
+			this.useDraft(intrinsic);
 		});
+		wobEditState.draft.properties.forEach((property) => {
+			this.useDraft(property);
+		});
+	}
+
+	private replaceField(item: Intrinsic | Property) {
+		var foundIndex: number;
+		var arrName = this.isIntrinsic(item) ? "intrinsics" : "properties";
+
+		// Check whether a corresponding applied property exists in
+		// array.
+		if ((foundIndex = this[arrName].findIndex((value) => {
+				return value.name == item.name;
+			})) != -1
+		) {
+			// If so, replace that property with draft version.
+			this[arrName][foundIndex] = item;
+		}
+		else {
+			// If not, append draft property to end of array
+			this[arrName].push(item);
+		}
+	}
+
+	private useApplied(item: Intrinsic | Property) {
+		item.isDraft = false;
+		this.replaceField(item);
+	}
+
+	private useDraft(item: Intrinsic | Property) {
+		item.isDraft = true;
+		this.replaceField(item);
 	}
 
 	ngOnInit() {
@@ -93,7 +129,20 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		this.draftUpdateSubscription.unsubscribe();
 	}
 
-	onChange(property: Property, newValue: string) {
+	refocus(id: string) {
+		// Obtain the current cursor position of the field.
+		var pos = (<HTMLInputElement>$(`#${id}`).focus().get(0)).selectionStart;
+
+		// After DOM updates, reset the cursor to that position.
+		setTimeout(() => {
+			(<HTMLInputElement>$(`#${id}`).focus().get(0)).setSelectionRange(pos, pos);
+		}, 0);
+	}
+
+	onChange(property: any, newValue: string) {
+		var arrName: string;
+		var propertyDraft: Intrinsic | Property;
+
 		if (property.isDraft) {
 			// If the form field that was modified represents a property draft,
 			// simply update the draft with the new value.
@@ -101,73 +150,96 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		}
 		else {
 			// Otherwise, create a draft version of the same property.
-			var propertyDraft = new Property(
-				property.id,
-				property.name,
-				newValue,
-				undefined,
-				true
-			);
+			if (this.isIntrinsic(property)) {
+				arrName = "intrinsics";
+				propertyDraft = new Intrinsic(
+					property.name,
+					newValue,
+					true
+				);
+			}
+			else {
+				arrName = "properties";
+				propertyDraft = new Property(
+					this.wobId,
+					property.name,
+					newValue,
+					property.perms,
+					undefined,
+					true
+				);
+			}
 
 			// Replace the form field with one represending the draft property.
-			var foundIndex = this.properties.findIndex((value: Property) => {
-				return value.name == property.name;
-			});
-			this.properties[foundIndex] = propertyDraft;
+			this.useDraft(propertyDraft);
 
 			// draftUpdate should receive a copy of the draft instead of the
 			// applied property.
 			property = propertyDraft;
 
 			// Refocus the form field after the template change.
-			var pos = (<HTMLInputElement>$(`#${property.name}`).focus().get(0)).selectionStart;
-			setTimeout(() => {
-				(<HTMLInputElement>$(`#${property.name}`).focus().get(0)).setSelectionRange(pos, pos);
-			}, 0);
+			this.refocus(property.name);
 		}
 
 		// Notify observer that property has been changed.
 		this.draftUpdate.next(property);
 	}
 
-	delete(property: Property): Promise<any> {
-		return this.wobService.deleteProperty(this.wobId, property.name, this.asAdmin)
-			.then((data: ModelBase) => {
-				// Remove the property from the form.
-				var foundIndex = this.properties.findIndex((value) => {
-					return value.name == property.name;
+	delete(property: Intrinsic | Property): Promise<any> {
+		if (this.isIntrinsic(property)) {
+			return Promise.reject("Can't delete intrinsic property");
+		}
+		else {
+			return this.wobService.deleteProperty(this.wobId, property.name, this.asAdmin)
+				.then((data: ModelBase) => {
+					// Remove the property from the form.
+					var foundIndex = this.properties.findIndex((value) => {
+						return value.name == property.name;
+					});
+					if (foundIndex != -1) {
+						this.properties.splice(foundIndex, 1);
+					}
+					this.message = "Deleted property " + property.name;
+				},
+				(error) => {
+					this.message = "Could not delete property: " + error;
 				});
-				if (foundIndex != -1) {
-					this.properties.splice(foundIndex, 1);
-				}
-				this.message = "Deleted property " + property.name;
-			},
-			(error) => {
-				this.message = "Could not delete property: " + error;
-			});
+		}
 	}
 
-	deleteDraft(property: Property): Promise<any> {
-		return this.wobService.deletePropertyDraft(this.wobId, property.name)
+	deleteDraft(property: Intrinsic | Property): Promise<any> {
+		var deleteDraftPromise: Promise<ModelBase>;
+
+		if (this.isIntrinsic(property)) {
+			deleteDraftPromise = this.wobService.deleteIntrinsicDraft(this.wobId, property.name)
+		}
+		else {
+			deleteDraftPromise = this.wobService.deletePropertyDraft(this.wobId, property.name)
+		}
+
+		return deleteDraftPromise
 			.then((data: ModelBase) => {
 				this.message = "Discarded draft of " + property.name;
 				// Attempt to retrieve applied version of property whose draft
 				// was just deleted.
-				return this.wobService.getProperty(this.wobId, property.name, this.asAdmin);
+				if (this.isIntrinsic(property)) {
+					return this.wobService.getInfo(this.wobId)
+						.then((info: WobInfo) => {
+							return new Intrinsic(property.name, info[property.name]);
+						});
+				}
+				else {
+					return this.wobService.getProperty(this.wobId, property.name, this.asAdmin);
+				}
 			})
 			.then((property: Property) => {
 				// If draft successfully retrieved, replace the form field with
 				// the applied version of the same property.
-				property.isDraft = false;
-				var foundIndex = this.properties.findIndex((value) => {
-					return value.name == property.name;
-				});
-				if (foundIndex == -1) {
-					this.properties.push(property);
-				}
-				else {
-					this.properties[foundIndex] = property;
-				}
+				this.useApplied(property);
+
+				// Refocus form field after it is replaced
+				this.refocus(property.name);
+
 				this.message += " and restored applied value";
 			},
 			(error) => {
@@ -184,10 +256,17 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		if (name && name.trim() != "") {
 			// Create form field for the new property.
 			this.properties.push(new Property(
+				// New property belongs to the wob being edited
 				this.wobId,
+				// User provides name
 				name,
+				// Empty value
 				"",
+				// Default permission: inherit server default
 				undefined,
+				// No sub-property
+				undefined,
+				// Is a draft
 				true
 			));
 
@@ -199,8 +278,24 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 	}
 
 	saveAll(): Promise<any> {
+		var saveIntrinsicsPromise: Promise<ModelBase>;
+		var savePropertiesPromise: Promise<ModelBase>;
+		var toDelete: any[] = [];
+
+		// Generate list of intrinsic properties to save.
+		var intrinsicsObj = {};
+		this.intrinsics.forEach((intrinsic: Intrinsic) => {
+			intrinsicsObj[intrinsic.name] = intrinsic.value;
+
+			// Draft properties should be deleted after the saveAll() completes
+			if (intrinsic.isDraft) {
+				toDelete.push(intrinsic);
+			}
+		});
+		saveIntrinsicsPromise = this.wobService.setIntrinsics(this.wobId, intrinsicsObj, this.asAdmin);
+
+		// Generate list of properties to save.
 		var propertiesObj = {};
-		var toDelete: Property[] = [];
 		this.properties.forEach((property: Property) => {
 			propertiesObj[property.name] = property.value;
 
@@ -208,16 +303,14 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 			if (property.isDraft) {
 				toDelete.push(property);
 			}
-		},
-		(error) => {
-			this.message = error;
 		});
+		savePropertiesPromise = this.wobService.setProperties(this.wobId, propertiesObj, this.asAdmin);
 
-		return this.wobService.setProperties(this.wobId, propertiesObj, this.asAdmin)
-			.then((data: ModelBase) => {
+		return Promise.all([ saveIntrinsicsPromise, savePropertiesPromise ])
+			.then((data: ModelBase[]) => {
 				this.message = "All properties saved";
-				toDelete.forEach((property: Property) => {
-					return this.deleteDraft(property);
+				toDelete.forEach((item: Intrinsic | Property) => {
+					return this.deleteDraft(item);
 				});
 			},
 			(error) => {
@@ -225,9 +318,19 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 			});
 	}
 
-	save(property: Property): Promise<any> {
-		// Save the current value of the form field as an applied property.
-		return this.wobService.setProperty(this.wobId, property.name, property.value, this.asAdmin)
+	save(property: Intrinsic | Property): Promise<any> {
+		var savePromise: Promise<ModelBase>;
+
+		if (this.isIntrinsic(property)) {
+			// Save the given value as an applied intrinsic property.
+			savePromise = this.wobService.setIntrinsic(this.wobId, property.name, property.value, this.asAdmin)
+		}
+		else {
+			// Save the given value as an applied property.
+			savePromise = this.wobService.setProperty(this.wobId, property.name, property.value, this.asAdmin)
+		}
+
+		return savePromise
 			.then((data: ModelBase) => {
 				this.message = "Saved " + property.name;
 				// Delete the corresponding property draft, if any.
@@ -241,8 +344,17 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 			});
 	}
 
-	saveDraft(property: Property): Promise<any> {
-		return this.wobService.setPropertyDraft(this.wobId, property.name, property.value)
+	saveDraft(property: Intrinsic | Property): Promise<any> {
+		var saveDraftPromise: Promise<ModelBase>;
+
+		if (this.isIntrinsic(property)) {
+			saveDraftPromise = this.wobService.setIntrinsicDraft(this.wobId, property.name, property.value)
+		}
+		else {
+			saveDraftPromise = this.wobService.setPropertyDraft(this.wobId, property.name, property.value)
+		}
+
+		return saveDraftPromise
 			.then((data: ModelBase) => {
 				this.message = "Saved draft of " + property.name;
 			},

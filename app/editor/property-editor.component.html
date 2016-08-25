@@ -1,23 +1,29 @@
 <form class="container form-horizontal">
-	<div *ngFor="let property of properties" class="form-group" [class.draft]="property.isDraft" [class.inherited]="property.id != wobId">
-		<label class="control-label col-sm-2" [attr.for]="property.name">
-			{{property.name}}
-			<span *ngIf="property.id != wobId && !property.isDraft" class="status-label">(from #{{property.id}})</span>
-			<span *ngIf="property.isDraft" class="status-label">(draft)</span>
-		</label>
-		<div class="input-group col-sm-10">
-			<input class="form-control" type="text" [id]="property.name" [name]="property.name" [ngModel]="property.value" (ngModelChange)="onChange(property, $event)" />
-			<span class="input-group-btn">
-				<button *ngIf="property.isDraft" class="btn btn-default" type="button" (click)="deleteDraft(property)" title="Discard draft" aria-label="Discard draft">
-					<span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
-				</button>
-				<button *ngIf="!property.isDraft" class="btn btn-default" type="button" (click)="delete(property)" title="Remove property" aria-label="Remove property">
-					<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-				</button>
-				<button class="btn btn-default" type="button" (click)="save(property)" title="Save property" aria-label="Save property">
-					<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>
-				</button>
-			</span>
+	<div *ngFor="let propertiesOfType of [ properties, intrinsics ]">
+		<div *ngFor="let property of propertiesOfType; let i = index" class="form-group" [class.draft]="property.isDraft" [class.inherited]="isInherited(property)">
+			<h2 class="type" *ngIf="i == 0">
+				<span *ngIf="!isIntrinsic(property)">Properties</span>
+				<span *ngIf="isIntrinsic(property)">Intrinsic properties</span>
+			</h2>
+			<label class="control-label col-sm-2" [attr.for]="property.name">
+				{{property.name}}
+				<span *ngIf="isInherited(property) && !property.isDraft" class="status-label">(from #{{property.id}})</span>
+				<span *ngIf="property.isDraft" class="status-label">(draft)</span>
+			</label>
+			<div class="input-group col-sm-10">
+				<input class="form-control" type="text" [id]="property.name" [name]="property.name" [ngModel]="property.value" (ngModelChange)="onChange(property, $event)" />
+				<span class="input-group-btn">
+					<button *ngIf="property.isDraft" class="btn btn-default" type="button" (click)="deleteDraft(property)" title="Discard draft" aria-label="Discard draft">
+						<span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+					</button>
+					<button *ngIf="!property.isDraft && !isIntrinsic(property)" class="btn btn-default" type="button" (click)="delete(property)" title="Remove property" aria-label="Remove property">
+						<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+					</button>
+					<button class="btn btn-default" type="button" (click)="save(property)" title="Save property" aria-label="Save property">
+						<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>
+					</button>
+				</span>
+			</div>
 		</div>
 	</div>
 	<div class="form-group">
@@ -28,4 +34,3 @@
 	</div>
 </form>
 {{message}}<br />
-{{properties | json}}<br />

@@ -23,16 +23,16 @@ const editorRoutes: Routes = [
 			{
 				path: "properties",
 				component: PropertyEditorComponent,
-				resolve: [
-					WobEditorResolve
-				]
+				resolve: {
+					wobEditState: WobEditorResolve
+				}
 			},
 			{
 				path: "verbs",
 				component: VerbEditorComponent,
-				resolve: [
-					WobEditorResolve
-				]
+				resolve: {
+					wobEditState: WobEditorResolve
+				}
 			},
 			{
 				path: "",
