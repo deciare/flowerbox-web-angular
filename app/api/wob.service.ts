@@ -195,6 +195,17 @@ export class WobService {
 			});
 	}
 
+	deleteIntrinsicDraft(id: number | string, name: string): Promise<ModelBase> {
+		return this.sessionService.getPlayerInfo()
+			.then((player: WobInfo) => {
+				return this.http.delete(Urls.worldWob + player.id + Urls.wobGetIntrinsicDraft(id, name)).toPromise();
+			})
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
 	deleteProperty(id: number | string, name: string, admin?: boolean): Promise<ModelBase> {
 		return this.http.delete(Urls.wobGetProperty(id, name), {
 				admin: admin
@@ -222,6 +233,56 @@ export class WobService {
 				admin: admin
 			})
 			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	setIntrinsics(id: number, intrinsics: any, admin?: boolean): Promise<ModelBase> {
+		return this.http.put(Urls.wobInfo(id), intrinsics, {
+			admin: admin
+		})
+		.toPromise()
+		.then(
+			this.handleResponse.bind(this),
+			this.handleServerError.bind(this)
+		);
+	}
+
+	setIntrinsic(id: number, name: string, value: any, admin?: boolean): Promise<ModelBase> {
+		return this.http.put(Urls.wobInfo(id), {
+				[name]: value
+			}, {
+				admin: admin
+			})
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	getIntrinsicDraft(id: number, name: string): Promise<Intrinsic> {
+		return this.sessionService.getPlayerInfo()
+			.then((player: WobInfo) => {
+				return this.http.get(Urls.worldWob + player.id + Urls.wobGetIntrinsicDraft(id, name)).toPromise();
+			})
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	setIntrinsicDraft(id: number, name: string, value: any): Promise<ModelBase> {
+		return this.sessionService.getPlayerInfo()
+			.then((player: WobInfo) => {
+				return this.http.put(Urls.worldWob + player.id +  Urls.wobSetDrafts(id),
+					{
+						[Urls.draftIntrinsic + name]: value
+					})
+					.toPromise();
+			})
 			.then(
 				this.handleResponse.bind(this),
 				this.handleServerError.bind(this)

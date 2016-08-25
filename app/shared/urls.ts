@@ -13,6 +13,7 @@ export class Urls {
 	static worldWob: string = Config.server + "world/wob/";
 
 	static draftWob: string = "__draft_wob_";
+	static draftIntrinsic: string = "__intrinsic_";
 	static draftProperty: string = "__property_";
 	static draftVerb: string = "__verb_";
 
@@ -22,6 +23,10 @@ export class Urls {
 
 	static wobInstanceOf(ids: number | string, ancestorId: number | string): string {
 		return Urls.worldWob + ids + "/instanceof/" + ancestorId;
+	}
+
+	static wobGetIntrinsicDraft(id: number | string, name: string) {
+		return "/property/" + Urls.draftWob + id + "/sub/" + Urls.draftIntrinsic + name;
 	}
 
 	static wobGetProperty(id: number | string, name: string, sub?: string): string {
