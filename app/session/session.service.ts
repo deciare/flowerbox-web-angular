@@ -31,6 +31,7 @@ export class SessionEvent {
 
 @Injectable()
 export class SessionService {
+	canHasAdmin: boolean;
 	events: BehaviorSubject<SessionEvent>;
 	adminToken: string;
 	token: string;
@@ -38,6 +39,8 @@ export class SessionService {
 	constructor(
 		private http: Http
 	) {
+		this.canHasAdmin = false; // can this player authenticate as admin?
+
 		// If authorization cookie exists, use that to initialise the token
 		var authorization = Cookie.get("authorization");
 		this.token = authorization ? authorization : undefined;
@@ -88,6 +91,20 @@ export class SessionService {
 			.toPromise()
 			.then((response: Response) => {
 				var data = response.json();
+
+				// Is this player an administrator?
+				this.http.get(
+						Urls.wobGetProperty(data.id, "admin"),
+						{ headers: headers }
+					)
+					.toPromise()
+					.then((response: Response) => {
+						var property = response.json();
+						this.canHasAdmin = property.value;
+					},
+					(error) => {
+						this.canHasAdmin = false;
+					});
 
 				if (data.success) {
 					return Promise.resolve(data);
