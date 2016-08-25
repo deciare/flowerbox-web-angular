@@ -4,6 +4,11 @@ body {
 textarea {
 	resize: vertical;
 }
+.admin-banner {
+	font-size: 1.4em;
+	margin-bottom: -0.9em;
+	text-align: right;
+}
 .status-label {
 	font-size: 0.7em;
 	font-weight: normal;
@@ -29,9 +34,10 @@ textarea {
 /*.draft .input-group-btn button {
 	color: #f4831f;
 }*/
-.type {
+.section-header {
 	color: #d1ca53;
-	font-size: 1.4em;
+	font-size: 1.2em;
+	margin-bottom: 0.9em;
 }
 @media(min-width: 768px) {
 	.status-label:before {

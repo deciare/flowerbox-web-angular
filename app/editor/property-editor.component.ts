@@ -4,7 +4,7 @@
 	For licensing info, please see LICENCE file.
 */
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
 import "rxjs/add/operator/debounceTime";
@@ -13,6 +13,7 @@ import "rxjs/add/operator/distinctUntilChanged";
 import { ModelBase } from "../models/base";
 import { Intrinsic, Property, WobEditState, WobInfo } from "../models/wob";
 
+import { SessionService } from "../session/session.service";
 import { WobService } from "../api/wob.service";
 
 @Component({
@@ -34,11 +35,17 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 
 	constructor(
 		private route: ActivatedRoute,
+		private router: Router,
+		private sessionService: SessionService,
 		private wobService: WobService
 	) {
 		this.asAdmin = false;
 		this.intrinsics = [];
 		this.properties = [];
+	}
+
+	private canHasAdmin(): boolean {
+		return this.sessionService.canHasAdmin;
 	}
 
 	private isInherited(value: any): boolean {
@@ -129,16 +136,6 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		this.draftUpdateSubscription.unsubscribe();
 	}
 
-	refocus(id: string) {
-		// Obtain the current cursor position of the field.
-		var pos = (<HTMLInputElement>$(`#${id}`).focus().get(0)).selectionStart;
-
-		// After DOM updates, reset the cursor to that position.
-		setTimeout(() => {
-			(<HTMLInputElement>$(`#${id}`).focus().get(0)).setSelectionRange(pos, pos);
-		}, 0);
-	}
-
 	onChange(property: any, newValue: string) {
 		var arrName: string;
 		var propertyDraft: Intrinsic | Property;
@@ -183,6 +180,20 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 
 		// Notify observer that property has been changed.
 		this.draftUpdate.next(property);
+	}
+
+	refocus(id: string) {
+		// Obtain the current cursor position of the field.
+		var pos = (<HTMLInputElement>$(`#${id}`).focus().get(0)).selectionStart;
+
+		// After DOM updates, reset the cursor to that position.
+		setTimeout(() => {
+			(<HTMLInputElement>$(`#${id}`).focus().get(0)).setSelectionRange(pos, pos);
+		}, 0);
+	}
+
+	reloadAsAdmin() {
+		this.router.navigate([ '/wob', this.wobId, { admin: true } ]);
 	}
 
 	delete(property: Intrinsic | Property): Promise<any> {

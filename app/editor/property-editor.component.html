@@ -1,10 +1,13 @@
 <form class="container form-horizontal">
-	<div *ngFor="let propertiesOfType of [ properties, intrinsics ]">
+	<div class="row">
+		<aside *ngIf="asAdmin" class="admin-banner monospace text-danger col-sm-12"><span aria-hidden="true">/* </span>editing as admin<span aria-hidden="true"> */</span></aside>
+	</div>
+	<section *ngFor="let propertiesOfType of [ properties, intrinsics ]">
+		<header class="section-header col-sm-12">
+			<span *ngIf="!isIntrinsic(propertiesOfType[0])">Properties</span>
+			<span *ngIf="isIntrinsic(propertiesOfType[0])">Intrinsic properties</span>
+		</header>
 		<div *ngFor="let property of propertiesOfType; let i = index" class="form-group" [class.draft]="property.isDraft" [class.inherited]="isInherited(property)">
-			<h2 class="type" *ngIf="i == 0">
-				<span *ngIf="!isIntrinsic(property)">Properties</span>
-				<span *ngIf="isIntrinsic(property)">Intrinsic properties</span>
-			</h2>
 			<label class="control-label col-sm-2" [attr.for]="property.name">
 				{{property.name}}
 				<span *ngIf="isInherited(property) && !property.isDraft" class="status-label">(from #{{property.id}})</span>
@@ -25,9 +28,10 @@
 				</span>
 			</div>
 		</div>
-	</div>
+	</section>
 	<div class="form-group">
 		<div class="col-sm-12 text-right">
+			<button *ngIf="!asAdmin && canHasAdmin()" class="btn btn-danger" type="button" (click)="reloadAsAdmin()">Edit as admin</button>
 			<button class="btn btn-success" type="button" (click)="newDraft()">New property</button>
 			<button class="btn btn-primary" type="button" (click)="saveAll()">Save all properties</button>
 		</div>
