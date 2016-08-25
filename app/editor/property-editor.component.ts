@@ -48,6 +48,32 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		return this.sessionService.canHasAdmin;
 	}
 
+	private fixType(value: any): any {
+		// If the value is numeric, convert it to a number; the server is
+		// type-sensitive.
+		var numericValue = +value;
+		if (!Number.isNaN(numericValue) && Number.isFinite(numericValue)) {
+			return numericValue;
+		}
+		// If value appears to be boolean, conver it to an actual boolean value.
+		else if (value === "true") {
+			return true;
+		}
+		else if (value === "false") {
+			return false;
+		}
+		else if (value === "null") {
+			return null;
+		}
+		else if (value === "undefined") {
+			return undefined;
+		}
+		// If no primitive type matched, return the original value.
+		else {
+			return value;
+		}
+	}
+
 	private isInherited(value: any): boolean {
 		return !this.isIntrinsic(value) && value.id !== this.wobId;
 	}
@@ -296,7 +322,7 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		// Generate list of intrinsic properties to save.
 		var intrinsicsObj = {};
 		this.intrinsics.forEach((intrinsic: Intrinsic) => {
-			intrinsicsObj[intrinsic.name] = intrinsic.value;
+			intrinsicsObj[intrinsic.name] = this.fixType(intrinsic.value);
 
 			// Draft properties should be deleted after the saveAll() completes
 			if (intrinsic.isDraft) {
@@ -308,7 +334,7 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		// Generate list of properties to save.
 		var propertiesObj = {};
 		this.properties.forEach((property: Property) => {
-			propertiesObj[property.name] = property.value;
+			propertiesObj[property.name] = this.fixType(property.value);
 
 			// Draft properties should be deleted after the saveAll() completes
 			if (property.isDraft) {
@@ -332,19 +358,8 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 	save(property: Intrinsic | Property): Promise<any> {
 		var savePromise: Promise<ModelBase>;
 
-		// If the value is numeric, convert it to a number; the server is
-		// type-sensitive.
-		var numericValue = +property.value;
-		if (!Number.isNaN(numericValue) && Number.isFinite(numericValue)) {
-			property.value = numericValue;
-		}
-		// If value appears to be boolean, conver it to an actual boolean value.
-		else if (property.value === "true") {
-			property.value = true;
-		}
-		else if (property.value === "false") {
-			property.value = false;
-		}
+		// All form fields are strings, but server may expect other type.
+		property.value = this.fixType(property.value);
 
 		if (this.isIntrinsic(property)) {
 			// Save the given value as an applied intrinsic property.
@@ -371,6 +386,9 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 
 	saveDraft(property: Intrinsic | Property): Promise<any> {
 		var saveDraftPromise: Promise<ModelBase>;
+
+		// All form fields are strings, but server may expect other type.
+		property.value = this.fixType(property.value);
 
 		if (this.isIntrinsic(property)) {
 			saveDraftPromise = this.wobService.setIntrinsicDraft(this.wobId, property.name, property.value)
