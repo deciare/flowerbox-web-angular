@@ -338,6 +338,13 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		if (!Number.isNaN(numericValue) && Number.isFinite(numericValue)) {
 			property.value = numericValue;
 		}
+		// If value appears to be boolean, conver it to an actual boolean value.
+		else if (property.value === "true") {
+			property.value = true;
+		}
+		else if (property.value === "false") {
+			property.value = false;
+		}
 
 		if (this.isIntrinsic(property)) {
 			// Save the given value as an applied intrinsic property.
