@@ -2,9 +2,6 @@
 body {
 	background-color: black;
 	color: #cccccc;
-	font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
-}
-.brand {
 	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
 }
 .brand.primary {
@@ -94,9 +91,6 @@ body {
 }
 
 /* Form controls */
-.control-label {
-	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
-}
 .form-control[type=text],
 .form-control[type=password],
 .btn {
@@ -105,7 +99,6 @@ body {
 	border-radius: 0;
 	box-shadow: 0.75em 1em 0 black;
 	color: #cccccc;
-	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
 	margin-bottom: 0.9em;
 }
 .form-control[type=text]:disabled,

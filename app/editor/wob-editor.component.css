@@ -30,7 +30,7 @@ textarea {
 	color: #f4831f;
 }*/
 .type {
-	font-family: Consolas, Monaco, "Liberation Mono", Fixed, monospace;
+	color: #d1ca53;
 	font-size: 1.4em;
 }
 @media(min-width: 768px) {
