@@ -1,7 +1,7 @@
 /* Due to scoping, body styles won't work here; use our own container */
 .view-container {
 	background-color: #222222;
-	height: 100vh;
+	min-height: 100vh;
 	width: 100%;
 }
 img.logo {

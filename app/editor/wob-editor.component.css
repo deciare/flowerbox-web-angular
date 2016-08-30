@@ -1,20 +1,32 @@
-body {
-	background-color: #222222;
-}
 textarea {
+	margin-bottom: 0.9em;
+	min-height: 128px;
 	resize: vertical;
+	width: 100%;
+}
+.view-container {
+	background-color: #222222;
+	min-height: 100vh;
+	width: 100%;
 }
 .admin-banner {
 	font-size: 1.4em;
 	margin-bottom: -0.9em;
 	text-align: right;
 }
+.container {
+	padding-right: calc(15px + 0.75em);
+}
 .status-label {
 	font-size: 0.7em;
 	font-weight: normal;
 	white-space: pre-wrap;
 }
-.inherited {
+.item-list a {
+	color: #cccccc;
+}
+.inherited,
+.inherited a {
 	color: #7F7F7F;
 }
 .inherited input.form-control[type=text],
@@ -24,7 +36,8 @@ textarea {
 /*.inherited .input-group-btn button {
 	color: #a8a8a8;
 }*/
-.draft {
+.draft,
+.draft a {
 	color: #e06e0b;
 }
 .draft input.form-control[type=text],
@@ -43,4 +56,39 @@ textarea {
 	.status-label:before {
 		content: '\A';
 	}
+}
+.item-list {
+	border-right: 1px solid #cccccc;
+	list-style: none;
+	padding-right: 0;
+	text-align: right;
+	position: relative;
+}
+.item-list li {
+	background-color: #1a1a1a;
+	border: 1px solid #cccccc;
+	margin-right: -1px; /* tab background overlaps container to hide border */
+	margin-bottom: -1px; /* tabs overlap to share border with adjacent tab */
+	margin-left: 0.75em; /* de-emphasise unselected tab */
+	padding: 0.5em;
+	position: relative;
+}
+.item-list li.selected {
+	background-color: #222222;
+	border-right: none;
+	box-shadow: 0.5em 1.6em 0 -0.6em rgba(0, 0, 0, 0.75);
+	margin-left: 0;
+	z-index: 10;
+}
+.item-detail-container {
+	/*padding-right: 1em;*/
+}
+.item-detail {
+	background-color: #222222;
+	border: 1px solid #cccccc;
+	border-left: none;
+	box-shadow: 0.75em 1em 0 rgba(0, 0, 0, 0.75);
+	padding-top: 0.9em;
+	padding-bottom: 0.9em;
+	z-index: 20;
 }

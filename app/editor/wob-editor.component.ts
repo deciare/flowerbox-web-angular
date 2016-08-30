@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Component, ViewEncapsulation } from "@angular/core";
+import { Component } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs/Subscription";
 
@@ -12,17 +12,10 @@ import { SessionService } from "../session/session.service";
 @Component({
 	moduleId: module.id,
 	selector: "wob-editor",
-	encapsulation: ViewEncapsulation.None,
 	styleUrls: [
 		"./wob-editor.component.css"
 	],
-	template: `
-		<nav>
-			<a [routerLink]="['properties']" routerLinkActive="active">Properties</a>
-			<a [routerLink]="['verbs']" routerLinkActive="active">Verbs</a>
-		</nav>
-		<router-outlet></router-outlet>
-	`
+	templateUrl: "./wob-editor.component.html"
 })
 export class WobEditorComponent {
 	protected wobId: number;

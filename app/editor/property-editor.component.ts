@@ -21,6 +21,9 @@ import { WobService } from "../api/wob.service";
 @Component({
 	moduleId: module.id,
 	selector: "property-editor",
+	styleUrls: [
+		"wob-editor.component.css"
+	],
 	templateUrl: "./property-editor.component.html"
 })
 export class PropertyEditorComponent extends WobEditorComponent implements OnDestroy, OnInit {
