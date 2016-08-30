@@ -13,7 +13,10 @@ import { editorRouting } from "./editor.routing";
 
 import { PropertyEditorComponent } from "./property-editor.component";
 import { VerbEditorComponent } from "./verb-editor.component";
+import { VerbformEditorComponent } from "./verbform-editor.component";
 import { WobEditorComponent } from "./wob-editor.component";
+
+import { KeyValuePipe } from "./key-value.pipe";
 
 import { WobEditorResolve } from "./wob-editor-resolve.service";
 
@@ -26,8 +29,10 @@ import { WobEditorResolve } from "./wob-editor-resolve.service";
 		editorRouting
 	],
 	declarations: [
+		KeyValuePipe,
 		PropertyEditorComponent,
 		VerbEditorComponent,
+		VerbformEditorComponent,
 		WobEditorComponent
 	],
 	providers: [

@@ -1,0 +1,8 @@
+th {
+	font-size: 0.8em;
+	white-space: nowrap;
+}
+th,
+td {
+	padding: 0 0.5em;
+}
