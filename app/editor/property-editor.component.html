@@ -7,10 +7,10 @@
 			<span *ngIf="!isIntrinsic(propertiesOfType[0])">Properties</span>
 			<span *ngIf="isIntrinsic(propertiesOfType[0])">Intrinsic properties</span>
 		</header>
-		<div *ngFor="let property of propertiesOfType; let i = index" class="form-group" [class.draft]="property.isDraft" [class.inherited]="isInherited(property)">
+		<div *ngFor="let property of propertiesOfType" class="form-group" [class.draft]="property.isDraft" [class.inherited]="!isIntrinsic(property) && isInherited(property)">
 			<label class="control-label col-sm-2" [attr.for]="property.name">
 				{{property.name}}
-				<span *ngIf="isInherited(property) && !property.isDraft" class="status-label">(from #{{property.id}})</span>
+				<span *ngIf="!isIntrinsic(property) && isInherited(property) && !property.isDraft" class="status-label">(from #{{property.id}})</span>
 				<span *ngIf="property.isDraft" class="status-label">(draft)</span>
 			</label>
 			<div class="input-group col-sm-10">

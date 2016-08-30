@@ -13,6 +13,8 @@ import "rxjs/add/operator/distinctUntilChanged";
 import { ModelBase } from "../models/base";
 import { Intrinsic, Property, WobEditState, WobInfo } from "../models/wob";
 
+import { WobEditorComponent } from "./wob-editor.component";
+
 import { SessionService } from "../session/session.service";
 import { WobService } from "../api/wob.service";
 
@@ -21,70 +23,37 @@ import { WobService } from "../api/wob.service";
 	selector: "property-editor",
 	templateUrl: "./property-editor.component.html"
 })
-export class PropertyEditorComponent implements OnDestroy, OnInit {
+export class PropertyEditorComponent extends WobEditorComponent implements OnDestroy, OnInit {
 	private draftUpdate: Subject<Intrinsic | Property>;
 	private draftUpdateSubscription: Subscription;
 	private routeDataSubscription: Subscription;
 	private routeParentParamsSubscription: Subscription;
 
 	asAdmin: boolean;
-	wobId: number;
 	intrinsics: Intrinsic[];
-	properties: Property[];
 	message: string;
+	properties: Property[];
+	wobId: number;
 
 	constructor(
 		private route: ActivatedRoute,
 		private router: Router,
-		private sessionService: SessionService,
-		private wobService: WobService
+		private wobService: WobService,
+		sessionService: SessionService
 	) {
+		super(sessionService);
 		this.asAdmin = false;
-		this.intrinsics = [];
-		this.properties = [];
-	}
-
-	private canHasAdmin(): boolean {
-		return this.sessionService.canHasAdmin;
-	}
-
-	private fixType(value: any): any {
-		// If the value is numeric, convert it to a number; the server is
-		// type-sensitive.
-		var numericValue = +value;
-		if (!Number.isNaN(numericValue) && Number.isFinite(numericValue)) {
-			return numericValue;
-		}
-		// If value appears to be boolean, conver it to an actual boolean value.
-		else if (value === "true") {
-			return true;
-		}
-		else if (value === "false") {
-			return false;
-		}
-		else if (value === "null") {
-			return null;
-		}
-		else if (value === "undefined") {
-			return undefined;
-		}
-		// If no primitive type matched, return the original value.
-		else {
-			return value;
-		}
-	}
-
-	private isInherited(value: any): boolean {
-		return !this.isIntrinsic(value) && value.id !== this.wobId;
 	}
 
 	private isIntrinsic(value: any): boolean {
 		return value instanceof Intrinsic;
 	}
 
-	private onWobEditStateChange(data: WobEditState): void {
+	private onWobEditStateChange(data: any): void {
 		var wobEditState: WobEditState = data["wobEditState"];
 
+		this.intrinsics = [];
+		this.properties = [];
 		this.wobId = wobEditState.id;
 
 		// Iterate through applied intrinsic properties
@@ -208,18 +177,8 @@ export class PropertyEditorComponent implements OnDestroy, OnInit {
 		this.draftUpdate.next(property);
 	}
 
-	refocus(id: string) {
-		// Obtain the current cursor position of the field.
-		var pos = (<HTMLInputElement>$(`#${id}`).focus().get(0)).selectionStart;
-
-		// After DOM updates, reset the cursor to that position.
-		setTimeout(() => {
-			(<HTMLInputElement>$(`#${id}`).focus().get(0)).setSelectionRange(pos, pos);
-		}, 0);
-	}
-
 	reloadAsAdmin() {
-		this.router.navigate([ '/wob', this.wobId, { admin: true } ]);
+		this.router.navigate([ "/wob", this.wobId, { admin: true }, "properties" ]);
 	}
 
 	delete(property: Intrinsic | Property): Promise<any> {
