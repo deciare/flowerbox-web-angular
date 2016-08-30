@@ -400,9 +400,23 @@ export class WobService {
 			);
 	}
 
-	setVerb(id: number, name: string, value: string, admin?: boolean): Promise<ModelBase> {
+	setVerbs(id: number, verbs: any, admin?: boolean): Promise<ModelBase> {
+		return this.http.put(Urls.wobSetVerbs(id), verbs, {
+				admin: admin
+			})
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	setVerb(id: number, name: string, sigs: string, code: string, admin?: boolean): Promise<ModelBase> {
 		return this.http.putFormData(Urls.wobSetVerbs(id), {
-				[name]: JSON.stringify(value)
+				[name]: {
+					sigs: sigs,
+					code: code
+				}
 			}, {
 				admin: admin
 			})
