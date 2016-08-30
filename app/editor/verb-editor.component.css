@@ -21,8 +21,8 @@
 .verbforms {
 	margin-bottom: 0.9em;
 }
-.verbform {
-	display: block;
+.verbform .signature {
+	margin-left: 0;
 	padding: 0;
 }
 .verbform .verb {
@@ -36,4 +36,9 @@
 }
 .verbform .indirect-object {
 	color: #ad7fa8;
+}
+.verbform-op {
+	color: #cccccc;
+	margin-left: 0;
+	padding: 0;
 }

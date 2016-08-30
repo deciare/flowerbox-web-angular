@@ -12,18 +12,23 @@
 			<form class="form item-detail col-sm-10" [style.min-height]="itemList.clientHeight + 'px'" #itemDetail>
 				<section class="verbforms">
 					<header class="section-header">Signatures</header>
-					<button class="btn btn-link verbform" type="button" *ngFor="let sig of selectedVerb.sigs" (click)="selectVerbform(sig)">
-						<span *ngFor="let word of sig.split(' '); let i = index">
-							<span [ngSwitch]="i">
-								<span *ngSwitchCase="0" class="verb">{{word}}</span>
-								<span *ngSwitchCase="1" class="object">{{word}}</span>
-								<span *ngSwitchCase="2" class="preposition">{{word}}</span>
-								<span *ngSwitchCase="3" class="indirect-object">{{word}}</span>
-								<span *ngSwitchCase="4" class="preposition">{{word}}</span>
-								<span *ngSwitchCase="5" class="indirect-object">{{word}}</span>
+					<div class="verbform" *ngFor="let sig of selectedVerb.sigs">
+						<button class="btn btn-link verbform-op" title="Remove verbform" type="button" aria-label="Remove verbform" (click)="removeVerbform(sig)"><span aria-hidden="true">[-]</span></button>
+						<button class="btn btn-link signature" type="button" title="Edit verbform" (click)="editVerbform(sig)">
+							<span class="sr-only">Edit verbform</span>
+							<span *ngFor="let word of sig.split(' '); let i = index">
+								<span [ngSwitch]="i">
+									<span *ngSwitchCase="0" class="verb">{{word}}</span>
+									<span *ngSwitchCase="1" class="object">{{word}}</span>
+									<span *ngSwitchCase="2" class="preposition">{{word}}</span>
+									<span *ngSwitchCase="3" class="indirect-object">{{word}}</span>
+									<span *ngSwitchCase="4" class="preposition">{{word}}</span>
+									<span *ngSwitchCase="5" class="indirect-object">{{word}}</span>
+								</span>
 							</span>
-						</span>
-					</button>
+						</button>
+					</div>
+					<button class="btn btn-link verbform-op" type="button" title="Add verbform" aria-label="Add verbform" (click)="addVerbform()"><span aria-hidden="true">[+]</span></button>
 				</section>
 				<section>
 					<header class="section-header">Code</header>

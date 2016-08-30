@@ -135,9 +135,20 @@ export class VerbEditorComponent extends WobEditorComponent implements AfterView
 		this.replaceField(verb);
 	}
 
-	selectVerbform(sig: string) {
+	addVerbform() {
+		this.editVerbform(this.selectedVerb.name + " __new__");
+	}
+
+	editVerbform(sig: string) {
 		this.selectedVerbform = sig;
 		this.verbformEditor.open(sig);
+	}
+
+	removeVerbform(sig: string) {
+		var foundIndex = this.selectedVerb.sigs.findIndex((value) => {
+			return value == sig;
+		});
+		this.selectedVerb.sigs.splice(foundIndex, 1);
 	}
 
 	reloadAsAdmin() {
@@ -145,10 +156,29 @@ export class VerbEditorComponent extends WobEditorComponent implements AfterView
 	}
 
 	updateVerbform(sig: string) {
+		// Find existing verbform that was being edited
 		var foundIndex = this.selectedVerb.sigs.findIndex((value) => {
 			return value == this.selectedVerbform;
 		});
 
-		this.selectedVerb.sigs[foundIndex] = sig;
+		if (foundIndex == -1) {
+			// If no existing verbfom matching the signature that was supplied
+			// to editVerbform(), then a new verb is being added.
+			// Confirm new verbform doesn't conflict with any existing one.
+			var newfoundIndex = this.selectedVerb.sigs.findIndex((value) => {
+				return value == sig;
+			});
+			if (newfoundIndex != -1) {
+				// New verbform conflicts with existing verbform.
+				return;
+			}
+
+			// Append new verbform.
+			this.selectedVerb.sigs.push(sig);
+		}
+		else {
+			// Replace existing verbform.
+			this.selectedVerb.sigs[foundIndex] = sig;
+		}
 	}
 }
