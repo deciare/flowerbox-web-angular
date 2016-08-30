@@ -1,0 +1,44 @@
+<div class="container">
+	<div class="row">
+		<aside *ngIf="asAdmin" class="admin-banner monospace text-danger col-sm-12"><span aria-hidden="true">/* </span>editing as admin<span aria-hidden="true"> */</span></aside>
+	</div>
+	<div class="row">
+		<ul class="item-list col-sm-2" [style.min-height]="(itemDetail.clientHeight + 2) + 'px'" #itemList>
+			<li *ngFor="let verb of verbs" [class.draft]="verb.isDraft" [class.inherited]="isInherited(verb)" [class.selected]="verb.name == selectedVerb.name">
+				<a [routerLink]="[ '..', { verb: verb.name } ]">{{verb.name}}</a>
+			</li>
+		</ul>
+		<!-- <div class="item-detail-container row col-sm-10"> -->
+			<form class="form item-detail col-sm-10" [style.min-height]="itemList.clientHeight + 'px'" #itemDetail>
+				<section class="verbforms">
+					<header class="section-header">Signatures</header>
+					<button class="btn btn-link verbform" type="button" *ngFor="let sig of selectedVerb.sigs" (click)="selectVerbform(sig)">
+						<span *ngFor="let word of sig.split(' '); let i = index">
+							<span [ngSwitch]="i">
+								<span *ngSwitchCase="0" class="verb">{{word}}</span>
+								<span *ngSwitchCase="1" class="object">{{word}}</span>
+								<span *ngSwitchCase="2" class="preposition">{{word}}</span>
+								<span *ngSwitchCase="3" class="indirect-object">{{word}}</span>
+								<span *ngSwitchCase="4" class="preposition">{{word}}</span>
+								<span *ngSwitchCase="5" class="indirect-object">{{word}}</span>
+							</span>
+						</span>
+					</button>
+				</section>
+				<section>
+					<header class="section-header">Code</header>
+					<textarea>{{selectedVerb.code}}</textarea>
+				</section>
+				<div class="form-group">
+					<div class="col-sm-12 text-right">
+						<button *ngIf="!asAdmin && canHasAdmin()" class="btn btn-danger" type="button" (click)="reloadAsAdmin()">Edit as admin</button>
+						<button class="btn btn-success" type="button" (click)="newDraft()">New verb</button>
+						<button class="btn btn-primary" type="button" (click)="saveAll()">Save all verbs</button>
+					</div>
+				</div>
+			</form>
+		<!-- </div> -->
+	</div>
+</div>
+<verbform-editor (save)="updateVerbform($event)"></verbform-editor>
+{{message}}<br />

@@ -1,0 +1,19 @@
+.verbforms {
+	margin-bottom: 0.9em;
+}
+.verbform {
+	display: block;
+	padding: 0;
+}
+.verbform .verb {
+	color: #ef2929;
+}
+.verbform .object {
+	color: #fcaf3e;
+}
+.verbform .preposition {
+	color: #8ae234;
+}
+.verbform .indirect-object {
+	color: #ad7fa8;
+}

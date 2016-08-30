@@ -46,6 +46,16 @@ body {
 	opacity: 0;
 }
 
+/* Bootstrap modals */
+.modal .modal-content {
+	background-color: #333333;
+}
+.modal .modal-content .modal-header .close {
+	color: white;
+    text-shadow: 0 2px 0 black;
+    opacity: 0.5;
+}
+
 /* Bootstrap popovers */
 .popover {
 	background-color: #333333;
@@ -93,13 +103,17 @@ body {
 /* Form controls */
 .form-control[type=text],
 .form-control[type=password],
-.btn {
+.btn:not(.btn-link) {
 	background-color: #222222;
 	border: 1px solid #cccccc;
 	border-radius: 0;
-	box-shadow: 0.75em 1em 0 black;
+	box-shadow: 0.75em 1em 0 rgba(0, 0, 0, 0.75);
 	color: #cccccc;
 	margin-bottom: 0.9em;
+}
+.modal-footer .btn {
+	margin-left: 7px !important;
+	margin-bottom: 0.3em !important;
 }
 .form-control[type=text]:disabled,
 .form-control[type=password]:disabled {
@@ -139,14 +153,4 @@ body {
 }
 .input-group-btn {
 	z-index: 10;
-}
-@media(max-width: 767px) {
-	.input-group {
-		padding: 0 1em !important;
-	}
-}
-@media(min-width: 768px) {
-	.input-group {
-		padding-right: 1em !important;
-	}
 }
