@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { AfterViewInit, Component, EventEmitter, Input, Output } from "@angular/core";
 
 import { Tag } from "../shared/tag";
 
@@ -17,7 +17,7 @@ import { Tag } from "../shared/tag";
 	],
 	templateUrl: "./verbform-editor.component.html"
 })
-export class VerbformEditorComponent {
+export class VerbformEditorComponent implements AfterViewInit {
 	private objects: string[] = [
 		"none",
 		"self",
@@ -43,6 +43,7 @@ export class VerbformEditorComponent {
 	};
 
 	private domId: string;
+	private element: JQuery;
 	private verbform: string[];
 
 
@@ -52,6 +53,10 @@ export class VerbformEditorComponent {
 	constructor() {
 		this.save = new EventEmitter<string>();
 		this.domId = "verbform-editor-" + Tag.makeTag(3);
+	}
+
+	ngAfterViewInit() {
+		this.element = $(`#${this.domId}`);
 	}
 
 	isFieldApplicable(index: number, allowPlaceholderPrep?: boolean): boolean {
@@ -100,10 +105,11 @@ export class VerbformEditorComponent {
 		}
 
 		this.save.emit(output.join(" "));
+		this.element.modal("hide");
 	}
 
 	open(verbform: string) {
-		$(`#${this.domId}`).modal();
+		this.element.modal();
 		this.verbform = verbform.split(" ");
 
 		// If the verbformt hat was passed in doesn't use all available slots,
