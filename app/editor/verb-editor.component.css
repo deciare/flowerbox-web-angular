@@ -1,3 +1,23 @@
+.editor-container {
+	background-color: #272822; /* match ace editor theme */
+	border: 1px solid #cccccc;
+	margin-bottom: 0.9em;
+	min-height: 200px;
+	overflow: scroll;
+	position: relative;
+	resize: vertical;
+}
+.editor-container .ace_editor {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 10px; /* margin for resize handle of container */
+	left: 0;
+}
+.editor-container >>> button,
+.editor-container >>> input {
+	color: black; /* avoid white-on-white inside ace search box */
+}
 .verbforms {
 	margin-bottom: 0.9em;
 }

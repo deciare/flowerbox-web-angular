@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Subscription } from "rxjs/Subscription";
 
@@ -14,6 +14,9 @@ import { WobEditorComponent } from "./wob-editor.component";
 
 import { SessionService } from "../session/session.service";
 
+// Silence warnings about ace coming from non-TypeScript file.
+declare var ace;
+
 @Component({
 	moduleId: module.id,
 	selector: "verb-editor",
@@ -23,7 +26,8 @@ import { SessionService } from "../session/session.service";
 	],
 	templateUrl: "./verb-editor.component.html"
 })
-export class VerbEditorComponent extends WobEditorComponent implements OnDestroy, OnInit {
+export class VerbEditorComponent extends WobEditorComponent implements AfterViewInit, OnDestroy, OnInit {
+	private editor: any;
 	private routeDataSubscription: Subscription;
 	private routeParentParamsSubscription: Subscription;
 	private routeParamsSubscription: Subscription;
@@ -59,6 +63,21 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 				return verb.name == params["verb"];
 			});
 			this.selectedVerb = selectedVerb ? selectedVerb : this.verbs[0];
+
+			// If editor was already initialised, it will have to be given
+			// new text on route change.
+			if (this.editor) {
+				this.editor.setValue(selectedVerb.code);
+			}
+		});
+	}
+
+	ngAfterViewInit() {
+		this.editor = ace.edit("editor");
+		this.editor.setTheme("ace/theme/monokai");
+		this.editor.getSession().setMode("ace/mode/javascript");
+		this.editor.on("change", (event: Event) => {
+			this.selectedVerb.code = this.editor.getValue();
 		});
 	}
 
