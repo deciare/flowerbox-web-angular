@@ -5,7 +5,7 @@
 */
 import { Injectable } from "@angular/core";
 import { Headers, Http, Response } from "@angular/http";
-import { Cookie } from "ng2-cookies/ng2-cookies";
+import { Cookie } from "ng2-cookies";
 import { BehaviorSubject } from "rxjs/BehaviorSubject";
 import "rxjs/add/operator/publishReplay";
 import "rxjs/add/operator/toPromise";
