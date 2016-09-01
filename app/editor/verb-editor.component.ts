@@ -198,6 +198,54 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 		this.onSignatureChange(null);
 	}
 
+	deleteCodeDraft() {
+		if (this.selectedVerb.isDraft) {
+			// Unset code draft.
+			this.selectedVerb.code = undefined;
+
+			// Update editor contents.
+			this.wobService.getVerb(
+					this.selectedVerb.id,
+					this.selectedVerb.name
+				)
+				.then((verb: Verb) => {
+					this.verbs.set(verb.name, verb);
+
+					// Avoid triggering creation of a draft when resetting the
+					// contents of the editor in response to deleting a draft.
+					this.ignoreCodeChanges = true;
+					this.editor.setValue(verb.code, -1);
+					this.ignoreCodeChanges = false;
+					this.editor.scrollToLine(1);
+				});
+
+			// If verbforms draft is also unset, delete the draft for this verb.
+			if (this.selectedVerb.sigs === undefined) {
+				return this.deleteVerbDraft();
+			}
+			// Otherwise, save draft with undefined code.
+			else {
+				this.saveDraft();
+			}
+		}
+	}
+
+	deleteSigsDraft(): Promise<ModelBase> {
+		if (this.selectedVerb.isDraft) {
+			// Unset verbforms draft.
+			this.selectedVerb.sigs = undefined;
+
+			// If code draft is also unset, delete the draft for this verb.
+			if (this.selectedVerb.code === undefined) {
+				return this.deleteVerbDraft();
+			}
+			// Otherwise, save draft with undefined signatures.
+			else {
+				this.saveDraft();
+			}
+		}
+	}
+
 	deleteVerbDraft(): Promise<ModelBase> {
 		if (this.selectedVerb.isDraft) {
 			// Delete draft from local data model.
@@ -297,6 +345,38 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 		this.router.navigate([ "/wob", this.wobId, { admin: true }, "verbs" ]);
 	}
 
+	saveCode(): Promise<ModelBase> {
+		// Get the latest version of this verb from the server to ensure we
+		// don't inadvertently overwrite the code with an older version.
+		return this.wobService.getVerb(
+				this.selectedVerb.id,
+				this.selectedVerb.name
+			)
+			.then((verb: Verb) => {
+				this.message = "Got latest verb from server";
+				// Use our code instead of the server's.
+				verb.code = this.selectedVerb.code;
+				this.verbs.set(this.selectedVerb.name, verb);
+
+				// Save the updated verb.
+				return this.wobService.setVerb(
+					this.wobId,
+					verb.name,
+					verb.sigs,
+					verb.code,
+					this.asAdmin
+				);
+			})
+			.then((data: ModelBase) => {
+				this.message += ", saved new code";
+				return this.deleteCodeDraft();
+			})
+			.then ((data: ModelBase) => {
+				this.message += ", deleted code draft";
+				return data;
+			});
+	}
+
 	saveDraft(): Promise<ModelBase> {
 		if (this.selectedVerb.isDraft) {
 			return this.wobService.setVerbDraft(
@@ -310,6 +390,38 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 					return data;
 				});
 		}
+	}
+
+	saveSigs(): Promise<ModelBase> {
+		// Get the latest version of this verb from the server to ensure we
+		// don't inadvertently overwrite the code with an older version.
+		return this.wobService.getVerb(
+				this.selectedVerb.id,
+				this.selectedVerb.name
+			)
+			.then((verb: Verb) => {
+				this.message = "Got latest verb from server";
+				// Use our signatures instead of the server's.
+				verb.sigs = this.selectedVerb.sigs;
+				this.verbs.set(this.selectedVerb.name, verb);
+
+				// Save the updated verb.
+				return this.wobService.setVerb(
+					this.wobId,
+					verb.name,
+					verb.sigs,
+					verb.code,
+					this.asAdmin
+				);
+			})
+			.then((data: ModelBase) => {
+				this.message += ", saved new signatures";
+				return this.deleteSigsDraft();
+			})
+			.then ((data: ModelBase) => {
+				this.message += ", deleted sigs draft";
+				return data;
+			});
 	}
 
 	saveVerb(): Promise<ModelBase> {

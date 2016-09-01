@@ -10,9 +10,15 @@
 		</ul>
 		<form class="form item-detail col-sm-10" [style.min-height]="itemList.clientHeight + 'px'" #itemDetail>
 			<section *ngIf="selectedVerb" class="verbforms">
-				<header class="section-header">Signatures</header>
+				<header class="section-header">
+					Signatures
+					<div class="btn-group" role="group">
+						<button class="btn btn-link btn-header" type="button" title="Discard signature drafts" aria-label="Discard signature drafts" (click)="deleteSigsDraft()"><span class="glyphicon glyphicon-erase"></span></button>
+						<button class="btn btn-link btn-header" type="button" title="Save signatures" aria-label="Save signatures" (click)="saveSigs()"><span class="glyphicon glyphicon-floppy-disk"></span></button>
+					</div>
+				</header>
 				<div class="verbform" *ngFor="let sig of compositeVerb.sigs">
-					<button class="btn btn-link verbform-op" title="Remove verbform" type="button" aria-label="Remove verbform" (click)="removeSignature(sig)"><span aria-hidden="true">[-]</span></button>
+					<button class="btn btn-link btn-verbform" title="Remove verbform" type="button" aria-label="Remove verbform" (click)="removeSignature(sig)"><span aria-hidden="true">-</span></button>
 					<button class="btn btn-link signature" type="button" title="Edit verbform" (click)="editSignature(sig)">
 						<span class="sr-only">Edit verbform</span>
 						<span *ngFor="let word of sig.split(' '); let i = index">
@@ -27,10 +33,16 @@
 						</span>
 					</button>
 				</div>
-				<button class="btn btn-link verbform-op" type="button" title="Add verbform" aria-label="Add verbform" (click)="addSignature()"><span aria-hidden="true">[+]</span></button>
+				<button class="btn btn-link btn-verbform" type="button" title="Add verbform" aria-label="Add verbform" (click)="addSignature()"><span aria-hidden="true">+</span></button>
 			</section>
 			<section>
-				<header class="section-header">Code</header>
+				<header class="section-header">
+					Code
+					<div class="btn-group" role="group">
+						<button class="btn btn-link btn-header" type="button" title="Discard code drafts" aria-label="Discard code drafts" (click)="deleteCodeDraft()"><span class="glyphicon glyphicon-erase"></span></button>
+						<button class="btn btn-link btn-header" type="button" title="Save code" aria-label="Save code" (click)="saveCode()"><span class="glyphicon glyphicon-floppy-disk"></span></button>
+					</div>
+				</header>
 				<div class="editor-container">
 					<div id="editor"></div>
 				</div>

@@ -1,3 +1,30 @@
+.btn-header {
+	color: #cccccc;
+}
+.btn-header:before {
+	content: "[ ";
+}
+.btn-header:after {
+	content: " ]";
+}
+.btn-header:hover .glyphicon:before {
+	/* Glyphicons use :before content, so they are normally not subject to the
+	 * container element's underline. Here we specifically underline the
+	 * :before content.
+	 */
+	text-decoration: underline;
+}
+.btn-verbform {
+	color: #cccccc;
+	margin-left: 0;
+	padding: 0;
+}
+.btn-verbform:before {
+	content: "[";
+}
+.btn-verbform:after {
+	content: "]";
+}
 .editor-container {
 	background-color: #272822; /* match ace editor theme */
 	border: 1px solid #cccccc;
@@ -36,9 +63,4 @@
 }
 .verbform .indirect-object {
 	color: #ad7fa8;
-}
-.verbform-op {
-	color: #cccccc;
-	margin-left: 0;
-	padding: 0;
 }
