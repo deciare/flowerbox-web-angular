@@ -103,9 +103,11 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 					}
 					// Avoid triggering draft creation when setting new code
 					// as a direct result of navigating to different verbs.
+					var compositeCode = this.compositeVerb.code;
 					this.ignoreCodeChanges = true;
-					this.editor.setValue(this.selectedVerb.code, -1);
+					this.editor.setValue(compositeCode ? compositeCode : "", -1);
 					this.ignoreCodeChanges = false;
+					this.editor.scrollToLine(1);
 				});
 		});
 
