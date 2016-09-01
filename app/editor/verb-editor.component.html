@@ -4,48 +4,46 @@
 	</div>
 	<div class="row">
 		<ul class="item-list col-sm-2" [style.min-height]="(itemDetail.clientHeight + 2) + 'px'" #itemList>
-			<li *ngFor="let verb of verbs" [class.draft]="verb.isDraft" [class.inherited]="isInherited(verb)" [class.selected]="verb.name == selectedVerb.name">
-				<a [routerLink]="[ '..', { verb: verb.name } ]">{{verb.name}}</a>
+			<li *ngFor="let verb of verbs | keyvalue" [class.draft]="verbDrafts.has(verb.key)" [class.inherited]="isInherited(verb)" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
+				<a [routerLink]="[ '..', { verb: verb.value.name } ]">{{verb.value.name}}</a>
 			</li>
 		</ul>
-		<!-- <div class="item-detail-container row col-sm-10"> -->
-			<form class="form item-detail col-sm-10" [style.min-height]="itemList.clientHeight + 'px'" #itemDetail>
-				<section class="verbforms">
-					<header class="section-header">Signatures</header>
-					<div class="verbform" *ngFor="let sig of selectedVerb.sigs">
-						<button class="btn btn-link verbform-op" title="Remove verbform" type="button" aria-label="Remove verbform" (click)="removeVerbform(sig)"><span aria-hidden="true">[-]</span></button>
-						<button class="btn btn-link signature" type="button" title="Edit verbform" (click)="editVerbform(sig)">
-							<span class="sr-only">Edit verbform</span>
-							<span *ngFor="let word of sig.split(' '); let i = index">
-								<span [ngSwitch]="i">
-									<span *ngSwitchCase="0" class="verb">{{word}}</span>
-									<span *ngSwitchCase="1" class="object">{{word}}</span>
-									<span *ngSwitchCase="2" class="preposition">{{word}}</span>
-									<span *ngSwitchCase="3" class="indirect-object">{{word}}</span>
-									<span *ngSwitchCase="4" class="preposition">{{word}}</span>
-									<span *ngSwitchCase="5" class="indirect-object">{{word}}</span>
-								</span>
+		<form class="form item-detail col-sm-10" [style.min-height]="itemList.clientHeight + 'px'" #itemDetail>
+			<section *ngIf="selectedVerb" class="verbforms">
+				<header class="section-header">Signatures</header>
+				<div class="verbform" *ngFor="let sig of compositeVerb.sigs">
+					<button class="btn btn-link verbform-op" title="Remove verbform" type="button" aria-label="Remove verbform" (click)="removeSignature(sig)"><span aria-hidden="true">[-]</span></button>
+					<button class="btn btn-link signature" type="button" title="Edit verbform" (click)="editSignature(sig)">
+						<span class="sr-only">Edit verbform</span>
+						<span *ngFor="let word of sig.split(' '); let i = index">
+							<span [ngSwitch]="i">
+								<span *ngSwitchCase="0" class="verb">{{word}}</span>
+								<span *ngSwitchCase="1" class="object">{{word}}</span>
+								<span *ngSwitchCase="2" class="preposition">{{word}}</span>
+								<span *ngSwitchCase="3" class="indirect-object">{{word}}</span>
+								<span *ngSwitchCase="4" class="preposition">{{word}}</span>
+								<span *ngSwitchCase="5" class="indirect-object">{{word}}</span>
 							</span>
-						</button>
-					</div>
-					<button class="btn btn-link verbform-op" type="button" title="Add verbform" aria-label="Add verbform" (click)="addVerbform()"><span aria-hidden="true">[+]</span></button>
-				</section>
-				<section>
-					<header class="section-header">Code</header>
-					<div class="editor-container">
-						<div id="editor">{{selectedVerb.code}}</div>
-					</div>
-				</section>
-				<div class="form-group">
-					<div class="col-sm-12 text-right">
-						<button *ngIf="!asAdmin && canHasAdmin()" class="btn btn-danger" type="button" (click)="reloadAsAdmin()">Edit as admin</button>
-						<button class="btn btn-success" type="button" (click)="newDraft()">New verb</button>
-						<button class="btn btn-primary" type="button" (click)="saveAll()">Save all verbs</button>
-					</div>
+						</span>
+					</button>
 				</div>
-			</form>
-		<!-- </div> -->
+				<button class="btn btn-link verbform-op" type="button" title="Add verbform" aria-label="Add verbform" (click)="addSignature()"><span aria-hidden="true">[+]</span></button>
+			</section>
+			<section>
+				<header class="section-header">Code</header>
+				<div class="editor-container">
+					<div id="editor"></div>
+				</div>
+			</section>
+			<div class="form-group">
+				<div class="col-sm-12 text-right">
+					<button *ngIf="!asAdmin && canHasAdmin()" class="btn btn-danger" type="button" (click)="reloadAsAdmin()">Edit as admin</button>
+					<button class="btn btn-success" type="button" (click)="newDraft()">New verb</button>
+					<button class="btn btn-primary" type="button" (click)="saveVerb()">Save verb</button>
+				</div>
+			</div>
+		</form>
 	</div>
 </div>
-<verbform-editor (save)="updateVerbform($event)"></verbform-editor>
+<verbform-editor (save)="onSignatureChange($event)"></verbform-editor>
 {{message}}<br />

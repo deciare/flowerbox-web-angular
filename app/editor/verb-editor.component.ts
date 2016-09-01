@@ -3,16 +3,22 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
+import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
+import "rxjs/add/operator/debounceTime";
+import "rxjs/add/operator/distinctUntilChanged";
+import "rxjs/add/operator/withLatestFrom";
 
+import { ModelBase } from "../models/base";
 import { Verb, WobEditState } from "../models/wob";
 
 import { VerbformEditorComponent } from "./verbform-editor.component";
 import { WobEditorComponent } from "./wob-editor.component";
 
 import { SessionService } from "../session/session.service";
+import { WobService } from "../api/wob.service";
 
 // Silence warnings about ace coming from non-TypeScript file.
 declare var ace;
@@ -26,17 +32,20 @@ declare var ace;
 	],
 	templateUrl: "./verb-editor.component.html"
 })
-export class VerbEditorComponent extends WobEditorComponent implements AfterViewInit, OnDestroy, OnInit {
+export class VerbEditorComponent extends WobEditorComponent implements OnDestroy, OnInit {
+	private draftUpdateSubscription: Subscription;
 	private editor: any;
+	private ignoreCodeChanges: boolean;
 	private routeDataSubscription: Subscription;
 	private routeParentParamsSubscription: Subscription;
-	private routeParamsSubscription: Subscription;
 
 	asAdmin: boolean;
+	draftUpdate: Subject<Verb>;
 	message: string;
 	selectedVerb: Verb;
-	selectedVerbform: string;
-	verbs: Verb[];
+	selectedSignature: string;
+	verbDrafts: Map<string, Verb>;
+	verbs: Map<string, Verb>;
 	wobId: number;
 
 	@ViewChild(VerbformEditorComponent)
@@ -45,125 +54,216 @@ export class VerbEditorComponent extends WobEditorComponent implements AfterView
 	constructor(
 		private route: ActivatedRoute,
 		private router: Router,
+		private wobService: WobService,
 		sessionService: SessionService
 	) {
 		super(sessionService);
 		this.asAdmin = false;
+		this.draftUpdate = new Subject<Verb>();
+		this.verbDrafts = new Map<string, Verb>();
+		this.verbs = new Map<string, Verb>();
 	}
 
 	ngOnInit() {
-		this.routeDataSubscription = this.route.data.subscribe(this.onWobEditStateChange.bind(this));
+		this.draftUpdateSubscription = this.draftUpdate
+			.debounceTime(1000)
+			.subscribe(this.saveDraft.bind(this));
+
+		this.routeDataSubscription = this.route.data.withLatestFrom(this.route.params).subscribe((values) => {
+			var wobEditState = values[0]["wobEditState"];
+			var verbName = values[1]["verb"];
+
+			this.onWobEditStateChange(wobEditState)
+				.then(() => {
+					// If specified verb exists, select it. Otherwise, use first
+					// verb in list.
+					if (verbName === undefined) {
+						verbName = this.verbs.values().next().value.name;
+					}
+
+					// If a draft of the selected verb exists, prefer the draft.
+					if (this.verbDrafts.has(verbName)) {
+						this.selectedVerb = this.verbDrafts.get(verbName);
+					}
+					else if (this.verbs.has(verbName)) {
+						this.selectedVerb = this.verbs.get(verbName)
+					}
+
+					// Initialise editor if needed.
+					if (!this.editor) {
+						this.editor = ace.edit("editor");
+						this.editor.$blockScrolling = Infinity;
+						this.editor.setTheme("ace/theme/monokai");
+						this.editor.getSession().setMode("ace/mode/javascript");
+						this.editor.on("change", (event: Event) => {
+							if (!this.ignoreCodeChanges) {
+								this.onCodeChange(this.editor.getValue());
+							}
+						});
+					}
+					// Avoid triggering draft creation when setting new code
+					// as a direct result of navigating to different verbs.
+					this.ignoreCodeChanges = true;
+					this.editor.setValue(this.selectedVerb.code, -1);
+					this.ignoreCodeChanges = false;
+				});
+		});
 
 		this.routeParentParamsSubscription = this.route.parent.params.subscribe((params) => {
 			this.asAdmin = params["admin"] == "true" ? true : false;
 		});
-
-		this.routeParamsSubscription = this.route.params.subscribe((params) => {
-			var selectedVerb = this.verbs.find((verb) => {
-				return verb.name == params["verb"];
-			});
-			this.selectedVerb = selectedVerb ? selectedVerb : this.verbs[0];
-
-			// If editor was already initialised, it will have to be given
-			// new text on route change.
-			if (this.editor) {
-				this.editor.setValue(selectedVerb.code);
-			}
-		});
-	}
-
-	ngAfterViewInit() {
-		this.editor = ace.edit("editor");
-		this.editor.setTheme("ace/theme/monokai");
-		this.editor.getSession().setMode("ace/mode/javascript");
-		this.editor.on("change", (event: Event) => {
-			this.selectedVerb.code = this.editor.getValue();
-		});
 	}
 
 	ngOnDestroy() {
+		this.draftUpdateSubscription.unsubscribe();
 		this.routeDataSubscription.unsubscribe();
 		this.routeParentParamsSubscription.unsubscribe();
-		this.routeParamsSubscription.unsubscribe();
 	}
 
-	private onWobEditStateChange(data: any) {
-		var wobEditState: WobEditState = data["wobEditState"];
-
-		this.verbs = [];
+	private onWobEditStateChange(wobEditState: WobEditState): Promise<void> {
+		this.verbDrafts.clear();
+		this.verbs.clear();
 		this.wobId = wobEditState.id;
 
 		// Iterate through applied properties
 		wobEditState.applied.verbs.forEach((verb) => {
 			// Create array of properties that are currently applied
 			verb.isDraft = false;
-			this.verbs.push(verb);
+			this.verbs.set(verb.name, verb);
 		});
 
 		// For each draft that exists for an intrinsic or property, overwrite
 		// what's displayed on the form with the draft version.
 		wobEditState.draft.verbs.forEach((verb) => {
-			this.useDraft(verb);
+			verb.isDraft = true;
+			this.verbDrafts.set(verb.name, verb);
 		});
+
+		// Indicate that WobEditState has been processed.
+		return Promise.resolve();
 	}
 
-	private replaceField(verb: Verb) {
-		var foundIndex: number;
+	/**
+	 * If the selected verb is not a draft, then return the selected verb.
+	 * If the selected verb is a draft, but the draft contains only signatures
+	 * or only code, then available portions of the draft are combined with
+	 * portions of the applied verb to create a composite verb.
+	 *
+	 * Changes made to this verb are silently discarded. Changes that need to
+	 * persist should be made to selectedVerb instead.
+	 */
+	get compositeVerb(): Verb {
+		var retval: Verb;
 
-		// Check whether a corresponding applied property exists in
-		// array.
-		if ((foundIndex = this.verbs.findIndex((value) => {
-				return value.name == verb.name;
-			})) != -1
-		) {
-			// If so, replace that property with draft version.
-			this.verbs[foundIndex] = verb;
+		// Create a Verb object based on selectedVerb, instead of setting
+		// retval = selectedVerb, to avoid making any changes to selectedVerb
+		retval = new Verb(
+			this.selectedVerb.id,
+			this.selectedVerb.name,
+			this.selectedVerb.sigs,
+			this.selectedVerb.code,
+			undefined,
+			this.selectedVerb.isDraft
+		);
+
+		if (this.selectedVerb.isDraft) {
+			if (this.selectedVerb.sigs === undefined) {
+				retval.sigs = this.verbs.get(this.selectedVerb.name).sigs;
+			}
+			else if (this.selectedVerb.code === undefined) {
+				retval.code = this.verbs.get(this.selectedVerb.name).code;
+			}
 		}
-		else {
-			// If not, append draft property to end of array
-			this.verbs.push(verb);
-		}
+
+		return retval;
 	}
 
-	private useApplied(verb: Verb) {
-		verb.isDraft = false;
-		this.replaceField(verb);
+	addSignature() {
+		this.editSignature(this.selectedVerb.name + " __new__");
 	}
 
-	private useDraft(verb: Verb) {
-		verb.isDraft = true;
-		this.replaceField(verb);
-	}
-
-	addVerbform() {
-		this.editVerbform(this.selectedVerb.name + " __new__");
-	}
-
-	editVerbform(sig: string) {
-		this.selectedVerbform = sig;
+	editSignature(sig: string) {
+		this.selectedSignature = sig;
 		this.verbformEditor.open(sig);
 	}
 
-	removeVerbform(sig: string) {
+	removeSignature(sig: string) {
+		this.selectedSignature = sig;
 		var foundIndex = this.selectedVerb.sigs.findIndex((value) => {
 			return value == sig;
 		});
 		this.selectedVerb.sigs.splice(foundIndex, 1);
+		this.onSignatureChange(null);
 	}
 
-	reloadAsAdmin() {
-		this.router.navigate([ "/wob", this.wobId, { admin: true }, "verbs" ]);
+	deleteVerbDraft(): Promise<ModelBase> {
+		if (this.selectedVerb.isDraft) {
+			// Delete draft from local data model.
+			this.selectedVerb = this.verbs.get(this.selectedVerb.name);
+			this.verbDrafts.delete(this.selectedVerb.name);
+
+			// Delete draft from server.
+			return this.wobService.deleteVerbDraft(
+					this.wobId,
+					this.selectedVerb.name
+				)
+				.then((data: ModelBase) => {
+					this.message = "Deleted verb draft";
+					return data;
+				});
+		}
 	}
 
-	updateVerbform(sig: string) {
+	onCodeChange(code: string) {
+		// If the selected verb is not a draft, create a new draft with the
+		// modified code instead of the applied version of the verb.
+		if (!this.selectedVerb.isDraft) {
+			this.verbDrafts.set(this.selectedVerb.name, new Verb(
+				this.wobId,
+				this.selectedVerb.name,
+				undefined,
+				code,
+				undefined,
+				true
+			));
+			this.selectedVerb = this.verbDrafts.get(this.selectedVerb.name);
+		}
+		// Otherwise, just modify the existing draft's code.
+		else {
+			this.selectedVerb.code = code;
+		}
+
+		// Notify observers draft has been updated.
+		this.draftUpdate.next(this.selectedVerb);
+	}
+
+	onSignatureChange(sig: string) {
+		// If the selected verb is not a draft, create a new draft and modify
+		// the draft instead of the applied version of the verb.
+		if (!this.selectedVerb.isDraft) {
+			this.verbDrafts.set(this.selectedVerb.name, new Verb(
+				this.wobId,
+				this.selectedVerb.name,
+				this.selectedVerb.sigs,
+				undefined,
+				undefined,
+				true
+			));
+			this.selectedVerb = this.verbDrafts.get(this.selectedVerb.name);
+		}
+		// Otherwise, base sigs on the applied version of the verb.
+		else if (this.selectedVerb.sigs === undefined) {
+			this.selectedVerb.sigs = this.verbs.get(this.selectedVerb.name).sigs;
+		}
+
 		// Find existing verbform that was being edited
 		var foundIndex = this.selectedVerb.sigs.findIndex((value) => {
-			return value == this.selectedVerbform;
+			return value == this.selectedSignature;
 		});
 
-		if (foundIndex == -1) {
+		if (foundIndex == -1 && sig !== null) {
 			// If no existing verbfom matching the signature that was supplied
-			// to editVerbform(), then a new verb is being added.
+			// to editSignature(), then a new verbform is being added.
 			// Confirm new verbform doesn't conflict with any existing one.
 			var newfoundIndex = this.selectedVerb.sigs.findIndex((value) => {
 				return value == sig;
@@ -177,8 +277,55 @@ export class VerbEditorComponent extends WobEditorComponent implements AfterView
 			this.selectedVerb.sigs.push(sig);
 		}
 		else {
-			// Replace existing verbform.
-			this.selectedVerb.sigs[foundIndex] = sig;
+			if (sig === null) {
+				// Delete existing verbform.
+				delete this.selectedVerb.sigs[foundIndex];
+			}
+			else {
+				// Replace existing verbform.
+				this.selectedVerb.sigs[foundIndex] = sig;
+			}
 		}
+
+		// Notify observers draft has been updated.
+		this.draftUpdate.next(this.selectedVerb);
+	}
+
+	reloadAsAdmin() {
+		this.router.navigate([ "/wob", this.wobId, { admin: true }, "verbs" ]);
+	}
+
+	saveDraft(): Promise<ModelBase> {
+		if (this.selectedVerb.isDraft) {
+			return this.wobService.setVerbDraft(
+					this.selectedVerb.id,
+					this.selectedVerb.name,
+					this.selectedVerb.sigs,
+					this.selectedVerb.code
+				)
+				.then((data: ModelBase) => {
+					this.message = "Saved draft";
+					return data;
+				});
+		}
+	}
+
+	saveVerb(): Promise<ModelBase> {
+		return this.wobService.setVerb(
+				this.wobId,
+				this.selectedVerb.name,
+				this.compositeVerb.sigs,
+				this.compositeVerb.code,
+				this.asAdmin
+			)
+			.then((data: ModelBase) => {
+				this.message = "Saved verb";
+				// Delete draft corresponding to verb that was just saved.
+				return this.deleteVerbDraft();
+			})
+			.then((data: ModelBase) => {
+				this.message += " and deleted draft";
+				return data;
+			});
 	}
 }
