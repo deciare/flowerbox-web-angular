@@ -7,14 +7,26 @@ import { Pipe, PipeTransform } from "@angular/core";
 
 @Pipe({name: 'keyvalue'})
 export class KeyValuePipe implements PipeTransform {
-	transform(value: any): any {
+	transform(obj: any): any {
 		var pairs: any[] = [];
 
-		for (let key in value) {
-			pairs.push({
-				key: key,
-				value: value[key]
-			});
+		if (typeof obj === "object") {
+			if (obj instanceof Map) {
+				obj.forEach((value, key) => {
+					pairs.push({
+						key: key,
+						value: value
+					});
+				});
+			}
+			else {
+				for (let key in obj) {
+					pairs.push({
+						key: key,
+						value: obj[key]
+					});
+				}
+			}
 		}
 
 		return pairs;
