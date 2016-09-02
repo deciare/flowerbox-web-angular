@@ -12,6 +12,7 @@
 					<a [routerLink]="[ { verb: verb.value.name } ]">{{verb.value.name}}</a>
 				</li>
 			</span>
+			<li class="plus"><a (click)="addVerb()">+</a></li>
 		</ul>
 		<form class="form item-detail col-sm-10" [style.min-height]="itemList.clientHeight + 'px'" #itemDetail>
 			<section *ngIf="selectedVerb" class="verbforms">
