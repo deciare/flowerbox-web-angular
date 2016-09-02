@@ -1,3 +1,8 @@
+.admin-banner {
+	position: absolute;
+	top: 0;
+	right: 0;
+}
 .btn-header {
 	color: #cccccc;
 }
@@ -24,6 +29,9 @@
 }
 .btn-verbform:after {
 	content: "]";
+}
+.comment-bar {
+	height: 1em;
 }
 .editor-container {
 	background-color: #272822; /* match ace editor theme */
