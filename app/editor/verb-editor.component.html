@@ -4,14 +4,14 @@
 	</div>
 	<div class="row">
 		<ul class="item-list col-sm-2" [style.min-height]="(itemDetail.clientHeight + 2) + 'px'" #itemList>
-			<li *ngFor="let verb of verbs | keyvalue" [class.draft]="verbDrafts[verb.key]" [class.inherited]="isInherited(verb.value)" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
-				<a [routerLink]="[ { verb: verb.value.name } ]">{{verb.value.name}}</a>
-			</li>
 			<span *ngFor="let verb of verbDrafts | keyvalue">
 				<li *ngIf="!verbs[verb.value.name]" class="draft" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
 					<a [routerLink]="[ { verb: verb.value.name } ]">{{verb.value.name}}</a>
 				</li>
 			</span>
+			<li *ngFor="let verb of verbs | keyvalue" [class.draft]="verbDrafts[verb.key]" [class.inherited]="isInherited(verb.value)" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
+				<a [routerLink]="[ { verb: verb.value.name } ]">{{verb.value.name}}</a>
+			</li>
 			<li class="plus"><a (click)="addVerb()">+</a></li>
 		</ul>
 		<form class="form item-detail col-sm-10" [style.min-height]="itemList.clientHeight + 'px'" #itemDetail>

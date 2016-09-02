@@ -5,7 +5,9 @@
 */
 import { Pipe, PipeTransform } from "@angular/core";
 
-@Pipe({name: 'keyvalue'})
+@Pipe({
+	name: 'keyvalue',
+})
 export class KeyValuePipe implements PipeTransform {
 	transform(obj: any): any {
 		var pairs: any[] = [];
