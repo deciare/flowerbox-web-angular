@@ -4,7 +4,7 @@
 	</div>
 	<div class="row">
 		<ul class="item-list col-sm-2" [style.min-height]="(itemDetail.clientHeight + 2) + 'px'" #itemList>
-			<li *ngFor="let verb of verbs | keyvalue" [class.draft]="verbDrafts[verb.key]" [class.inherited]="isInherited(verb)" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
+			<li *ngFor="let verb of verbs | keyvalue" [class.draft]="verbDrafts[verb.key]" [class.inherited]="isInherited(verb.value)" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
 				<a [routerLink]="[ { verb: verb.value.name } ]">{{verb.value.name}}</a>
 			</li>
 			<span *ngFor="let verb of verbDrafts | keyvalue">
