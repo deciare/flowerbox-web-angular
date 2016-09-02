@@ -323,7 +323,16 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 					// Delete draft from local data model.
 					delete this.verbDrafts[this.selectedVerb.name];
 					this.verbDraftsChanged();
-					this.selectedVerb = this.verbs[this.selectedVerb.name];
+
+					// If an applied version of this verb exists, display the
+					// applied version.
+					if (this.verbs[this.selectedVerb.name]) {
+						this.selectedVerb = this.verbs[this.selectedVerb.name];
+					}
+					// Otherwise, navigate to the first still-existing verb.
+					else {
+						this.navigateToVerb(this.firstVerb.name);
+					}
 
 					this.message = "Deleted verb draft";
 					return data;
