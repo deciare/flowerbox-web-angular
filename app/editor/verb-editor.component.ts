@@ -256,12 +256,21 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 			true		// is draft
 		);
 		this.selectedVerb = this.verbDrafts[name];
-		this.navigateToVerb(name);
 		this.verbDraftsChanged();
 
-		// We're just saving a placeholder draft, so there's no need to wait
-		// for a result.
-		this.saveVerbDraft();
+		this.saveVerbDraft()
+			.then(() => {
+				// Navigate to the newly created draft.
+				//
+				// Navigating from a route without a verb= parameter to a route
+				// WITH a verb= parameter is considered a route change, and
+				// causes a new WobEditState to be fetched from the server.
+				//
+				// Navigating before the server finishes saving the draft would
+				// therefore result in new WobEditState missing the draft we
+				// just created, causing navigation to fail.
+				this.navigateToVerb(name);
+			});
 	}
 
 	deleteCodeDraft(): Promise<ModelBase> {
@@ -618,6 +627,17 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 					undefined,
 					false
 				);
+				this.verbsChanged();
+
+				// If the selected verb is not a draft, reload it from the
+				// updated local data model. This is required to ensure that
+				// correct data is displayed on the template (e.g. simply
+				// saving an unmodified verb would still change its source ID,
+				// and not reloading selectedVerb from the local data model
+				// could cause it to be incorrectly displayed as inherited).
+				if (!this.selectedVerb.isDraft) {
+					this.selectedVerb = this.verbs[this.selectedVerb.name];
+				}
 
 				// Delete draft corresponding to verb that was just saved.
 				return this.deleteVerbDraft();
