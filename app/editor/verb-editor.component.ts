@@ -153,7 +153,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	 * (Needed for pure pipe.)
 	 */
 	private verbsChanged() {
-		this.verbs = Object.create(this.verbs);
+		this.verbs = Object.assign(Object.create(null), this.verbs);
 	}
 
 	/**
@@ -161,7 +161,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	 * (Needed for pure pipe.)
 	 */
 	private verbDraftsChanged() {
-		this.verbDrafts = Object.create(this.verbDrafts);
+		this.verbDrafts = Object.assign(Object.create(null), this.verbDrafts);
 	}
 
 	/**
