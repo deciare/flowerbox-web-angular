@@ -4,10 +4,12 @@
 	For licensing info, please see LICENCE file.
 */
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
-import { Headers, Http, Response } from "@angular/http";
+import { Response, ResponseContentType } from "@angular/http";
 import "rxjs/add/operator/toPromise";
-import { SessionService } from "../session/session.service";
+
 import { Urls } from "../shared/urls";
+
+import { SessionHttp } from "../session/session-http.service";
 
 @Component({
 	moduleId: module.id,
@@ -41,8 +43,7 @@ export class EmbedMediaComponent implements OnInit, OnChanges {
 	load: EventEmitter<string>;
 
 	constructor(
-		private http: Http,
-		private sessionService: SessionService
+		private http: SessionHttp
 	) {
 		this.load = new EventEmitter<string>();
 	}
@@ -67,18 +68,18 @@ export class EmbedMediaComponent implements OnInit, OnChanges {
 
 		switch(this.type) {
 		case "image":
-			this.getImageWithAuthorization();
+			this.getImage();
 			break;
 		}
 	}
 
-	toDataUrl(raw: any): Promise<string> {
+	toDataUrl(blob: Blob): Promise<string> {
 		return new Promise((resolve, reject) => {
 			var reader = new FileReader();
 			reader.onloadend = function() {
 				resolve(reader.result);
 			};
-			reader.readAsDataURL(raw);
+			reader.readAsDataURL(blob);
 		});
 	}
 
@@ -87,35 +88,18 @@ export class EmbedMediaComponent implements OnInit, OnChanges {
 	 * Images can't be loaded directly from the server via a regular <img> tag
 	 * because an <img> tag wouldn't supply the requisite Authorization header.
 	 */
-	getImageWithAuthorization() {
-		var headers = new Headers({
-			"Authorization": this.sessionService.token
-		});
-
-		// FIXME: Angular 2 doesn't yet implement retrieving a response as
-		// blob, so use XMLHttpRequest directly for now.
-		var request = new XMLHttpRequest();
-		request.open("GET", this.url, true);
-		request.setRequestHeader("Authorization", this.sessionService.token);
-		request.responseType = "blob";
-
-		return new Promise((resolve, reject) => {
-				request.onload = function(event) {
-					resolve(request);
-				};
-				request.onerror = function(event) {
-					reject(request);
-				};
-				request.send();
+	getImage() {
+		return this.http.get(this.url, {
+				responseType: ResponseContentType.Blob
 			})
-			.then((response: any) => {
-				var contentType = response.getResponseHeader("Content-Type");
-				var isImage: boolean = contentType.startsWith("image/");
+			.toPromise()
+			.then((response: Response) => {
+				var contentType = response.headers.get("Content-Type");
 
-				if (isImage) {
-					this.toDataUrl(response.response)
-						.then((response: string) => {
-							this.data = response;
+				if (contentType.startsWith("image/")) {
+					this.toDataUrl(response.blob())
+						.then((dataUrl: string) => {
+							this.data = dataUrl;
 							this.load.emit(this.data);
 						});
 				}

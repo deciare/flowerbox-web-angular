@@ -4,7 +4,7 @@
 	For licensing info, please see LICENCE file.
 */
 import { Injectable } from "@angular/core";
-import { Response } from "@angular/http";
+import { Response, ResponseContentType } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 
 import { ModelBase } from "../models/base";
@@ -23,14 +23,32 @@ export class WobService {
 	}
 
 	private handleResponse(response: Response): Promise<any> {
-		// console.debug("WobService.handleResponse:", response);
-		var data = response.json();
+		var contentType = response.headers.get("Content-Type");
 
-		if (data.success) {
-			return Promise.resolve(data);
+		if (contentType.startsWith("application/json")) {
+			let data: any = response.json();
+
+			if (data.success) {
+				return Promise.resolve(data);
+			}
+			else {
+				return this.handleDataError(data.error);
+			}
 		}
-		else {
-			return this.handleDataError(data.error);
+		else if (
+			contentType.startsWith("audio/") ||
+			contentType.startsWith("image/") ||
+			contentType.startsWith("video/")
+		) {
+			try {
+				let data: Blob = response.blob();
+				return Promise.resolve(data);
+			}
+			catch(error) {
+				// Retrieving blob may fail if XMLHttpRequest.responseType was
+				// set incorrectly.
+				return Promise.reject(error);
+			}
 		}
 	}
 
@@ -316,6 +334,18 @@ export class WobService {
 	instanceOf(ids: number | number[] | string | string[], ancestorId: number | string): Promise<InstanceOfList> {
 		var idStr = ids instanceof Array ? ids.join(",") : ids;
 		return this.http.get(Urls.wobInstanceOf(idStr, ancestorId))
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	getBinaryProperty(id: number | string, name: string, admin?: boolean): Promise<Property> {
+		return this.http.get(Urls.wobGetProperty(id, name), {
+				responseType: ResponseContentType.Blob,
+				admin: admin
+			})
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),

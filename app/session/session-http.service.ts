@@ -4,7 +4,7 @@
 	For licensing info, please see LICENCE file.
 */
 import { Injectable } from "@angular/core";
-import { ConnectionBackend, Headers, Http, Request, RequestOptions, RequestOptionsArgs, Response, ResponseOptions, ResponseType } from "@angular/http";
+import { ConnectionBackend, Headers, Http, Request, RequestOptions, RequestOptionsArgs, Response, ResponseOptions, ResponseContentType, ResponseType } from "@angular/http";
 import { Observable } from "rxjs/Observable";
 import { Observer } from "rxjs/Observer";
 import "rxjs/add/operator/do";
@@ -53,12 +53,10 @@ export class SessionHttp extends Http {
 				options.headers.set("Authorization", options.admin === true ? this.sessionService.adminToken : this.sessionService.token);
 			}
 			else {
-				options = {
-					headers: new Headers({
-						"Authorization": options.admin ? this.sessionService.adminToken : this.sessionService.token
-					}),
-					admin: options.admin
-				}
+				options.headers = new Headers({
+					"Authorization": options.admin ? this.sessionService.adminToken : this.sessionService.token
+				});
+				options.admin = options.admin;
 			}
 		}
 		// Otherwise, create a new options object with our token
@@ -95,6 +93,24 @@ export class SessionHttp extends Http {
 
 			// Insert authorization header into the request
 			options = this.mergeAuthorizationHeader(options);
+
+			// Set correct response content type
+			if (options.responseType !== undefined) {
+				switch(options.responseType) {
+				case ResponseContentType.ArrayBuffer:
+					xhr.responseType = "arraybuffer";
+					break;
+				case ResponseContentType.Blob:
+					xhr.responseType = "blob";
+					break;
+				case ResponseContentType.Json:
+					xhr.responseType = "json";
+					break;
+				case ResponseContentType.Text:
+					xhr.responseType = "text";
+					break;
+				}
+			}
 
 			// Initialise async request, translate headers into XHR-compatible
 			// form, and attach event handlers
