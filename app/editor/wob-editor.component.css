@@ -45,6 +45,9 @@ textarea {
 	color: #cccccc;
 	text-decoration: underline;
 }
+.item-list a {
+	color: #cccccc;
+}
 .admin-banner {
 	font-size: 1.4em;
 	margin-bottom: -0.9em;
@@ -119,7 +122,6 @@ textarea {
 	margin-left: 0;
 }
 .item-list li > a {
-	color: #cccccc;
 	display: block;
 	padding: 0.5em;
 }

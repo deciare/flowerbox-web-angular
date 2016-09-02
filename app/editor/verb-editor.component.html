@@ -9,23 +9,23 @@
 			<li *ngFor="let verb of verbs | keyvalue" [class.draft]="verbDrafts[verb.key]" [class.inherited]="isInherited(verb.value)" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
 				<a [routerLink]="[ { verb: verb.value.name } ]">{{verb.value.name}}</a>
 			</li>
-			<li class="plus"><a href="#" (click)="addVerb()">+</a></li>
+			<li class="plus"><a (click)="addVerb()">+</a></li>
 		</ul>
 		<form class="form item-detail col-sm-10">
 			<section *ngIf="selectedVerb" class="verbforms">
 				<aside class="comment-bar">
 					<span *ngIf="isInherited(selectedVerb)" class="inherited">(inherited from #{{selectedVerb.id}})</span>
 					<span *ngIf="selectedVerb && selectedVerb.isDraft" class="draft">
-						<span *ngIf="selectedVerb.sigs && !selectedVerb.code">(draft signatures)</span>
-						<span *ngIf="!selectedVerb.sigs && selectedVerb.code">(draft code)</span>
-						<span *ngIf="selectedVerb.sigs && selectedVerb.code">(draft signatures and code)</span>
+						<span *ngIf="selectedVerb.sigs != undefined && selectedVerb.code == undefined">(draft signatures)</span>
+						<span *ngIf="selectedVerb.sigs == undefined&& selectedVerb.code != undefined">(draft code)</span>
+						<span *ngIf="selectedVerb.sigs != undefined && selectedVerb.code != undefined">(draft signatures and code)</span>
 					</span>
 					<span *ngIf="asAdmin" class="admin-banner monospace text-danger col-sm-12"><span aria-hidden="true">/* </span>editing as admin<span aria-hidden="true"> */</span></span>
 				</aside>
 				<header class="section-header">
 					Signatures
 					<div class="btn-group" role="group">
-						<button *ngIf="selectedVerb && selectedVerb.isDraft && selectedVerb.sigs" class="btn btn-link btn-header" type="button" title="Discard signature drafts" aria-label="Discard signature drafts" (click)="deleteSigsDraft()"><span class="glyphicon glyphicon-erase"></span></button>
+						<button *ngIf="selectedVerb && selectedVerb.isDraft && selectedVerb.sigs != undefined" class="btn btn-link btn-header" type="button" title="Discard signature drafts" aria-label="Discard signature drafts" (click)="deleteSigsDraft()"><span class="glyphicon glyphicon-erase"></span></button>
 						<button class="btn btn-link btn-header" type="button" title="Save signatures" aria-label="Save signatures" (click)="saveSigs()"><span class="glyphicon glyphicon-floppy-disk"></span></button>
 					</div>
 				</header>
@@ -51,7 +51,7 @@
 				<header class="section-header">
 					Code
 					<div class="btn-group" role="group">
-						<button *ngIf="selectedVerb && selectedVerb.isDraft && selectedVerb.code" class="btn btn-link btn-header" type="button" title="Discard code drafts" aria-label="Discard code drafts" (click)="deleteCodeDraft()"><span class="glyphicon glyphicon-erase"></span></button>
+						<button *ngIf="selectedVerb && selectedVerb.isDraft && selectedVerb.code != undefined" class="btn btn-link btn-header" type="button" title="Discard code drafts" aria-label="Discard code drafts" (click)="deleteCodeDraft()"><span class="glyphicon glyphicon-erase"></span></button>
 						<button class="btn btn-link btn-header" type="button" title="Save code" aria-label="Save code" (click)="saveCode()"><span class="glyphicon glyphicon-floppy-disk"></span></button>
 					</div>
 				</header>
