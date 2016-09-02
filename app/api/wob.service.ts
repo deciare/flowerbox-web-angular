@@ -228,6 +228,19 @@ export class WobService {
 			);
 	}
 
+	deleteVerb(id: number | string, name: string, admin: boolean): Promise<ModelBase> {
+		return this.sessionService.getPlayerInfo()
+			.then((player: WobInfo) => {
+				return this.http.delete(Urls.wobGetVerb(id, name), {
+					admin: admin
+				}).toPromise();
+			})
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
 	deleteVerbDraft(id: number | string, name: string): Promise<ModelBase> {
 		return this.sessionService.getPlayerInfo()
 			.then((player: WobInfo) => {

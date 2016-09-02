@@ -65,7 +65,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	ngOnInit() {
 		this.draftUpdateSubscription = this.draftUpdate
 			.debounceTime(1000)
-			.subscribe(this.saveDraft.bind(this));
+			.subscribe(this.saveVerbDraft.bind(this));
 
 		this.routeDataSubscription = this.route.data.withLatestFrom(this.route.params).subscribe((values) => {
 			var wobEditState = values[0]["wobEditState"];
@@ -238,7 +238,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 
 		// We're just saving a placeholder draft, so there's no need to wait
 		// for a result.
-		this.saveDraft();
+		this.saveVerbDraft();
 	}
 
 	deleteCodeDraft(): Promise<ModelBase> {
@@ -268,7 +268,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 			}
 			// Otherwise, save draft with undefined code.
 			else {
-				return this.saveDraft();
+				return this.saveVerbDraft();
 			}
 		}
 	}
@@ -284,7 +284,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 			}
 			// Otherwise, save draft with undefined signatures.
 			else {
-				return this.saveDraft();
+				return this.saveVerbDraft();
 			}
 		}
 	}
@@ -305,6 +305,32 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 					return data;
 				});
 		}
+	}
+
+	deleteVerb(): Promise<ModelBase> {
+		// Delete verb from server.
+		return this.wobService.deleteVerb(
+				this.wobId,
+				this.selectedVerb.name,
+				this.asAdmin
+			)
+			.then((data: ModelBase) => {
+				this.message = "Deleted verb";
+
+				// Delete verb from local data models.
+				delete this.verbDrafts[this.selectedVerb.name];
+				delete this.verbs[this.selectedVerb.name];
+
+				// Navigate to first still-existing verb.
+				var verbName: string;
+				for (let key in this.verbs) {
+					verbName = key;
+					break;
+				}
+				this.navigateToVerb(verbName);
+
+				return data;
+			});
 	}
 
 	navigateToVerb(name: string) {
@@ -457,7 +483,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 			});
 	}
 
-	saveDraft(): Promise<ModelBase> {
+	saveVerbDraft(): Promise<ModelBase> {
 		if (this.selectedVerb.isDraft) {
 			return this.wobService.setVerbDraft(
 					this.selectedVerb.id,

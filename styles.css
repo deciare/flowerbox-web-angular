@@ -144,6 +144,9 @@ body {
 	border-color: #4cae4c;
 	/*color: #64c164;*/
 }
+.btn.btn-warn {
+	border-color: #eea236;
+}
 .btn:hover,
 .btn:focus {
 	color: #cccccc;
