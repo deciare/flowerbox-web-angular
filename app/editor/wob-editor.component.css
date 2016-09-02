@@ -1,6 +1,6 @@
 textarea {
 	margin-bottom: 0.9em;
-	min-height: 128px;
+	min-height: 256px;
 	resize: vertical;
 	width: 100%;
 }
@@ -21,9 +21,6 @@ textarea {
 	font-size: 0.7em;
 	font-weight: normal;
 	white-space: pre-wrap;
-}
-.item-list a {
-	color: #cccccc;
 }
 .inherited,
 .inherited a {
@@ -73,7 +70,6 @@ textarea {
 	margin-right: -1px; /* tab background overlaps container to hide border */
 	margin-bottom: -1px; /* tabs overlap to share border with adjacent tab */
 	margin-left: 0.75em; /* de-emphasise unselected tab */
-	padding: 0.5em;
 	position: relative;
 }
 .item-list li.plus {
@@ -86,8 +82,13 @@ textarea {
 	box-shadow: 0.5em 1.6em 0 -0.6em rgba(0, 0, 0, 0.75);
 	margin-left: 0;
 }
-.item-list li:focus,
-.item-list li:hover {
+.item-list li > a {
+	color: #cccccc;
+	display: block;
+	padding: 0.5em;
+}
+.item-list li > a:focus,
+.item-list li > a:hover {
 	text-decoration: underline;
 }
 .item-detail-container {
