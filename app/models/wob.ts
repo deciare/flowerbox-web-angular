@@ -36,7 +36,7 @@ export class Verb extends ModelBase {
 		super(true);
 		this.id = id;
 		this.name = name;
-		this.sigs = sigs;
+		this.sigs = sigs.slice(); // copy array instead of using reference to it
 		this.code = code;
 		this.perms = perms;
 		this.isDraft = isDraft === undefined ? false : isDraft;
