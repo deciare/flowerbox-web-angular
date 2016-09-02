@@ -60,13 +60,16 @@ textarea {
 .item-list {
 	border-right: 1px solid #cccccc;
 	list-style: none;
+	margin-right: -1px;
 	padding-right: 0;
 	text-align: right;
 	position: relative;
+	z-index: 10;
 }
 .item-list li {
 	background-color: #1a1a1a;
 	border: 1px solid #cccccc;
+	cursor: pointer;
 	margin-right: -1px; /* tab background overlaps container to hide border */
 	margin-bottom: -1px; /* tabs overlap to share border with adjacent tab */
 	margin-left: 0.75em; /* de-emphasise unselected tab */
@@ -82,7 +85,10 @@ textarea {
 	border-right: none;
 	box-shadow: 0.5em 1.6em 0 -0.6em rgba(0, 0, 0, 0.75);
 	margin-left: 0;
-	z-index: 10;
+}
+.item-list li:focus,
+.item-list li:hover {
+	text-decoration: underline;
 }
 .item-detail-container {
 	/*padding-right: 1em;*/
@@ -90,9 +96,8 @@ textarea {
 .item-detail {
 	background-color: #222222;
 	border: 1px solid #cccccc;
-	border-left: none;
 	box-shadow: 0.75em 1em 0 rgba(0, 0, 0, 0.75);
 	padding-top: 0.9em;
 	padding-bottom: 0.9em;
-	z-index: 20;
+	z-index: 0;
 }

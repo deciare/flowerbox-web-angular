@@ -1,17 +1,17 @@
 <div class="container">
 	<div class="row">
-		<ul class="item-list col-sm-2" [style.min-height]="(itemDetail.clientHeight + 2) + 'px'" #itemList>
+		<ul class="item-list col-sm-2">
 			<span *ngFor="let verb of verbDrafts | keyvalue">
 				<li *ngIf="!verbs[verb.value.name]" class="draft" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
 					<a [routerLink]="[ { verb: verb.value.name } ]">{{verb.value.name}}</a>
 				</li>
 			</span>
-			<li *ngFor="let verb of verbs | keyvalue" [class.draft]="verbDrafts[verb.key]" [class.inherited]="isInherited(verb.value)" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
-				<a [routerLink]="[ { verb: verb.value.name } ]">{{verb.value.name}}</a>
+			<li *ngFor="let verb of verbs | keyvalue" [class.draft]="verbDrafts[verb.key]" [class.inherited]="isInherited(verb.value)" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name" (click)="navigateToVerb(verb.value.name)">
+				<a [routerLink]="[ { verb: verb.value.name } ]" (click)="$event.stopPropagation()">{{verb.value.name}}</a>
 			</li>
-			<li class="plus"><a (click)="addVerb()">+</a></li>
+			<li class="plus" (click)="addVerb()"><a href="#" (click)="$event.preventDefault(); $event.stopPropagation();		 addVerb()">+</a></li>
 		</ul>
-		<form class="form item-detail col-sm-10" [style.min-height]="itemList.clientHeight + 'px'" #itemDetail>
+		<form class="form item-detail col-sm-10">
 			<section *ngIf="selectedVerb" class="verbforms">
 				<aside class="comment-bar">
 					<span *ngIf="isInherited(selectedVerb)" class="inherited">(inherited from #{{selectedVerb.id}})</span>
