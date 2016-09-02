@@ -9,6 +9,42 @@ textarea {
 	min-height: 100vh;
 	width: 100%;
 }
+.editor-nav {
+	border-bottom: 1px solid #cccccc;
+	display: block;
+	list-style: none;
+	margin-bottom: 2.65em;
+	text-align: center;
+}
+.editor-nav > li {
+	position: relative;
+	top: 0.75em;
+	background-color: #cccccc;
+	display: inline-block;
+	margin-right: -2px;
+	margin-bottom: -1em;
+	padding: 2px;
+}
+.editor-nav > li > a {
+	background-color: #cccccc;
+	border: 1px solid #222222;
+	color: #222222;
+	display: block;
+	padding: 0.5em 1em;
+	text-decoration: none;
+	text-transform: uppercase;
+}
+.editor-nav > li:not(:first-child) {
+	padding-left: 0;
+}
+.editor-nav > li:not(:last-child) > a {
+	border-right: none;
+}
+.editor-nav > li.active > a {
+	background-color: black;
+	color: #cccccc;
+	text-decoration: underline;
+}
 .admin-banner {
 	font-size: 1.4em;
 	margin-bottom: -0.9em;

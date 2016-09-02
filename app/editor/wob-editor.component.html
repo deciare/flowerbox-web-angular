@@ -1,7 +1,9 @@
 <div class="view-container">
 <nav>
-	<a [routerLink]="['properties']" routerLinkActive="active">Properties</a>
-	<a [routerLink]="['verbs']" routerLinkActive="active">Verbs</a>
+	<ul class="editor-nav">
+		<li role="presentation" routerLinkActive="active"><a class="active" [routerLink]="['properties']">Properties</a></li><!--
+		--><li role="presentation" routerLinkActive="active"><a [routerLink]="['verbs']">Verbs</a></li>
+	</ul>
 </nav>
 <router-outlet></router-outlet>
 </div>
