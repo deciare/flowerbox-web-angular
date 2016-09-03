@@ -39,6 +39,7 @@ export class AceConfigComponent {
 
 	ngAfterViewInit() {
 		this.element = $(`#${this.domId}`);
+		this.element.on("hide.bs.modal", this.onDismiss.bind(this));
 	}
 
 	applyConfig() {
@@ -80,8 +81,11 @@ export class AceConfigComponent {
 		this.editor = editor;
 	}
 
-	onSubmit() {
+	onDismiss(event: JQueryEventObject) {
 		this.saveConfig();
+	}
+
+	onSubmit() {
 		this.element.modal("hide");
 	}
 
