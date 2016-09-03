@@ -23,6 +23,7 @@ export class WobService {
 	}
 
 	private handleResponse(response: Response): Promise<any> {
+		var blobType;
 		var contentType = response.headers.get("Content-Type");
 
 		if (contentType.startsWith("application/json")) {
@@ -35,18 +36,37 @@ export class WobService {
 				return this.handleDataError(data.error);
 			}
 		}
-		else if (
-			contentType.startsWith("audio/") ||
-			contentType.startsWith("image/") ||
-			contentType.startsWith("video/")
-		) {
+		else if (contentType.startsWith("audio/")) {
+			blobType = "audio";
+		}
+		else if (contentType.startsWith("image/")) {
+			blobType = "image";
+		}
+		else if (contentType.startsWith("video/")) {
+			blobType="video";
+		}
+
+		if (blobType) {
+			let metadata = JSON.parse(response.headers.get("X-Property-Metadata"));
 			try {
 				let data: Blob = response.blob();
-				return Promise.resolve(data);
+				return Urls.toDataUrl(data)
+					.then((dataUrl: string) => {
+						return new Property(
+							metadata.id,
+							metadata.name,
+							dataUrl,
+							undefined,
+							undefined,
+							undefined,
+							blobType
+						);
+					});
 			}
 			catch(error) {
 				// Retrieving blob may fail if XMLHttpRequest.responseType was
 				// set incorrectly.
+				console.error("WobService.handleResponse():", error);
 				return Promise.reject(error);
 			}
 		}
@@ -83,14 +103,8 @@ export class WobService {
 
 	getEditState(id: number, admin?: boolean): Promise<WobEditState> {
 		var state: WobEditState = new WobEditState(id);
-		var dataUrlPromises: Promise<string>[] = [];
 		var propertyPromises: Promise<any>[] = [];
 		var verbPromises: Promise<any>[] = [];
-
-		// Binary properties don't include names in their response. We need to
-		// keep track of the order in which property names were requested, in
-		// order to know which name corresponds with a blob response.
-		var propertyNames: string[] = [];
 
 		// Get info about this wob
 		return this.getInfo(id)
@@ -109,7 +123,6 @@ export class WobService {
 					// FIXME: "image" property is a special case until
 					//        server API can identify property content type
 					if (property.value == "image") {
-						propertyNames.push("image");
 						propertyPromises.push(
 							this.getBinaryProperty(id, property.value, admin)
 								.catch((error) => {
@@ -120,7 +133,6 @@ export class WobService {
 						);
 					}
 					else {
-						propertyNames.push(property.value);
 						propertyPromises.push(
 							this.getProperty(id, property.value, admin)
 								.catch((error) => {
@@ -209,41 +221,21 @@ export class WobService {
 			})
 			.then((values: [ Property[], Verb[] ]) => {
 				// Add each applied property to the edit state
-				values[0].forEach((property: any /*Blob | Property*/, index: number) => {
+				values[0].forEach((property: Property) => {
 					if (!property) {
 						// Some properties may be missing due to security
 						// constraints; simply skip those.
 						return;
 					}
 
-					if (property instanceof Blob) {
-						dataUrlPromises.push(
-							Urls.toDataUrl(property)
-								.then((dataUrl: string) => {
-									state.applied.properties.push(new Property(
-										id,
-										propertyNames[index],
-										dataUrl,
-										undefined,	// default permissions
-										undefined,	// not a sub-property
-										false,		// not a draft
-										Property.BlobTypeImage	// image blob
-									));
-
-									return dataUrl;
-								})
-						);
-					}
-					else {
-						// Exclude drafts, event stream, and properties that are
-						// not meant to be edited directly from being shown in
-						// the property editor.
-						if (!property.name.startsWith(Urls.draftWob) &&
-							property.name != "eventstream" &&
-							property.name != "pwhash"
-						) {
-							state.applied.properties.push(property);
-						}
+					// Exclude drafts, event stream, and properties that are
+					// not meant to be edited directly from being shown in
+					// the property editor.
+					if (!property.name.startsWith(Urls.draftWob) &&
+						property.name != "eventstream" &&
+						property.name != "pwhash"
+					) {
+						state.applied.properties.push(property);
 					}
 				});
 				// Add each applied verb to the edit state
@@ -251,13 +243,6 @@ export class WobService {
 					state.applied.verbs.push(verb);
 				});
 
-				// Wait for data URLs to resolve, if any
-				return Promise.all(dataUrlPromises);
-			})
-			.then((dataUrls: string[]) => {
-				// No need to do anything with the data URLs; that was taken
-				// care of by the thenable attached directly to the data URL
-				// Promises.
 				return state;
 			});
 	}
