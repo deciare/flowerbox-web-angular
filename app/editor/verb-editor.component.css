@@ -30,8 +30,11 @@
 .btn-verbform:after {
 	content: "]";
 }
-.comment-bar {
+.status-label {
 	height: 1em;
+	font-size: 1em;
+	margin-top: -0.35em;
+	white-space: normal;
 }
 .editor-container {
 	background-color: #272822; /* match ace editor theme */

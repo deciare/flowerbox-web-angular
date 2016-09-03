@@ -14,6 +14,7 @@ import "rxjs/add/operator/withLatestFrom";
 import { ModelBase } from "../models/base";
 import { Verb, WobEditState } from "../models/wob";
 
+import { AceConfigComponent } from "./ace-config.component";
 import { VerbformEditorComponent } from "./verbform-editor.component";
 import { WobEditorComponent } from "./wob-editor.component";
 
@@ -47,6 +48,9 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	verbDrafts: any;
 	verbs: any;
 	wobId: number;
+
+	@ViewChild(AceConfigComponent)
+	aceConfig: AceConfigComponent;
 
 	@ViewChild(VerbformEditorComponent)
 	verbformEditor: VerbformEditorComponent;
@@ -103,6 +107,10 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 								this.onCodeChange(this.editor.getValue());
 							}
 						});
+
+						// Load editor configuration
+						this.aceConfig.setEditor(this.editor);
+						this.aceConfig.loadConfig();
 					}
 					// Avoid triggering draft creation when setting new code
 					// as a direct result of navigating to different verbs.

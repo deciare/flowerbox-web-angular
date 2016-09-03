@@ -13,7 +13,7 @@
 		</ul>
 		<form class="form item-detail col-sm-10">
 			<section *ngIf="selectedVerb" class="verbforms">
-				<aside class="comment-bar">
+				<aside class="status-label">
 					<span *ngIf="isInherited(selectedVerb)" class="inherited">(inherited from #{{selectedVerb.id}})</span>
 					<span *ngIf="selectedVerb && selectedVerb.isDraft" class="draft">
 						<span *ngIf="selectedVerb.sigs != undefined && selectedVerb.code == undefined">(draft signatures)</span>
@@ -53,6 +53,7 @@
 					<div class="btn-group" role="group">
 						<button *ngIf="selectedVerb && selectedVerb.isDraft && selectedVerb.code != undefined" class="btn btn-link btn-header" type="button" title="Discard code drafts" aria-label="Discard code drafts" (click)="deleteCodeDraft()"><span class="glyphicon glyphicon-erase"></span></button>
 						<button class="btn btn-link btn-header" type="button" title="Save code" aria-label="Save code" (click)="saveCode()"><span class="glyphicon glyphicon-floppy-disk"></span></button>
+						<button class="btn btn-link btn-header" type="button" title="Configure code editor" aria-label="Configure code editor" (click)="aceConfig.open(editor)"><span class="glyphicon glyphicon-cog"></span></button>
 					</div>
 				</header>
 				<div class="editor-container">
@@ -69,5 +70,6 @@
 		</form>
 	</div>
 </div>
+<ace-config></ace-config>
 <verbform-editor (save)="onSignatureChange($event)"></verbform-editor>
 {{message}}<br />

@@ -103,6 +103,7 @@ body {
 /* Form controls */
 .form-control[type=text],
 .form-control[type=password],
+select.form-control,
 .btn:not(.btn-link) {
 	background-color: #222222;
 	border: 1px solid #cccccc;
@@ -110,6 +111,9 @@ body {
 	box-shadow: 0.75em 1em 0 rgba(0, 0, 0, 0.75);
 	color: #cccccc;
 	margin-bottom: 0.9em;
+}
+.form-group > .form-control[type=text] {
+	margin-bottom: 1.8em;
 }
 .modal-footer .btn {
 	margin-left: 7px !important;
