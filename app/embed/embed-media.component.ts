@@ -73,16 +73,6 @@ export class EmbedMediaComponent implements OnInit, OnChanges {
 		}
 	}
 
-	toDataUrl(blob: Blob): Promise<string> {
-		return new Promise((resolve, reject) => {
-			var reader = new FileReader();
-			reader.onloadend = function() {
-				resolve(reader.result);
-			};
-			reader.readAsDataURL(blob);
-		});
-	}
-
 	/**
 	 * Get an image from the server and convert it into a dat: URL.
 	 * Images can't be loaded directly from the server via a regular <img> tag
@@ -97,7 +87,7 @@ export class EmbedMediaComponent implements OnInit, OnChanges {
 				var contentType = response.headers.get("Content-Type");
 
 				if (contentType.startsWith("image/")) {
-					this.toDataUrl(response.blob())
+					Urls.toDataUrl(response.blob())
 						.then((dataUrl: string) => {
 							this.data = dataUrl;
 							this.load.emit(this.data);

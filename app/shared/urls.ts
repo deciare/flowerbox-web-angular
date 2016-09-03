@@ -17,6 +17,16 @@ export class Urls {
 	static draftProperty: string = "__property_";
 	static draftVerb: string = "__verb_";
 
+	static toDataUrl(blob: Blob): Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			var reader = new FileReader();
+			reader.onloadend = function() {
+				resolve(reader.result);
+			};
+			reader.readAsDataURL(blob);
+		});
+	}
+
 	static wobInfo(id: number | string): string {
 		return Urls.worldWob + id + "/info";
 	}
