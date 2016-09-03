@@ -107,6 +107,7 @@ textarea {
 	margin-bottom: -1px; /* tabs overlap to share border with adjacent tab */
 	margin-left: 0.75em; /* de-emphasise unselected tab */
 	position: relative;
+	z-index: 0;
 }
 .item-list li.plus {
 	margin-left: 75%;
@@ -115,8 +116,9 @@ textarea {
 .item-list li.selected {
 	background-color: #222222;
 	border-right: none;
-	box-shadow: 0.5em 1.6em 0 -0.6em rgba(0, 0, 0, 0.75);
+	box-shadow: 0.5em 1.6em 0 -0.6em rgba(0, 0, 0, 0.66);
 	margin-left: 0;
+	z-index: 10;
 }
 .item-list li > a {
 	display: block;

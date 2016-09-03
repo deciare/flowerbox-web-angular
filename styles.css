@@ -50,6 +50,9 @@ body {
 .modal .modal-content {
 	background-color: #333333;
 }
+.modal .modal-content .modal-header {
+	color: #d1ca53;
+}
 .modal .modal-content .modal-header .close {
 	color: white;
     text-shadow: 0 2px 0 black;
@@ -125,9 +128,14 @@ select.form-control,
 	box-shadow: none;
 }
 .form-control[type=text]:focus,
-.form-control[type=password]:focus {
+.form-control[type=password]:focus,
+select.form-control:focus {
 	background-color: #cccccc;
 	color: black;
+}
+select.form-control:focus {
+	/* Override Bootstrap's box-shadow override for focused select boxes */
+	box-shadow: 0.75em 1em 0 rgba(0, 0, 0, 0.75);
 }
 .btn {
 	margin-left: 12px;
