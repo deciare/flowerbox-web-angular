@@ -8,7 +8,7 @@ import { ModelBase } from "../models/base";
 
 // For returning one property on a wob.
 export class Property extends ModelBase {
-	constructor(id: number, name: string, value: any, perms?: number, sub?: string, isDraft?: boolean) {
+	constructor(id: number, name: string, value: any, perms?: number, sub?: string, isDraft?: boolean, blobType?: string) {
 		super(true);
 		this.id = id;
 		this.name = name;
@@ -16,6 +16,7 @@ export class Property extends ModelBase {
 		this.perms = perms;
 		this.sub = sub;
 		this.isDraft = isDraft === undefined ? false : isDraft;
+		this.blobType = blobType;
 	}
 
 	public id: number;
@@ -24,6 +25,10 @@ export class Property extends ModelBase {
 	public perms: number;
 	public sub: string;
 	public isDraft: boolean;
+	public blobType: string;
+
+	// Possible values for blobType
+	static BlobTypeImage: string = "image";
 }
 
 export class PropertyList {

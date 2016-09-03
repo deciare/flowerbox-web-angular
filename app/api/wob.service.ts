@@ -83,8 +83,14 @@ export class WobService {
 
 	getEditState(id: number, admin?: boolean): Promise<WobEditState> {
 		var state: WobEditState = new WobEditState(id);
+		var dataUrlPromises: Promise<string>[] = [];
 		var propertyPromises: Promise<any>[] = [];
 		var verbPromises: Promise<any>[] = [];
+
+		// Binary properties don't include names in their response. We need to
+		// keep track of the order in which property names were requested, in
+		// order to know which name corresponds with a blob response.
+		var propertyNames: string[] = [];
 
 		// Get info about this wob
 		return this.getInfo(id)
@@ -100,14 +106,30 @@ export class WobService {
 
 				// Expect a promise to resolve with info about each property
 				data.properties.forEach((property) => {
-					propertyPromises.push(
-						this.getProperty(id, property.value, admin)
-							.catch((error) => {
-								// If a property cannot be fetched, it's a
-								// security error; move along
-								return null;
-							})
-					);
+					// FIXME: "image" property is a special case until
+					//        server API can identify property content type
+					if (property.value == "image") {
+						propertyNames.push("image");
+						propertyPromises.push(
+							this.getBinaryProperty(id, property.value, admin)
+								.catch((error) => {
+									// If a property cannot be fetched, it's a
+									// security error; move along
+									return null;
+								})
+						);
+					}
+					else {
+						propertyNames.push(property.value);
+						propertyPromises.push(
+							this.getProperty(id, property.value, admin)
+								.catch((error) => {
+									// If a property cannot be fetched, it's a
+									// security error; move along
+									return null;
+								})
+						);
+					}
 				});
 				// Expect a promise to resolve with info about each verb
 				data.verbs.forEach((verb) => {
@@ -185,23 +207,43 @@ export class WobService {
 						Promise.all(verbPromises)
 					]);
 			})
-			.then((values) => {
+			.then((values: [ Property[], Verb[] ]) => {
 				// Add each applied property to the edit state
-				values[0].forEach((property: Property) => {
+				values[0].forEach((property: any /*Blob | Property*/, index: number) => {
 					if (!property) {
 						// Some properties may be missing due to security
 						// constraints; simply skip those.
 						return;
 					}
 
-					// Exclude drafts, event stream, and properties that are
-					// not meant to be edited directly from being shown in the
-					// property editor.
-					if (!property.name.startsWith(Urls.draftWob) &&
-						property.name != "eventstream" &&
-						property.name != "pwhash"
-					) {
-						state.applied.properties.push(property);
+					if (property instanceof Blob) {
+						dataUrlPromises.push(
+							Urls.toDataUrl(property)
+								.then((dataUrl: string) => {
+									state.applied.properties.push(new Property(
+										id,
+										propertyNames[index],
+										dataUrl,
+										undefined,	// default permissions
+										undefined,	// not a sub-property
+										false,		// not a draft
+										Property.BlobTypeImage	// image blob
+									));
+
+									return dataUrl;
+								})
+						);
+					}
+					else {
+						// Exclude drafts, event stream, and properties that are
+						// not meant to be edited directly from being shown in
+						// the property editor.
+						if (!property.name.startsWith(Urls.draftWob) &&
+							property.name != "eventstream" &&
+							property.name != "pwhash"
+						) {
+							state.applied.properties.push(property);
+						}
 					}
 				});
 				// Add each applied verb to the edit state
@@ -209,6 +251,13 @@ export class WobService {
 					state.applied.verbs.push(verb);
 				});
 
+				// Wait for data URLs to resolve, if any
+				return Promise.all(dataUrlPromises);
+			})
+			.then((dataUrls: string[]) => {
+				// No need to do anything with the data URLs; that was taken
+				// care of by the thenable attached directly to the data URL
+				// Promises.
 				return state;
 			});
 	}
@@ -341,7 +390,7 @@ export class WobService {
 			);
 	}
 
-	getBinaryProperty(id: number | string, name: string, admin?: boolean): Promise<Property> {
+	getBinaryProperty(id: number | string, name: string, admin?: boolean): Promise<Blob> {
 		return this.http.get(Urls.wobGetProperty(id, name), {
 				responseType: ResponseContentType.Blob,
 				admin: admin
