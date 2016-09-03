@@ -17,7 +17,7 @@ export class Urls {
 	static draftProperty: string = "__property_";
 	static draftVerb: string = "__verb_";
 
-	static toDataUrl(blob: Blob): Promise<string> {
+	static blobToDataUri(blob: Blob): Promise<string> {
 		return new Promise<string>((resolve, reject) => {
 			var reader = new FileReader();
 			reader.onloadend = function() {

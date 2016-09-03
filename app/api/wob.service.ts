@@ -50,12 +50,12 @@ export class WobService {
 			let metadata = JSON.parse(response.headers.get("X-Property-Metadata"));
 			try {
 				let data: Blob = response.blob();
-				return Urls.toDataUrl(data)
-					.then((dataUrl: string) => {
+				return Urls.blobToDataUri(data)
+					.then((dataUri: string) => {
 						return new Property(
 							metadata.id,
 							metadata.name,
-							dataUrl,
+							dataUri,
 							undefined,
 							undefined,
 							undefined,
@@ -170,6 +170,21 @@ export class WobService {
 					// the draft
 					for (let key in draft.value) {
 						if (key.startsWith(Urls.draftProperty)) {
+							let blobType;
+
+							if (typeof draft.value[key] === "string" && draft.value[key].startsWith("data:")) {
+								let contentType = Urls.dataUriMediaType(draft.value[key]);
+
+								if (contentType.startsWith("audio/")) {
+									blobType = "audio";
+								}
+								else if (contentType.startsWith("image/")) {
+									blobType = "image";
+								}
+								else if (contentType.startsWith("video/")) {
+									blobType = "video/";
+								}
+							}
 							state.draft.properties.push(new Property(
 								// Wob ID
 								id,
@@ -182,7 +197,9 @@ export class WobService {
 								// Sub-property
 								undefined,
 								// Draft status
-								true
+								true,
+								// Type of blob data this is, if it is one
+								blobType
 							));
 						}
 						else if (key.startsWith(Urls.draftVerb)) {

@@ -87,9 +87,9 @@ export class EmbedMediaComponent implements OnInit, OnChanges {
 				var contentType = response.headers.get("Content-Type");
 
 				if (contentType.startsWith("image/")) {
-					Urls.toDataUrl(response.blob())
-						.then((dataUrl: string) => {
-							this.data = dataUrl;
+					Urls.blobToDataUri(response.blob())
+						.then((dataUri: string) => {
+							this.data = dataUri;
 							this.load.emit(this.data);
 						});
 				}
