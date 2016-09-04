@@ -17,7 +17,7 @@ export class Urls {
 	static draftProperty: string = "__property_";
 	static draftVerb: string = "__verb_";
 
-	static blobToDataUri(blob: Blob): Promise<string> {
+	static blobToDataUri(blob: Blob | File): Promise<string> {
 		return new Promise<string>((resolve, reject) => {
 			var reader = new FileReader();
 			reader.onloadend = function() {
@@ -27,8 +27,35 @@ export class Urls {
 		});
 	}
 
+	static blobToObjectUrl(blob: Blob | File): string {
+		var urlCreator = window.URL || (<any>window).webkitURL;
+		return urlCreator.createObjectURL(blob);
+	}
+
 	static dataUriMediaType(dataUri: string): string {
-		return dataUri.split(',')[0].split(':')[1].split(';')[0];
+		return dataUri ? dataUri.split(',')[0].split(':')[1].split(';')[0] : undefined;
+	}
+
+	static objectUrlToBlob(objectUrl: string): Promise<Blob> {
+		return new Promise((resolve, reject) => {
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", objectUrl, true);
+			xhr.responseType = "blob";
+			xhr.onload = function (event) {
+				if (this.status == 200) {
+					resolve(this.response);
+				}
+				else {
+					reject(this.status + " " + this.statusText)
+				}
+			};
+			xhr.send();
+		});
+	}
+
+	static revokeObjectUrl(objectUrl: string) {
+		var urlCreator = window.URL || (<any>window).webkitURL;
+		urlCreator.revokeObjectURL(objectUrl);
 	}
 
 	// Thanks to https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata/5100158#5100158

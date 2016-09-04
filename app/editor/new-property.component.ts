@@ -37,6 +37,7 @@ export class NewPropertyComponent implements AfterViewInit {
 		this.domId = "new-property-" + Tag.makeTag(3);
 		this.validTypes = {
 			Text: null,
+			Audio: "audio",
 			Image: "image"
 		};
 		this.confirm = new EventEmitter<NewPropertyParams>();

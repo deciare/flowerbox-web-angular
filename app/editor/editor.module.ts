@@ -12,6 +12,7 @@ import { SessionModule } from "../session/session.module";
 import { editorRouting } from "./editor.routing";
 
 import { AceConfigComponent } from "./ace-config.component";
+import { AudioPropertyEditorComponent } from "./audio-property-editor.component";
 import { ImagePropertyEditorComponent } from "./image-property-editor.component";
 import { PropertyEditorComponent } from "./property-editor.component";
 import { NewPropertyComponent } from "./new-property.component";
@@ -33,8 +34,9 @@ import { WobEditorResolve } from "./wob-editor-resolve.service";
 	],
 	declarations: [
 		AceConfigComponent,
-		KeyValuePipe,
+		AudioPropertyEditorComponent,
 		ImagePropertyEditorComponent,
+		KeyValuePipe,
 		NewPropertyComponent,
 		PropertyEditorComponent,
 		VerbEditorComponent,

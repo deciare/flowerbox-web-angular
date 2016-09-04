@@ -27,6 +27,9 @@
 					</button>
 				</span>
 			</div>
+			<div *ngIf="property.blobType == 'audio'" class="col-sm-10">
+				<audio-property-editor [property]="property" (propertyChange)="onChange(property, $event)" (deleteDraftClick)="deleteDraft(property)" (deleteClick)="delete(property)" (saveClick)="save(property)"></audio-property-editor>
+			</div>
 			<div *ngIf="property.blobType == 'image'" class="col-sm-10">
 				<image-property-editor [property]="property" (propertyChange)="onChange(property, $event)" (deleteDraftClick)="deleteDraft(property)" (deleteClick)="delete(property)" (saveClick)="save(property)"></image-property-editor>
 			</div>

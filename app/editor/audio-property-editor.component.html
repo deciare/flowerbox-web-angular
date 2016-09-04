@@ -1,12 +1,15 @@
 <div class="row">
 	<div class="col-xs-6">
-		<a [href]="property.value" target="_blank"><img [src]="property.value" /></a>
+		<audio *ngIf="property.value" controls>
+			Your browser does not support the <code>audio</code> element.
+			<source [src]="property.value" [type]="mediaType" />
+		</audio>
 	</div>
 	<div class="col-xs-6">
 		<div class="row">
 			<div class="col-xs-12">
 				<input type="file" (change)="onFileChange($event)" />
-				<p class="help-block">Selecting a file will replace the current image.</p>
+				<p class="help-block">Selecting a file will replace the current sound.</p>
 			</div>
 		</div>
 		<div class="row">
