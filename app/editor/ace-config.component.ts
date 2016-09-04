@@ -13,7 +13,7 @@ import { Tag } from "../shared/tag";
 	selector: "ace-config",
 	templateUrl: "./ace-config.component.html"
 })
-export class AceConfigComponent {
+export class AceConfigComponent implements AfterViewInit {
 	private domId: string;
 	private editor: any; // Ace editor
 	private element: JQuery;

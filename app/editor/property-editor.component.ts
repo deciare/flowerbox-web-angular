@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
@@ -13,6 +13,7 @@ import "rxjs/add/operator/distinctUntilChanged";
 import { ModelBase } from "../models/base";
 import { Intrinsic, Property, WobEditState, WobInfo } from "../models/wob";
 
+import { NewPropertyComponent, NewPropertyParams } from "./new-property.component";
 import { WobEditorComponent } from "./wob-editor.component";
 
 import { SessionService } from "../session/session.service";
@@ -37,6 +38,9 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 	message: string;
 	properties: Property[];
 	wobId: number;
+
+	@ViewChild(NewPropertyComponent)
+	newProperty: NewPropertyComponent;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -254,15 +258,14 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 			});
 	}
 
-	newDraft() {
-		var name = window.prompt("New property name:");
-		if (name && name.trim() != "") {
+	newDraft(param: NewPropertyParams) {
+		if (param.name && param.name.trim() != "") {
 			// Create form field for the new property.
 			this.properties.push(new Property(
 				// New property belongs to the wob being edited
 				this.wobId,
 				// User provides name
-				name,
+				param.name,
 				// Empty value
 				"",
 				// Default permission: inherit server default
@@ -270,14 +273,20 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 				// No sub-property
 				undefined,
 				// Is a draft
-				true
+				true,
+				// Blob type, if it is one
+				param.type
 			));
 
 			// Focus the newly created field.
 			setTimeout(() => {
-				$(`#${name}`).focus();
+				$(`#${param.name}`).focus();
 			}, 0);
 		}
+	}
+
+	newDraftPrompt() {
+		this.newProperty.open();
 	}
 
 	saveAll(): Promise<any> {
