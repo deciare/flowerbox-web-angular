@@ -24,9 +24,9 @@ export class WobService {
 
 	private handleResponse(response: Response): Promise<any> {
 		var blobType;
-		var contentType = response.headers.get("Content-Type");
+		var contentType = response.headers ? response.headers.get("Content-Type") : undefined;
 
-		if (contentType.startsWith("application/json")) {
+		if (!contentType || contentType.startsWith("application/json")) {
 			let data: any = response.json();
 
 			if (data.success) {
@@ -37,13 +37,13 @@ export class WobService {
 			}
 		}
 		else if (contentType.startsWith("audio/")) {
-			blobType = "audio";
+			blobType = Property.BlobTypeAudio;
 		}
 		else if (contentType.startsWith("image/")) {
-			blobType = "image";
+			blobType = Property.BlobTypeImage;
 		}
 		else if (contentType.startsWith("video/")) {
-			blobType="video";
+			blobType = Property.BlobTypeVideo;
 		}
 
 		if (blobType) {
@@ -120,9 +120,7 @@ export class WobService {
 
 				// Expect a promise to resolve with info about each property
 				data.properties.forEach((property) => {
-					// FIXME: "image" property is a special case until
-					//        server API can identify property content type
-					if (property.value == "image") {
+					if (property.blobmimetype) {
 						propertyPromises.push(
 							this.getBinaryProperty(id, property.value, admin)
 								.catch((error) => {
@@ -176,13 +174,13 @@ export class WobService {
 								let contentType = Urls.dataUriMediaType(draft.value[key]);
 
 								if (contentType.startsWith("audio/")) {
-									blobType = "audio";
+									blobType = Property.BlobTypeAudio;
 								}
 								else if (contentType.startsWith("image/")) {
-									blobType = "image";
+									blobType = Property.BlobTypeImage;
 								}
 								else if (contentType.startsWith("video/")) {
-									blobType = "video/";
+									blobType = Property.BlobTypeVideo;
 								}
 							}
 							state.draft.properties.push(new Property(
@@ -392,7 +390,7 @@ export class WobService {
 			);
 	}
 
-	getBinaryProperty(id: number | string, name: string, admin?: boolean): Promise<Blob> {
+	getBinaryProperty(id: number | string, name: string, admin?: boolean): Promise<Property> {
 		return this.http.get(Urls.wobGetProperty(id, name), {
 				responseType: ResponseContentType.Blob,
 				admin: admin
@@ -416,8 +414,16 @@ export class WobService {
 	}
 
 	setBinaryProperty(id: number, name: string, value: any, admin?: boolean): Promise<ModelBase> {
+		// If value is a data URI, it needs to be converted into a Blob.
+		if (value.startsWith("data:")) {
+			value = Urls.dataUriToBlob(value);
+		}
+		else {
+			value = JSON.stringify(value);
+		}
+
 		return this.http.putFormData(Urls.wobSetBinaryProperties(id), {
-				[name]: JSON.stringify(value)
+				[name]: value
 			}, {
 				admin: admin
 			})

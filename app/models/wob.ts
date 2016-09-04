@@ -28,7 +28,9 @@ export class Property extends ModelBase {
 	public blobType: string;
 
 	// Possible values for blobType
+	static BlobTypeAudio: string = "audio";
 	static BlobTypeImage: string = "image";
+	static BlobTypeVideo: string = "video";
 }
 
 export class PropertyList {
@@ -64,7 +66,7 @@ export class WobInfo extends ModelBase {
 	constructor(id: number, base: number, container: number,
 			name: string, desc: string, globalid: string,
 			owner: number, group: number, perms: number,
-			properties?: AttachedItem[], verbs?: AttachedItem[]) {
+			properties?: AttachedProperty[], verbs?: AttachedVerb[]) {
 		super(true);
 
 		this.id = id;
@@ -96,18 +98,37 @@ export class WobInfo extends ModelBase {
 	public globalid: string;
 
 	// List of properties and verbs, by wob ID.
-	public properties: AttachedItem[];
-	public verbs: AttachedItem[];
+	public properties: AttachedProperty[];
+	public verbs: AttachedVerb[];
 }
 
 export class AttachedItem {
-	constructor(sourceid: number, value: string) {
+	constructor(sourceid: number, value: string, perms?: number, permsEffective?: number) {
 		this.sourceid = sourceid;
 		this.value = value;
+		this.perms = perms;
+		this.permsEffective = permsEffective;
 	}
 
 	public sourceid: number;
 	public value: string;
+	public perms: number;
+	public permsEffective: number;
+}
+
+export class AttachedProperty extends AttachedItem {
+	constructor(sourceid: number, value: string, perms?: number, permsEffective?: number, blobmimetype?: string) {
+		super(sourceid, value, perms, permsEffective);
+		this.blobmimetype = blobmimetype;
+	}
+
+	public blobmimetype: string;
+}
+
+export class AttachedVerb extends AttachedItem {
+	constructor(sourceid: number, value: string, perms?: number, permsEffective?: number) {
+		super(sourceid, value, perms, permsEffective);
+	}
 }
 
 export class IdList {

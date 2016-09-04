@@ -27,6 +27,34 @@ export class Urls {
 		});
 	}
 
+	static dataUriMediaType(dataUri: string): string {
+		return dataUri.split(',')[0].split(':')[1].split(';')[0];
+	}
+
+	// Thanks to https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata/5100158#5100158
+	static dataUriToBlob(dataUri: string) {
+		var byteString: string;
+
+		// Convert base64/URLencoded data component to raw binary data.
+		if (dataUri.split(',')[0].indexOf('base64') >= 0) {
+			byteString = atob(dataUri.split(',')[1]);
+		}
+		else {
+			byteString = decodeURIComponent(dataUri.split(',')[1]);
+		}
+
+		// Write bytes of the string to a typed array.
+		var buffer = new ArrayBuffer(byteString.length);
+		var ia = new Uint8Array(buffer);
+		for (let i = 0; i < byteString.length; i++) {
+			ia[i] = byteString.charCodeAt(i);
+		}
+
+		return new Blob([buffer], {
+			type: Urls.dataUriMediaType(dataUri)
+		});
+	}
+
 	static wobInfo(id: number | string): string {
 		return Urls.worldWob + id + "/info";
 	}
