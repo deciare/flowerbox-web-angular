@@ -161,11 +161,12 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 					newValue,
 					property.perms,
 					undefined,
-					true
+					true,
+					property.blobType
 				);
 			}
 
-			// Replace the form field with one represending the draft property.
+			// Replace the form field with one representing the draft property.
 			this.useDraft(propertyDraft);
 
 			// draftUpdate should receive a copy of the draft instead of the
@@ -226,6 +227,9 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 						.then((info: WobInfo) => {
 							return new Intrinsic(property.name, info[property.name]);
 						});
+				}
+				else if ((<Property>property).blobType) {
+					return this.wobService.getBinaryProperty(this.wobId, property.name, this.asAdmin);
 				}
 				else {
 					return this.wobService.getProperty(this.wobId, property.name, this.asAdmin);
@@ -329,7 +333,12 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 		}
 		else {
 			// Save the given value as an applied property.
-			savePromise = this.wobService.setProperty(this.wobId, property.name, property.value, this.asAdmin)
+			if ((<Property>property).blobType) {
+				savePromise = this.wobService.setBinaryProperty(this.wobId, property.name, property.value, this.asAdmin)
+			}
+			else {
+				savePromise = this.wobService.setProperty(this.wobId, property.name, property.value, this.asAdmin)
+			}
 		}
 
 		return savePromise

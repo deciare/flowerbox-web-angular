@@ -13,7 +13,7 @@
 				<span *ngIf="!isIntrinsic(property) && isInherited(property) && !property.isDraft" class="status-label">(from #{{property.id}})</span>
 				<span *ngIf="property.isDraft" class="status-label">(draft)</span>
 			</label>
-			<div class="input-group col-sm-10">
+			<div *ngIf="!property.blobType" class="input-group col-sm-10">
 				<input class="form-control" type="text" [id]="property.name" [name]="property.name" [ngModel]="property.value" (ngModelChange)="onChange(property, $event)" />
 				<span class="input-group-btn">
 					<button *ngIf="property.isDraft" class="btn btn-default" type="button" (click)="deleteDraft(property)" title="Discard draft" aria-label="Discard draft">
@@ -26,6 +26,9 @@
 						<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>
 					</button>
 				</span>
+			</div>
+			<div *ngIf="property.blobType == 'image'" class="col-sm-10">
+				<image-property-editor [property]="property" (propertyChange)="onChange(property, $event)" (deleteDraftClick)="deleteDraft(property)" (deleteClick)="delete(property)" (saveClick)="save(property)"></image-property-editor>
 			</div>
 		</div>
 	</section>

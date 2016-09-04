@@ -61,12 +61,19 @@ export class WobEditorComponent {
 	}
 
 	protected refocus(id: string) {
+		var element : JQuery = $(`#${id}`);
+
+		if (!element.length) {
+			// If selector matched no elements, it may be unfocusable. Bail.
+			return;
+		}
+
 		// Obtain the current cursor position of the field.
-		var pos = (<HTMLInputElement>$(`#${id}`).focus().get(0)).selectionStart;
+		var pos = (<HTMLInputElement>element.focus().get(0)).selectionStart;
 
 		// After DOM updates, reset the cursor to that position.
 		setTimeout(() => {
-			(<HTMLInputElement>$(`#${id}`).focus().get(0)).setSelectionRange(pos, pos);
+			(<HTMLInputElement>element.focus().get(0)).setSelectionRange(pos, pos);
 		}, 0);
 	}
 }

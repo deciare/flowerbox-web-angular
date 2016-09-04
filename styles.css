@@ -167,5 +167,10 @@ select.form-control:focus {
 	z-index: 0;
 }
 .input-group-btn {
+	/* Prevent overlap from attached input field's box-shadow */
 	z-index: 10;
+}
+.btn-group .btn {
+	/* Prevent overlap from adjacent button's box-shadow */
+	z-index: 2;
 }

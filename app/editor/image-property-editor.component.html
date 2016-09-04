@@ -1,0 +1,26 @@
+<div class="row">
+	<div class="col-xs-6">
+		<a [href]="property.value" target="_blank"><img [src]="property.value" /></a>
+	</div>
+	<div class="col-xs-6">
+		<div class="row">
+			<div class="col-xs-12">
+				<input type="file" (change)="onChange($event)" />
+				<p class="help-block">Selecting a file will replace the current image.</p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="btn-group col-xs-12" role="group">
+				<button *ngIf="property.isDraft" type="button" class="btn btn-default" title="Discard draft" aria-label="Discard draft" (click)="onDeleteDraftClick($event)">
+					<span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+				</button>
+				<button *ngIf="!property.isDraft" type="button" class="btn btn-default" title="Remove property" aria-label="Remove property" (click)="onDeleteClick($event)">
+					<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+				</button>
+				<button type="button" class="btn btn-default" title="Save property" aria-label="Save property" (click)="onSaveClick($event)">
+					<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
