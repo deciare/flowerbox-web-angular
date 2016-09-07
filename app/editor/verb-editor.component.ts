@@ -119,7 +119,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 					this.ignoreCodeChanges = true;
 					this.editor.setValue(compositeCode ? compositeCode : "", -1);
 					this.ignoreCodeChanges = false;
-					this.editor.scrollToLine(1);
+					this.editor.scrollToLine(0);
 				});
 		});
 
@@ -300,7 +300,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 					this.ignoreCodeChanges = true;
 					this.editor.setValue(verb.code, -1);
 					this.ignoreCodeChanges = false;
-					this.editor.scrollToLine(1);
+					this.editor.scrollToLine(0);
 				});
 
 			// If verbforms draft is also unset, delete the draft for this verb.
