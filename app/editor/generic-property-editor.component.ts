@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from "@angular/core";
 import { DomSanitizer } from "@angular/platform-browser";
 
 import { Property } from "../types/wob";
@@ -17,7 +17,7 @@ import { SessionService } from "../session/session.service";
 	selector: "generic-property-editor",
 	template: ``
 })
-export class GenericPropertyEditorComponent implements OnChanges {
+export class GenericPropertyEditorComponent implements OnChanges, OnDestroy {
 	private _objectURL: string;
 
 	@Input()
@@ -49,24 +49,25 @@ export class GenericPropertyEditorComponent implements OnChanges {
 	}
 
 	set objectURL(value: string) {
+		if (this._objectURL !== undefined) {
+			Property.revokeObjectURL(this._objectURL);
+		}
 		this._objectURL = value;
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
-		if (this.objectURL) {
-			Property.revokeObjectURL(this.objectURL);
-		}
-
 		if (changes["property"].currentValue.isBlob) {
 			this.objectURL = changes["property"].currentValue.createObjectURL();
 		}
 	}
 
-	onFileChange(event: Event) {
-		if (this.objectURL) {
-			Property.revokeObjectURL(this.objectURL);
+	ngOnDestroy() {
+		if (this._objectURL !== undefined) {
+			Property.revokeObjectURL(this._objectURL);
 		}
+	}
 
+	onFileChange(event: Event) {
 		this.property.value = (<HTMLInputElement>event.target).files[0];
 		this.objectURL = this.property.createObjectURL();
 		this.propertyChange.emit(this.property.value);

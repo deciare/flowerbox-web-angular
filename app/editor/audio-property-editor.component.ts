@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Component, OnChanges, SimpleChanges } from "@angular/core";
+import { Component } from "@angular/core";
 import { DomSanitizer } from "@angular/platform-browser";
 
 import { Urls } from "../shared/urls";
@@ -19,16 +19,10 @@ import { GenericPropertyEditorComponent } from "./generic-property-editor.compon
 	],
 	templateUrl: "./audio-property-editor.component.html"
 })
-export class AudioPropertyEditorComponent extends GenericPropertyEditorComponent implements OnChanges {
-	mediaType: string;
-
+export class AudioPropertyEditorComponent extends GenericPropertyEditorComponent {
 	constructor(
 		domSanitizer: DomSanitizer
 	) {
 		super(domSanitizer);
-	}
-
-	ngOnChanges(changes: SimpleChanges) {
-		this.mediaType = Urls.dataUriMediaType((<Property>changes["property"].currentValue).value);
 	}
 }

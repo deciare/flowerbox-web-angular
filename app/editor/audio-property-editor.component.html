@@ -1,8 +1,7 @@
 <div class="row">
 	<div class="col-xs-6">
-		<audio *ngIf="property.value" controls>
+		<audio *ngIf="property.isBlob" [src]="objectURL" controls>
 			Your browser does not support the <code>audio</code> element.
-			<source [src]="property.value" [type]="mediaType" />
 		</audio>
 	</div>
 	<div class="col-xs-6">
