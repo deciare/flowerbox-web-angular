@@ -541,13 +541,12 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 				this.verbs[this.selectedVerb.name] = savedVerb;
 				this.verbsChanged();
 
+				return this.deleteCodeDraft();
+			})
 			.then ((data: BaseModel) => {
 				// Reload selected verb from updated local data model to
 				// ensure correct display of inheritance state.
 				this.selectedVerb = this.verbs[this.selectedVerb.name];
-
-				return this.deleteCodeDraft();
-			})
 				this.message += ", deleted code draft";
 				return data;
 			});
@@ -628,13 +627,13 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 				this.verbs[this.selectedVerb.name] = savedVerb;
 				this.verbsChanged();
 
+				return this.deleteSigsDraft();
+			})
 			.then ((data: BaseModel) => {
 				// Reload selected verb from updated local data model to
 				// ensure correct display of inheritance state.
 				this.selectedVerb = this.verbs[this.selectedVerb.name];
 
-				return this.deleteCodeDraft();
-			})
 				this.message += ", deleted sigs draft";
 				return data;
 			});
