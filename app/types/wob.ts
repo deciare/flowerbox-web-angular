@@ -55,6 +55,13 @@ export class Property extends Metadata {
 		this._isIntrinsic = isIntrinsic === undefined ? false : isIntrinsic;
 	}
 
+	private setAsBlob() {
+		if (this._blobValue === undefined) {
+			this._blobValue = new Blob([]);
+		}
+		this._value = undefined;
+	}
+
 	get isBlob(): boolean {
 		if (this._blobValue !== undefined) {
 			if (this._blobType === undefined) {
@@ -94,17 +101,16 @@ export class Property extends Metadata {
 
 	set value(value: any) {
 		if (typeof(value) === "object" && value instanceof Blob) {
+			this._blobValue = value;
 			if ((<Blob>value).type.startsWith("audio/")) {
-				this._blobType = BlobType.Audio;
+				this.setAsAudio();
 			}
 			else if ((<Blob>value).type.startsWith("image/")) {
-				this._blobType = BlobType.Image;
+				this.setAsImage();
 			}
 			else if ((<Blob>value).type.startsWith("video/")) {
-				this._blobType = BlobType.Video;
+				this.setAsVideo();
 			}
-
-			this._blobValue = value;
 		}
 		else {
 			this._blobType = undefined;
@@ -130,6 +136,35 @@ export class Property extends Metadata {
 		}
 	}
 
+	/**
+	 * Make this Property appear to contain audio data. This should usually not
+	 * be necessary, as setting the Property's value automatically sets its
+	 * media type as well.
+	 */
+	setAsAudio() {
+		this.setAsBlob();
+		this._blobType = BlobType.Audio;
+	}
+
+	/**
+	 * Make this Property appear to contain image data. This should usually not
+	 * be necessary, as setting the Property's value automatically sets its
+	 * media type as well.
+	 */
+	setAsImage() {
+		this.setAsBlob();
+		this._blobType = BlobType.Image;
+	}
+
+	/**
+	 * Make this Property appear to contain video data. This should usually not
+	 * be necessary, as setting the Property's value automatically sets its
+	 * media type as well.
+	 */
+	setAsVideo() {
+		this.setAsBlob();
+		this._blobType = BlobType.Video;
+	}
 }
 
 // For storing the wob editor's initial state.

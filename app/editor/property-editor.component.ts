@@ -276,7 +276,7 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 	newDraft(param: NewPropertyParams) {
 		if (param.name && param.name.trim() != "") {
 			// Create form field for the new property.
-			this.properties.push(new Property(
+			var newProperty = new Property(
 				// New property belongs to the wob being edited
 				this.wobId,
 				// User provides name
@@ -290,7 +290,23 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 				// TODO: permissions
 				undefined,
 				undefined
-			));
+			);
+
+			// Set new property's type, if needed.
+			switch(param.type) {
+			case "audio":
+				newProperty.setAsAudio();
+				break;
+			case "image":
+				newProperty.setAsImage();
+				break;
+			case "video":
+				newProperty.setAsVideo();
+				break;
+			}
+
+			// Add new property to the list.
+			this.properties.push(newProperty);
 
 			// Focus the newly created field.
 			setTimeout(() => {
