@@ -4,9 +4,10 @@
 	For licensing info, please see LICENCE file.
 */
 import { Component, OnChanges, SimpleChanges } from "@angular/core";
+import { DomSanitizer } from "@angular/platform-browser";
 
-import { Property } from "../models/wob";
 import { Urls } from "../shared/urls";
+import { Property } from "../types/wob";
 
 import { GenericPropertyEditorComponent } from "./generic-property-editor.component";
 
@@ -20,6 +21,12 @@ import { GenericPropertyEditorComponent } from "./generic-property-editor.compon
 })
 export class AudioPropertyEditorComponent extends GenericPropertyEditorComponent implements OnChanges {
 	mediaType: string;
+
+	constructor(
+		domSanitizer: DomSanitizer
+	) {
+		super(domSanitizer);
+	}
 
 	ngOnChanges(changes: SimpleChanges) {
 		this.mediaType = Urls.dataUriMediaType((<Property>changes["property"].currentValue).value);

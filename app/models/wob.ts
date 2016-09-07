@@ -4,41 +4,34 @@
 	For license info, please see notes/gpl-3.0.txt under the project root.
 */
 
-import { ModelBase } from "../models/base";
+import { BaseModel } from "../models/base";
 
 // For returning one property on a wob.
-export class Property extends ModelBase {
-	constructor(id: number, name: string, value: any, perms?: number, sub?: string, isDraft?: boolean, blobType?: string) {
+export class PropertyModel extends BaseModel {
+	constructor(id: number, name: string, value: any, perms?: number, permseffective?: number, sub?: string) {
 		super(true);
 		this.id = id;
 		this.name = name;
 		this.value = value;
 		this.perms = perms;
+		this.permseffective = permseffective;
 		this.sub = sub;
-		this.isDraft = isDraft === undefined ? false : isDraft;
-		this.blobType = blobType;
 	}
 
 	public id: number;
 	public name: string;
 	public value: any;
 	public perms: number;
+	public permseffective: number;
 	public sub: string;
-	public isDraft: boolean;
-	public blobType: string;
-
-	// Possible values for blobType
-	static BlobTypeAudio: string = "audio";
-	static BlobTypeImage: string = "image";
-	static BlobTypeVideo: string = "video";
 }
 
-export class PropertyList {
-	public properties: Property[];
+export class PropertyModelList {
+	public properties: PropertyModel[];
 }
 
 // For returning one verb on a wob.
-export class Verb extends ModelBase {
+export class VerbModel extends BaseModel {
 	constructor(id: number, name: string, sigs: string[], code: string, perms?: number, isDraft?: boolean) {
 		super(true);
 		this.id = id;
@@ -57,12 +50,12 @@ export class Verb extends ModelBase {
 	public isDraft: boolean;
 }
 
-export class VerbList {
-	public verbs: Verb[];
+export class VerbModelList {
+	public verbs: VerbModel[];
 }
 
 // For returning the basic info about a wob.
-export class WobInfo extends ModelBase {
+export class WobInfoModel extends BaseModel {
 	constructor(id: number, base: number, container: number,
 			name: string, desc: string, globalid: string,
 			owner: number, group: number, perms: number,
@@ -139,16 +132,16 @@ export class IdList {
 	public list: number[];
 }
 
-export class WobInfoList {
-	constructor(list: WobInfo[]) {
+export class WobInfoModelList {
+	constructor(list: WobInfoModel[]) {
 		this.list = list;
 	}
 
-	public list: WobInfo[];
+	public list: WobInfoModel[];
 }
 
 // For returning a result of whether one wob is descended from another.
-export class InstanceOfResult {
+export class InstanceOfModel {
 	constructor(id: number, isInstance: boolean) {
 		this.id = id;
 		this.isInstance = isInstance;
@@ -159,53 +152,11 @@ export class InstanceOfResult {
 }
 
 // For returning a list of InstanceOfResults
-export class InstanceOfList extends ModelBase {
-	constructor(list: InstanceOfResult[]) {
+export class InstanceOfModelList extends BaseModel {
+	constructor(list: InstanceOfModel[]) {
 		super(true);
 		this.list = list;
 	}
 
-	public list: InstanceOfResult[];
-}
-
-// For representing an intrinsic property in WobEditState,
-export class Intrinsic {
-	constructor(name: string, value: any, isDraft?: boolean) {
-		this.name = name;
-		this.value = value;
-		this.isDraft = isDraft === undefined ? false : isDraft;
-	}
-
-	name: string;
-	value: any;
-	isDraft: boolean;
-}
-
-// For storing the wob editor's initial state.
-export class WobEditState {
-	constructor(id: number) {
-		this.id = id;
-		this.applied = {
-			intrinsics: [],
-			properties: [],
-			verbs: []
-		};
-		this.draft = {
-			intrinsics: [],
-			properties: [],
-			verbs: []
-		}
-	}
-
-	id: number;
-	applied: {
-		intrinsics: Intrinsic[],
-		properties: Property[],
-		verbs: Verb[]
-	};
-	draft: {
-		intrinsics: Intrinsic[],
-		properties: Property[],
-		verbs: Verb[]
-	};
+	public list: InstanceOfModel[];
 }

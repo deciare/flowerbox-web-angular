@@ -4,6 +4,7 @@
 	For licensing info, please see LICENCE file.
 */
 import { Component } from "@angular/core";
+import { DomSanitizer } from "@angular/platform-browser";
 
 import { GenericPropertyEditorComponent } from "./generic-property-editor.component";
 
@@ -17,4 +18,9 @@ import { GenericPropertyEditorComponent } from "./generic-property-editor.compon
 	templateUrl: "./image-property-editor.component.html"
 })
 export class ImagePropertyEditorComponent extends GenericPropertyEditorComponent {
+	constructor(
+		domSanitizer: DomSanitizer
+	) {
+		super(domSanitizer);
+	}
 }

@@ -57,7 +57,7 @@ export class WobEditorComponent {
 	}
 
 	protected isInherited(value: any): boolean {
-		return value.id !== this.wobId;
+		return value.sourceId !== this.wobId;
 	}
 
 	protected refocus(id: string) {

@@ -7,9 +7,10 @@ import { Injectable } from "@angular/core";
 import { Response, ResponseContentType } from "@angular/http";
 import "rxjs/add/operator/toPromise";
 
-import { ModelBase } from "../models/base";
+import { BaseModel } from "../models/base";
 import { Urls } from "../shared/urls";
-import { Property, Verb, InstanceOfList, Intrinsic, WobEditState, WobInfo, WobInfoList } from "../models/wob";
+import { PropertyModel, VerbModel, InstanceOfModelList, WobInfoModel, WobInfoModelList } from "../models/wob";
+import { Property, WobEditState } from "../types/wob";
 
 import { SessionHttp } from "../session/session-http.service";
 import { SessionService } from "../session/session.service";
@@ -22,46 +23,52 @@ export class WobService {
 	) {
 	}
 
-	private handleResponse(response: Response): Promise<any> {
-		var blobType;
+	private handleResponse(response: Response, isDraft?: boolean): Promise<any> {
 		var contentType = response.headers ? response.headers.get("Content-Type") : undefined;
 
 		if (!contentType || contentType.startsWith("application/json")) {
 			let data: any = response.json();
 
 			if (data.success) {
-				return Promise.resolve(data);
+				if (
+					data.id !== undefined &&
+					data.name !== undefined &&
+					data.value !== undefined
+				) {
+					// Response contains a Property.
+					return Promise.resolve(new Property(
+						data.id,
+						data.name,
+						data.value,
+						isDraft,
+						data.perms,
+						data.permseffective
+					));
+				}
+				else {
+					return Promise.resolve(data);
+				}
 			}
 			else {
 				return this.handleDataError(data.error);
 			}
 		}
-		else if (contentType.startsWith("audio/")) {
-			blobType = Property.BlobTypeAudio;
-		}
-		else if (contentType.startsWith("image/")) {
-			blobType = Property.BlobTypeImage;
-		}
-		else if (contentType.startsWith("video/")) {
-			blobType = Property.BlobTypeVideo;
-		}
-
-		if (blobType) {
+		else if (
+			contentType.startsWith("audio/") ||
+			contentType.startsWith("image/") ||
+			contentType.startsWith("video/")
+		) {
 			let metadata = JSON.parse(response.headers.get("X-Property-Metadata"));
 			try {
 				let data: Blob = response.blob();
-				return Urls.blobToDataUri(data)
-					.then((dataUri: string) => {
-						return new Property(
-							metadata.id,
-							metadata.name,
-							dataUri,
-							undefined,
-							undefined,
-							undefined,
-							blobType
-						);
-					});
+				return Promise.resolve(new Property(
+					metadata.id,
+					metadata.name,
+					data,
+					isDraft,
+					metadata.perms,
+					metadata.permseffective
+				));
 			}
 			catch(error) {
 				// Retrieving blob may fail if XMLHttpRequest.responseType was
@@ -90,7 +97,7 @@ export class WobService {
 		}
 	}
 
-	getContents(id: number, admin?: boolean): Promise<WobInfoList>{
+	getContents(id: number, admin?: boolean): Promise<WobInfoModelList>{
 		return this.http.get(Urls.worldWob + id + "/contents", {
 				admin: admin
 			})
@@ -103,19 +110,20 @@ export class WobService {
 
 	getEditState(id: number, admin?: boolean): Promise<WobEditState> {
 		var state: WobEditState = new WobEditState(id);
-		var propertyPromises: Promise<any>[] = [];
-		var verbPromises: Promise<any>[] = [];
+		var draftBlobPromises: Promise<Property>[] = [];
+		var propertyPromises: Promise<Property>[] = [];
+		var verbPromises: Promise<VerbModel>[] = [];
 
 		// Get info about this wob
 		return this.getInfo(id)
-			.then((data: WobInfo) => {
+			.then((data: WobInfoModel) => {
 				// Set intrinsic properties
 				state.applied.intrinsics = [
-					new Intrinsic("base", data.base),
-					new Intrinsic("container", data.container),
-					new Intrinsic("owner", data.owner),
-					new Intrinsic("group", data.group),
-					new Intrinsic("perms", data.perms)
+					new Property(id, "base", data.base, true, false, undefined, undefined),
+					new Property(id, "container", data.container, true, false, undefined, undefined),
+					new Property(id, "owner", data.owner, true, false, undefined, undefined),
+					new Property(id, "group", data.group, true, false, undefined, undefined),
+					new Property(id, "perms", data.perms, true, false, undefined, undefined)
 				];
 
 				// Expect a promise to resolve with info about each property
@@ -148,7 +156,7 @@ export class WobService {
 
 				// Obtain player's draft for this wob, if any
 				return this.sessionService.getPlayerInfo()
-					.then((player: WobInfo) => {
+					.then((player: WobInfoModel) => {
 						return this.getProperty(player.id, Urls.draftWob + id);
 					})
 					.then((draft: Property) => {
@@ -168,20 +176,13 @@ export class WobService {
 					// the draft
 					for (let key in draft.value) {
 						if (key.startsWith(Urls.draftProperty)) {
-							let blobType;
-
-							if (typeof draft.value[key] === "string" && draft.value[key].startsWith("data:")) {
-								let contentType = Urls.dataUriMediaType(draft.value[key]);
-
-								if (contentType.startsWith("audio/")) {
-									blobType = Property.BlobTypeAudio;
-								}
-								else if (contentType.startsWith("image/")) {
-									blobType = Property.BlobTypeImage;
-								}
-								else if (contentType.startsWith("video/")) {
-									blobType = Property.BlobTypeVideo;
-								}
+							// If this is a property draft...
+							if (typeof draft.value[key] === "string" && draft.value[key].startsWith(Urls.draftBlob)) {
+								// If this draft's value is a Blob, the Blob
+								// content was stored in a separate property.
+								// Add it to the list of draft Blobs that need
+								// to be retrieved.
+								draftBlobPromises.push(this.getBinaryPropertyDraft(id, key.substring(Urls.draftProperty.length)));
 							}
 							state.draft.properties.push(new Property(
 								// Wob ID
@@ -190,18 +191,18 @@ export class WobService {
 								key.substring(Urls.draftProperty.length),
 								// Value
 								draft.value[key],
+								// Is intrinsic property?
+								false,
+								// Is a draft?
+								true,
 								// TODO: Permissions
 								undefined,
-								// Sub-property
-								undefined,
-								// Draft status
-								true,
-								// Type of blob data this is, if it is one
-								blobType
+								undefined
 							));
 						}
 						else if (key.startsWith(Urls.draftVerb)) {
-							state.draft.verbs.push(new Verb(
+							// If this is a verb draft...
+							state.draft.verbs.push(new VerbModel(
 								// Wob ID
 								id,
 								// Verb name minus prefix
@@ -217,15 +218,44 @@ export class WobService {
 							));
 						}
 						else if (key.startsWith(Urls.draftIntrinsic)) {
-							state.draft.intrinsics.push(new Intrinsic(
+							// If this is a draft for an intrinsic property...
+							state.draft.intrinsics.push(new Property(
+								// Wob ID
+								id,
 								// Intrinsic property name minus prefix
 								key.substring(Urls.draftIntrinsic.length),
 								// Value
-								draft.value[key]
+								draft.value[key],
+								// Is an intrinsic property?
+								true,
+								// Is a draft?
+								false,
+								// TODO: Permissions
+								undefined, undefined
 							));
 						}
 					}
 				}
+
+				// Return a promise that resolves after all Blobs associated
+				// with drafts have been retrieved.
+				return Promise.all(draftBlobPromises);
+			})
+			.then((draftBlobProperties: Property[]) => {
+				// For each Blob corresponding to a property draft...
+				draftBlobProperties.forEach((draftBlobProperty) => {
+					// Find the property draft associaed with the Blob.
+					var foundIndex = state.draft.properties.findIndex((value) => {
+						// If a property draft is associated witha Blob, then
+						// the value of the draft will equal the name of the
+						// property where the Blob is stored.
+						return value.value == draftBlobProperty.name;
+					});
+
+					// Replace the value of the found property draft with th
+					// Blob.
+					state.draft.properties[foundIndex].value = draftBlobProperty.value;
+				});
 
 				// Return a promise that resolves after all properties and
 				// verbs have been retrieved
@@ -234,7 +264,7 @@ export class WobService {
 						Promise.all(verbPromises)
 					]);
 			})
-			.then((values: [ Property[], Verb[] ]) => {
+			.then((values: [ Property[], VerbModel[] ]) => {
 				// Add each applied property to the edit state
 				values[0].forEach((property: Property) => {
 					if (!property) {
@@ -254,7 +284,7 @@ export class WobService {
 					}
 				});
 				// Add each applied verb to the edit state
-				values[1].forEach((verb: Verb) => {
+				values[1].forEach((verb: VerbModel) => {
 					state.applied.verbs.push(verb);
 				});
 
@@ -262,9 +292,9 @@ export class WobService {
 			});
 	}
 
-	deleteIntrinsicDraft(id: number | string, name: string): Promise<ModelBase> {
+	deleteIntrinsicDraft(id: number | string, name: string): Promise<BaseModel> {
 		return this.sessionService.getPlayerInfo()
-			.then((player: WobInfo) => {
+			.then((player: WobInfoModel) => {
 				return this.http.delete(Urls.worldWob + player.id + Urls.wobGetIntrinsicDraft(id, name)).toPromise();
 			})
 			.then(
@@ -273,7 +303,7 @@ export class WobService {
 			);
 	}
 
-	deleteProperty(id: number | string, name: string, admin?: boolean): Promise<ModelBase> {
+	deleteProperty(id: number | string, name: string, admin?: boolean): Promise<BaseModel> {
 		return this.http.delete(Urls.wobGetProperty(id, name), {
 				admin: admin
 			})
@@ -284,9 +314,25 @@ export class WobService {
 			);
 	}
 
-	deletePropertyDraft(id: number | string, name: string): Promise<ModelBase> {
+	deleteBinaryPropertyDraft(id: number | string, name: string): Promise<BaseModel> {
 		return this.sessionService.getPlayerInfo()
-			.then((player: WobInfo) => {
+			.then((player: WobInfoModel) => {
+				// Delete the property draft.
+				return this.http.delete(Urls.worldWob + player.id + Urls.wobGetPropertyDraft(id, name))
+					.toPromise()
+					.then(
+						(response: Response) => {
+							// Delete the Blob property associated with this draft.
+							return this.deleteProperty(player.id, Urls.draftBlob + id + "_" + name);
+						},
+						this.handleServerError.bind(this)
+					);
+			})
+	}
+
+	deletePropertyDraft(id: number | string, name: string): Promise<BaseModel> {
+		return this.sessionService.getPlayerInfo()
+			.then((player: WobInfoModel) => {
 				return this.http.delete(Urls.worldWob + player.id + Urls.wobGetPropertyDraft(id, name)).toPromise();
 			})
 			.then(
@@ -295,9 +341,9 @@ export class WobService {
 			);
 	}
 
-	deleteVerb(id: number | string, name: string, admin: boolean): Promise<ModelBase> {
+	deleteVerb(id: number | string, name: string, admin: boolean): Promise<BaseModel> {
 		return this.sessionService.getPlayerInfo()
-			.then((player: WobInfo) => {
+			.then((player: WobInfoModel) => {
 				return this.http.delete(Urls.wobGetVerb(id, name), {
 					admin: admin
 				}).toPromise();
@@ -308,9 +354,9 @@ export class WobService {
 			);
 	}
 
-	deleteVerbDraft(id: number | string, name: string): Promise<ModelBase> {
+	deleteVerbDraft(id: number | string, name: string): Promise<BaseModel> {
 		return this.sessionService.getPlayerInfo()
-			.then((player: WobInfo) => {
+			.then((player: WobInfoModel) => {
 				return this.http.delete(Urls.worldWob + player.id + Urls.wobGetVerbDraft(id, name)).toPromise();
 			})
 			.then(
@@ -319,7 +365,7 @@ export class WobService {
 			);
 	}
 
-	getInfo(id: number | string, admin?: boolean): Promise<WobInfo> {
+	getInfo(id: number | string, admin?: boolean): Promise<WobInfoModel> {
 		return this.http.get(Urls.wobInfo(id), {
 				admin: admin
 			})
@@ -330,7 +376,7 @@ export class WobService {
 			);
 	}
 
-	setIntrinsics(id: number, intrinsics: any, admin?: boolean): Promise<ModelBase> {
+	setIntrinsics(id: number, intrinsics: any, admin?: boolean): Promise<BaseModel> {
 		return this.http.put(Urls.wobInfo(id), intrinsics, {
 			admin: admin
 		})
@@ -341,7 +387,7 @@ export class WobService {
 		);
 	}
 
-	setIntrinsic(id: number, name: string, value: any, admin?: boolean): Promise<ModelBase> {
+	setIntrinsic(id: number, name: string, value: any, admin?: boolean): Promise<BaseModel> {
 		return this.http.put(Urls.wobInfo(id), {
 				[name]: value
 			}, {
@@ -354,9 +400,9 @@ export class WobService {
 			);
 	}
 
-	getIntrinsicDraft(id: number, name: string): Promise<Intrinsic> {
+	getIntrinsicDraft(id: number, name: string): Promise<Property> {
 		return this.sessionService.getPlayerInfo()
-			.then((player: WobInfo) => {
+			.then((player: WobInfoModel) => {
 				return this.http.get(Urls.worldWob + player.id + Urls.wobGetIntrinsicDraft(id, name)).toPromise();
 			})
 			.then(
@@ -365,9 +411,9 @@ export class WobService {
 			);
 	}
 
-	setIntrinsicDraft(id: number, name: string, value: any): Promise<ModelBase> {
+	setIntrinsicDraft(id: number, name: string, value: any): Promise<BaseModel> {
 		return this.sessionService.getPlayerInfo()
-			.then((player: WobInfo) => {
+			.then((player: WobInfoModel) => {
 				return this.http.put(Urls.worldWob + player.id +  Urls.wobSetDrafts(id),
 					{
 						[Urls.draftIntrinsic + name]: value
@@ -380,7 +426,7 @@ export class WobService {
 			);
 	}
 
-	instanceOf(ids: number | number[] | string | string[], ancestorId: number | string): Promise<InstanceOfList> {
+	instanceOf(ids: number | number[] | string | string[], ancestorId: number | string): Promise<InstanceOfModelList> {
 		var idStr = ids instanceof Array ? ids.join(",") : ids;
 		return this.http.get(Urls.wobInstanceOf(idStr, ancestorId))
 			.toPromise()
@@ -413,12 +459,9 @@ export class WobService {
 			);
 	}
 
-	setBinaryProperty(id: number, name: string, value: any, admin?: boolean): Promise<ModelBase> {
+	setBinaryProperty(id: number, name: string, value: any, admin?: boolean): Promise<BaseModel> {
 		// If value is a data URI, it needs to be converted into a Blob.
-		if (value.startsWith("data:")) {
-			value = Urls.dataUriToBlob(value);
-		}
-		else {
+		if (!(value instanceof Blob)) {
 			value = JSON.stringify(value);
 		}
 
@@ -447,11 +490,11 @@ export class WobService {
 	 * Where nameOfProperty is a string, and valueOfProperty is any object,
 	 * string, number, or boolean.
 	 *
-	 * @params id (number) ID of wob whose property to set
-	 * @params properties (any) As descibed above
+	 * @param {number} id - ID of wob whose property to set
+	 * @param {any} properties - As descibed above
 	 */
-	setProperties(id: number, properties: any, admin?: boolean): Promise<ModelBase> {
-		return this.http.put(Urls.wobSetProperties(id), properties, {
+	setProperties(id: number, properties: any, admin?: boolean): Promise<BaseModel> {
+		return this.http.putFormData(Urls.wobSetProperties(id), properties, {
 				admin: admin
 			})
 			.toPromise()
@@ -461,7 +504,7 @@ export class WobService {
 			);
 	}
 
-	setProperty(id: number, name: string, value: any, admin?: boolean): Promise<ModelBase> {
+	setProperty(id: number, name: string, value: any, admin?: boolean): Promise<BaseModel> {
 		return this.http.put(Urls.wobSetProperties(id), {
 				[name]: value
 			}, {
@@ -474,20 +517,64 @@ export class WobService {
 			);
 	}
 
-	getPropertyDraft(id: number, name: string): Promise<Property> {
+	getBinaryPropertyDraft(id: number | string, name: string): Promise<Property> {
 		return this.sessionService.getPlayerInfo()
-			.then((player: WobInfo) => {
-				return this.http.get(Urls.worldWob + player.id + Urls.wobGetPropertyDraft(id, name)).toPromise();
+			.then((player: WobInfoModel) => {
+				return this.http.get(Urls.wobGetProperty(player.id, Urls.draftBlob + id + "_" + name), {
+						responseType: ResponseContentType.Blob
+					})
+					.toPromise();
 			})
 			.then(
-				this.handleResponse.bind(this),
+				(response: Response) => {
+					return this.handleResponse(response, true);
+				},
 				this.handleServerError.bind(this)
 			);
 	}
 
-	setPropertyDraft(id: number, name: string, value: any): Promise<ModelBase> {
+	getPropertyDraft(id: number, name: string): Promise<PropertyModel> {
 		return this.sessionService.getPlayerInfo()
-			.then((player: WobInfo) => {
+			.then((player: WobInfoModel) => {
+				return this.http.get(Urls.worldWob + player.id + Urls.wobGetPropertyDraft(id, name)).toPromise();
+			})
+			.then(
+				(response: Response) => {
+					return this.handleResponse(response, true);
+				},
+				this.handleServerError.bind(this)
+			);
+	}
+
+	setBinaryPropertyDraft(id: number, name: string, value: any): Promise<BaseModel> {
+		var blobPropertyName = Urls.draftBlob + id + "_" + name;
+
+		// If value is a data URI, it needs to be converted into a Blob.
+		if (!(value instanceof Blob)) {
+			value = JSON.stringify(value);
+		}
+
+		return this.sessionService.getPlayerInfo()
+			.then((player: WobInfoModel) => {
+				// Create a property for storing this Blob.
+				return this.http.putFormData(Urls.wobSetBinaryProperties(player.id), {
+						[blobPropertyName]: value
+					})
+					.toPromise();
+			})
+			.then(
+				(response: Response) => {
+					// Create a property draft that indicates that a Blob
+					// property corresponding to this draft exists.
+					return this.setPropertyDraft(id, name, blobPropertyName);
+				},
+				this.handleServerError.bind(this)
+			);
+	}
+
+	setPropertyDraft(id: number, name: string, value: any): Promise<BaseModel> {
+		return this.sessionService.getPlayerInfo()
+			.then((player: WobInfoModel) => {
 				return this.http.put(Urls.worldWob + player.id +  Urls.wobSetDrafts(id),
 					{
 						[Urls.draftProperty + name]: value
@@ -500,7 +587,7 @@ export class WobService {
 			);
 	}
 
-	getVerb(id: number, name: string, admin?: boolean): Promise<Verb> {
+	getVerb(id: number, name: string, admin?: boolean): Promise<VerbModel> {
 		return this.http.get(Urls.wobGetVerb(id, name), {
 				admin: admin
 			})
@@ -511,7 +598,7 @@ export class WobService {
 			);
 	}
 
-	setVerbs(id: number, verbs: any, admin?: boolean): Promise<ModelBase> {
+	setVerbs(id: number, verbs: any, admin?: boolean): Promise<BaseModel> {
 		return this.http.put(Urls.wobSetVerbs(id), verbs, {
 				admin: admin
 			})
@@ -522,7 +609,7 @@ export class WobService {
 			);
 	}
 
-	setVerb(id: number, name: string, sigs: string[], code: string, admin?: boolean): Promise<ModelBase> {
+	setVerb(id: number, name: string, sigs: string[], code: string, admin?: boolean): Promise<BaseModel> {
 		return this.http.put(Urls.wobSetVerbs(id), {
 				[name]: {
 					sigs: sigs,
@@ -538,20 +625,22 @@ export class WobService {
 			);
 	}
 
-	getVerbDraft(id: number, name: string): Promise<Verb> {
+	getVerbDraft(id: number, name: string): Promise<VerbModel> {
 		return this.sessionService.getPlayerInfo()
-			.then((player: WobInfo) => {
+			.then((player: WobInfoModel) => {
 				return this.http.get(Urls.worldWob + player.id + Urls.wobGetVerbDraft(id, name)).toPromise();
 			})
 			.then(
-				this.handleResponse.bind(this),
+				(response: Response) => {
+					return this.handleResponse(response, true);
+				},
 				this.handleServerError.bind(this)
 			);
 	}
 
-	setVerbDraft(id: number, name: string, sigs: string[], code: string): Promise<ModelBase> {
+	setVerbDraft(id: number, name: string, sigs: string[], code: string): Promise<BaseModel> {
 		return this.sessionService.getPlayerInfo()
-			.then((player: WobInfo) => {
+			.then((player: WobInfoModel) => {
 				return this.http.put(Urls.worldWob + player.id + Urls.wobSetDrafts(id), {
 					[Urls.draftVerb + name]: {
 						sigs: sigs,

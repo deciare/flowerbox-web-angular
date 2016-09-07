@@ -4,9 +4,9 @@
 	For license info, please see notes/gpl-3.0.txt under the project root.
 */
 
-import { ModelBase } from "../models/base";
+import { BaseModel } from "../models/base";
 
-export class EventStream extends ModelBase {
+export class EventStream extends BaseModel {
 	constructor(log: EventStreamItem[]) {
 		super(true);
 		this.log = log;

@@ -10,8 +10,9 @@ import { Subscription } from "rxjs/Subscription";
 import "rxjs/add/operator/debounceTime";
 import "rxjs/add/operator/distinctUntilChanged";
 
-import { ModelBase } from "../models/base";
-import { Intrinsic, Property, WobEditState, WobInfo } from "../models/wob";
+import { BaseModel } from "../models/base";
+import { WobInfoModel } from "../models/wob";
+import { Property, WobEditState} from "../types/wob";
 
 import { NewPropertyComponent, NewPropertyParams } from "./new-property.component";
 import { WobEditorComponent } from "./wob-editor.component";
@@ -28,13 +29,13 @@ import { WobService } from "../api/wob.service";
 	templateUrl: "./property-editor.component.html"
 })
 export class PropertyEditorComponent extends WobEditorComponent implements OnDestroy, OnInit {
-	private draftUpdate: Subject<Intrinsic | Property>;
+	private draftUpdate: Subject<Property>;
 	private draftUpdateSubscription: Subscription;
 	private routeDataSubscription: Subscription;
 	private routeParentParamsSubscription: Subscription;
 
 	asAdmin: boolean;
-	intrinsics: Intrinsic[];
+	intrinsics: Property[];
 	message: string;
 	properties: Property[];
 	wobId: number;
@@ -52,12 +53,9 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 		this.asAdmin = false;
 	}
 
-	private isIntrinsic(value: any): boolean {
-		return value instanceof Intrinsic;
-	}
-
 	private onWobEditStateChange(data: any): void {
 		var wobEditState: WobEditState = data["wobEditState"];
+		console.log(wobEditState);
 
 		this.intrinsics = [];
 		this.properties = [];
@@ -87,9 +85,9 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 		});
 	}
 
-	private replaceField(item: Intrinsic | Property) {
+	private replaceField(item: Property) {
 		var foundIndex: number;
-		var arrName = this.isIntrinsic(item) ? "intrinsics" : "properties";
+		var arrName = item.isIntrinsic ? "intrinsics" : "properties";
 
 		// Check whether a corresponding applied property exists in
 		// array.
@@ -106,12 +104,12 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 		}
 	}
 
-	private useApplied(item: Intrinsic | Property) {
+	private useApplied(item: Property) {
 		item.isDraft = false;
 		this.replaceField(item);
 	}
 
-	private useDraft(item: Intrinsic | Property) {
+	private useDraft(item: Property) {
 		item.isDraft = true;
 		this.replaceField(item);
 	}
@@ -140,7 +138,7 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 
 	onChange(property: any, newValue: string) {
 		var arrName: string;
-		var propertyDraft: Intrinsic | Property;
+		var propertyDraft: Property;
 
 		if (property.isDraft) {
 			// If the form field that was modified represents a property draft,
@@ -149,24 +147,28 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 		}
 		else {
 			// Otherwise, create a draft version of the same property.
-			if (this.isIntrinsic(property)) {
+			if (property.isIntrinsic) {
 				arrName = "intrinsics";
-				propertyDraft = new Intrinsic(
-					property.name,
-					newValue,
-					true
+				propertyDraft = new Property(
+					this.wobId,		// wob ID
+					property.name,	// name
+					newValue,		// value
+					true,			// is intrinsic?
+					true,			// is draft?
+					undefined,		// TODO: permissions
+					undefined
 				);
 			}
 			else {
 				arrName = "properties";
 				propertyDraft = new Property(
-					this.wobId,
-					property.name,
-					newValue,
-					property.perms,
-					undefined,
-					true,
-					property.blobType
+					this.wobId,				// wob ID
+					property.name,			// name
+					newValue,				// value
+					false,					// is intrinsic?
+					true,					// is draft?
+					property.perms,			// TODO: permissions
+					property.permsEffective
 				);
 			}
 
@@ -189,13 +191,13 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 		this.router.navigate([ "/wob", this.wobId, { admin: true }, "properties" ]);
 	}
 
-	delete(property: Intrinsic | Property): Promise<any> {
-		if (this.isIntrinsic(property)) {
+	delete(property: Property): Promise<any> {
+		if (property.isIntrinsic) {
 			return Promise.reject("Can't delete intrinsic property");
 		}
 		else {
 			return this.wobService.deleteProperty(this.wobId, property.name, this.asAdmin)
-				.then((data: ModelBase) => {
+				.then((data: BaseModel) => {
 					// Remove the property from the form.
 					var foundIndex = this.properties.findIndex((value) => {
 						return value.name == property.name;
@@ -211,28 +213,39 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 		}
 	}
 
-	deleteDraft(property: Intrinsic | Property): Promise<any> {
-		var deleteDraftPromise: Promise<ModelBase>;
+	deleteDraft(property: Property): Promise<any> {
+		var deleteDraftPromise: Promise<BaseModel>;
 
-		if (this.isIntrinsic(property)) {
+		if (property.isIntrinsic) {
 			deleteDraftPromise = this.wobService.deleteIntrinsicDraft(this.wobId, property.name)
+		}
+		else if (property.isBlob) {
+			deleteDraftPromise = this.wobService.deleteBinaryPropertyDraft(this.wobId, property.name);
 		}
 		else {
 			deleteDraftPromise = this.wobService.deletePropertyDraft(this.wobId, property.name)
 		}
 
 		return deleteDraftPromise
-			.then((data: ModelBase) => {
+			.then((data: BaseModel) => {
 				this.message = "Discarded draft of " + property.name;
 				// Attempt to retrieve applied version of property whose draft
 				// was just deleted.
-				if (this.isIntrinsic(property)) {
+				if (property.isIntrinsic) {
 					return this.wobService.getInfo(this.wobId)
-						.then((info: WobInfo) => {
-							return new Intrinsic(property.name, info[property.name]);
+						.then((info: WobInfoModel) => {
+							return new Property(
+								this.wobId,				// wob ID
+								property.name,			// name
+								info[property.name],	// value
+								true,					// is intrinsic?
+								false,					// is draft?
+								undefined,				// TODO: permissions
+								undefined
+							);
 						});
 				}
-				else if ((<Property>property).blobType) {
+				else if (property.isBlob) {
 					return this.wobService.getBinaryProperty(this.wobId, property.name, this.asAdmin);
 				}
 				else {
@@ -248,6 +261,8 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 				this.refocus(property.name);
 
 				this.message += " and restored applied value";
+
+				return new BaseModel(true);
 			},
 			(error) => {
 				var foundIndex = this.properties.findIndex((value) => {
@@ -268,14 +283,13 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 				param.name,
 				// Empty value
 				"",
-				// Default permission: inherit server default
-				undefined,
-				// No sub-property
-				undefined,
-				// Is a draft
+				// Is an intrinsic property?
+				false,
+				// Is a draft?
 				true,
-				// Blob type, if it is one
-				param.type
+				// TODO: permissions
+				undefined,
+				undefined
 			));
 
 			// Focus the newly created field.
@@ -290,13 +304,13 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 	}
 
 	saveAll(): Promise<any> {
-		var saveIntrinsicsPromise: Promise<ModelBase>;
-		var savePropertiesPromise: Promise<ModelBase>;
+		var saveIntrinsicsPromise: Promise<BaseModel>;
+		var savePropertiesPromise: Promise<BaseModel>;
 		var toDelete: any[] = [];
 
 		// Generate list of intrinsic properties to save.
 		var intrinsicsObj = {};
-		this.intrinsics.forEach((intrinsic: Intrinsic) => {
+		this.intrinsics.forEach((intrinsic: Property) => {
 			intrinsicsObj[intrinsic.name] = this.fixType(intrinsic.value);
 
 			// Draft properties should be deleted after the saveAll() completes
@@ -319,9 +333,9 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 		savePropertiesPromise = this.wobService.setProperties(this.wobId, propertiesObj, this.asAdmin);
 
 		return Promise.all([ saveIntrinsicsPromise, savePropertiesPromise ])
-			.then((data: ModelBase[]) => {
+			.then((data: BaseModel[]) => {
 				this.message = "All properties saved";
-				toDelete.forEach((item: Intrinsic | Property) => {
+				toDelete.forEach((item: Property) => {
 					return this.deleteDraft(item);
 				});
 			},
@@ -330,19 +344,19 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 			});
 	}
 
-	save(property: Intrinsic | Property): Promise<any> {
-		var savePromise: Promise<ModelBase>;
+	save(property: Property): Promise<any> {
+		var savePromise: Promise<BaseModel>;
 
 		// All form fields are strings, but server may expect other type.
 		property.value = this.fixType(property.value);
 
-		if (this.isIntrinsic(property)) {
+		if (property.isIntrinsic) {
 			// Save the given value as an applied intrinsic property.
 			savePromise = this.wobService.setIntrinsic(this.wobId, property.name, property.value, this.asAdmin)
 		}
 		else {
 			// Save the given value as an applied property.
-			if ((<Property>property).blobType) {
+			if ((<Property>property).isBlob) {
 				savePromise = this.wobService.setBinaryProperty(this.wobId, property.name, property.value, this.asAdmin)
 			}
 			else {
@@ -351,12 +365,12 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 		}
 
 		return savePromise
-			.then((data: ModelBase) => {
+			.then((data: BaseModel) => {
 				this.message = "Saved " + property.name;
 				// Delete the corresponding property draft, if any.
 				return this.deleteDraft(property);
 			})
-			.then((data: ModelBase) => {
+			.then((data: BaseModel) => {
 				this.message += " and deleted draft";
 			},
 			(error) => {
@@ -364,21 +378,24 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 			});
 	}
 
-	saveDraft(property: Intrinsic | Property): Promise<any> {
-		var saveDraftPromise: Promise<ModelBase>;
+	saveDraft(property: Property): Promise<any> {
+		var saveDraftPromise: Promise<BaseModel>;
 
 		// All form fields are strings, but server may expect other type.
 		property.value = this.fixType(property.value);
 
-		if (this.isIntrinsic(property)) {
+		if (property.isIntrinsic) {
 			saveDraftPromise = this.wobService.setIntrinsicDraft(this.wobId, property.name, property.value)
+		}
+		else if (property.isBlob) {
+			saveDraftPromise = this.wobService.setBinaryPropertyDraft(this.wobId, property.name, property.value)
 		}
 		else {
 			saveDraftPromise = this.wobService.setPropertyDraft(this.wobId, property.name, property.value)
 		}
 
 		return saveDraftPromise
-			.then((data: ModelBase) => {
+			.then((data: BaseModel) => {
 				this.message = "Saved draft of " + property.name;
 			},
 			(error) => {

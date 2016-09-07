@@ -7,7 +7,7 @@ import { Injectable } from "@angular/core";
 import "rxjs/add/operator/toPromise";
 
 import { Urls } from "../shared/urls";
-import { AttachedItem, WobInfo, WobInfoList } from "../models/wob";
+import { AttachedItem, WobInfoModel, WobInfoModelList } from "../models/wob";
 
 import { SessionService } from "../session/session.service";
 import { WobService } from "../api/wob.service";
@@ -53,7 +53,7 @@ export class AutocompleteService {
 		// TODO: Cache data for locations. For now, simply query the server
 		// anew for each attempted auto-completion.
 		return this.wobService.getContents(locationId)
-			.then((data: WobInfoList) => {
+			.then((data: WobInfoModelList) => {
 				// Start by looking for matches against the last word in the
 				// command, then for matches against the last 2 words in the
 				// command, and so on. Continue until matches have been
@@ -70,7 +70,7 @@ export class AutocompleteService {
 					matches = [];
 					word = wordList[i];
 
-					data.list.forEach((wob: WobInfo) => {
+					data.list.forEach((wob: WobInfoModel) => {
 						// If including verbs in the search...
 						if (includeVerbs) {
 							wob.verbs.forEach((verb: AttachedItem) => {

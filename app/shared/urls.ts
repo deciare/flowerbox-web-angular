@@ -12,6 +12,7 @@ export class Urls {
 	static userPlayerInfo: string = Config.server + "user/player-info/";
 	static worldWob: string = Config.server + "world/wob/";
 
+	static draftBlob: string = "__draft_blob_";
 	static draftWob: string = "__draft_wob_";
 	static draftIntrinsic: string = "__intrinsic_";
 	static draftProperty: string = "__property_";

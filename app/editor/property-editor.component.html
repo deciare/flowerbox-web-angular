@@ -4,22 +4,22 @@
 	</div>
 	<section *ngFor="let propertiesOfType of [ properties, intrinsics ]">
 		<header class="section-header col-sm-12">
-			<span *ngIf="!isIntrinsic(propertiesOfType[0])">Properties</span>
-			<span *ngIf="isIntrinsic(propertiesOfType[0])">Intrinsic properties</span>
+			<span *ngIf="!propertiesOfType[0].isIntrinsic">Properties</span>
+			<span *ngIf="propertiesOfType[0].isIntrinsic">Intrinsic properties</span>
 		</header>
-		<div *ngFor="let property of propertiesOfType" class="form-group" [class.draft]="property.isDraft" [class.inherited]="!isIntrinsic(property) && isInherited(property)">
+		<div *ngFor="let property of propertiesOfType" class="form-group" [class.draft]="property.isDraft" [class.inherited]="!property.isIntrinsic && isInherited(property)">
 			<label class="control-label col-sm-2" [attr.for]="property.name">
 				{{property.name}}
-				<span *ngIf="!isIntrinsic(property) && isInherited(property) && !property.isDraft" class="status-label">(from #{{property.id}})</span>
+				<span *ngIf="!property.isIntrinsic && isInherited(property) && !property.isDraft" class="status-label">(from #{{property.sourceId}})</span>
 				<span *ngIf="property.isDraft" class="status-label">(draft)</span>
 			</label>
-			<div *ngIf="!property.blobType" class="input-group col-sm-10">
+			<div *ngIf="!property.isBlob" class="input-group col-sm-10">
 				<input class="form-control" type="text" [id]="property.name" [name]="property.name" [ngModel]="property.value" (ngModelChange)="onChange(property, $event)" />
 				<span class="input-group-btn">
 					<button *ngIf="property.isDraft" class="btn btn-default" type="button" (click)="deleteDraft(property)" title="Discard draft" aria-label="Discard draft">
 						<span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
 					</button>
-					<button *ngIf="!property.isDraft && !isIntrinsic(property)" class="btn btn-default" type="button" (click)="delete(property)" title="Remove property" aria-label="Remove property">
+					<button *ngIf="!property.isDraft && !property.isIntrinsic" class="btn btn-default" type="button" (click)="delete(property)" title="Remove property" aria-label="Remove property">
 						<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
 					</button>
 					<button class="btn btn-default" type="button" (click)="save(property)" title="Save property" aria-label="Save property">
@@ -27,10 +27,10 @@
 					</button>
 				</span>
 			</div>
-			<div *ngIf="property.blobType == 'audio'" class="col-sm-10">
+			<div *ngIf="property.isAudio" class="col-sm-10">
 				<audio-property-editor [property]="property" (propertyChange)="onChange(property, $event)" (deleteDraftClick)="deleteDraft(property)" (deleteClick)="delete(property)" (saveClick)="save(property)"></audio-property-editor>
 			</div>
-			<div *ngIf="property.blobType == 'image'" class="col-sm-10">
+			<div *ngIf="property.isImage" class="col-sm-10">
 				<image-property-editor [property]="property" (propertyChange)="onChange(property, $event)" (deleteDraftClick)="deleteDraft(property)" (deleteClick)="delete(property)" (saveClick)="save(property)"></image-property-editor>
 			</div>
 		</div>

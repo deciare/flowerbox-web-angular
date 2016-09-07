@@ -7,13 +7,13 @@ import { Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, Router, Resolve } from "@angular/router";
 import { Observable } from "rxjs/Observable";
 
-import { WobInfo } from "../models/wob.ts";
+import { WobInfoModel } from "../models/wob.ts";
 
 import { SessionHttp } from "../session/session-http.service";
 import { WobService } from "../api/wob.service";
 
 @Injectable()
-export class WobEditorResolve implements Resolve<WobInfo> {
+export class WobEditorResolve implements Resolve<WobInfoModel> {
 	constructor(
 		private wobService: WobService
 	) {

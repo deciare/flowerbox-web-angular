@@ -7,7 +7,7 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Subscription } from "rxjs/Subscription";
 
 import { EventStream, EventStreamItem } from "../models/event-stream";
-import { WobInfo, WobInfoList } from "../models/wob";
+import { WobInfoModel, WobInfoModelList } from "../models/wob";
 
 import { InteractiveChunk, InteractiveChunkComponent } from "../embed/interactive-chunk.component";
 
@@ -27,11 +27,11 @@ export class InfobarComponent implements OnDestroy, OnInit {
 	private locationPlayersSubscription: Subscription;
 	private playerSubscription: Subscription;
 
-	location: WobInfo;
+	location: WobInfoModel;
 	locationChunk: any;
-	locationContents: WobInfoList;
-	locationPlayers: WobInfoList;
-	player: WobInfo;
+	locationContents: WobInfoModelList;
+	locationPlayers: WobInfoModelList;
+	player: WobInfoModel;
 	playerChunk: any;
 
 	constructor(

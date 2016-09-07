@@ -7,7 +7,7 @@ import { AfterViewInit, Component, EventEmitter, Input, Output, ViewEncapsulatio
 
 import { Tag } from "../shared/tag";
 import { Urls } from "../shared/urls";
-import { WobInfo } from "../models/wob";
+import { WobInfoModel } from "../models/wob";
 
 import { EmbedMediaComponent } from "./embed-media.component";
 
@@ -29,10 +29,10 @@ export class InteractiveChunk {
 	 * Interactive chunk of text for displaying rich elements in the terminal,
 	 * such as wob references and images.
 	 *
-	 * @params id (number) Wob ID
-	 * @params type (string) Type of content (see static Type* properties)
-	 * @params text (string) Text to display inside chunk
-	 * @params extra (any) (optional) Content type-specific parameters
+	 * @param {number} id -  Wob ID
+	 * @param {string} type - Type of content (see static Type* properties)
+	 * @param {string} text - Text to display inside chunk
+	 * @param {any} extra - (optional) Content type-specific parameters
 	 */
 	constructor(id: number, type: string, text: string, extra?: any) {
 		this.id = id;
@@ -159,7 +159,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 			// it can no longer be changed, so there's no point in getting new
 			// data from the server each time; reuse cached value
 			this.wobService.getInfo(this.chunk.id)
-				.then((data: WobInfo) => {
+				.then((data: WobInfoModel) => {
 					var imageProperty = data.properties.find((element) => {
 						return element.value == "image";
 					});

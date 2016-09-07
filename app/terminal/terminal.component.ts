@@ -11,7 +11,7 @@ import { EventStream, EventStreamItem } from "../models/event-stream";
 import { InteractiveChunk } from "../embed/interactive-chunk.component";
 import { Tag } from "../shared/tag";
 import { Urls } from "../shared/urls";
-import { Property, WobInfo } from "../models/wob";
+import { PropertyModel, WobInfoModel } from "../models/wob";
 
 import { AutocompleteService } from "./autocomplete.service";
 import { SessionService } from "../session/session.service";
@@ -350,7 +350,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 			// Auto-fill username and prompt only for password if this is a
 			// sudo prompt.
 			this.sessionService.getPlayerInfo()
-				.then((player: WobInfo) => {
+				.then((player: WobInfoModel) => {
 					username = player.globalid;
 				});
 			passwordPrompt = this.promptInput("[sudo] Password: ", "*");
@@ -671,7 +671,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	 * TerminalComponent. This processing should take place before user input
 	 * is submitted to the server.
 	 *
-	 * @returns (boolean) true if command should be forwarded to server
+	 * @return {boolean} true if command should be forwarded to server
 	 */
 	localExec(command: string, admin?: boolean): boolean {
 		var matches: string[]; // results of regex matching
@@ -700,7 +700,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 
 			// Get wob ID and popup editor window
 			this.wobService.getProperty(name, "name")
-				.then((property: Property) => {
+				.then((property: PropertyModel) => {
 					this.appendLine("text-success", "Opening editor in new window");
 					id = property.id;
 					window.open("wob/" + id + (admin ? ";admin=true" : ""), "WobEditor");

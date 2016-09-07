@@ -17,9 +17,9 @@ export class MaskPipe implements PipeTransform {
 	 * If the input string contains a non-breaking space character, the
 	 * non-breaking space character is preserved (not masked).
 	 *
-	 * @params value (string) Input string
-	 * @params mask (string) Masking string
-	 * @returns Masked string
+	 * @param {string} value - Input string
+	 * @param {string} mask -  Masking string
+	 * @return {string} Masked string
 	 */
 	transform(value: string, mask: string): string {
 		var maskedValue: string = "";

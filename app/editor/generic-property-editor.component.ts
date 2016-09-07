@@ -3,16 +3,23 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import { DomSanitizer } from "@angular/platform-browser";
 
-import { Property } from "../models/wob";
+import { Property } from "../types/wob";
 import { Urls } from "../shared/urls";
+
+import { MyDomSanitizer } from "../my-dom-sanitizer.service";
+import { SessionService } from "../session/session.service";
 
 @Component({
 	moduleId: module.id,
-	selector: "generic-property-editor"
+	selector: "generic-property-editor",
+	template: ``
 })
-export class GenericPropertyEditorComponent {
+export class GenericPropertyEditorComponent implements OnChanges {
+	private _objectURL: string;
+
 	@Input()
 	property: Property;
 
@@ -28,19 +35,41 @@ export class GenericPropertyEditorComponent {
 	@Output()
 	saveClick: EventEmitter<Event>;
 
-	constructor() {
+	constructor(
+		protected domSanitizer: DomSanitizer
+	) {
 		this.propertyChange = new EventEmitter<Property>();
 		this.deleteDraftClick = new EventEmitter<Event>();
 		this.deleteClick = new EventEmitter<Event>();
 		this.saveClick = new EventEmitter<Event>();
 	}
 
+	get objectURL(): string {
+		return <string>this.domSanitizer.bypassSecurityTrustUrl(this._objectURL);
+	}
+
+	set objectURL(value: string) {
+		this._objectURL = value;
+	}
+
+	ngOnChanges(changes: SimpleChanges) {
+		if (this.objectURL) {
+			Property.revokeObjectURL(this.objectURL);
+		}
+
+		if (changes["property"].currentValue.isBlob) {
+			this.objectURL = changes["property"].currentValue.createObjectURL();
+		}
+	}
+
 	onFileChange(event: Event) {
-		Urls.blobToDataUri((<HTMLInputElement>event.target).files[0])
-			.then((dataUri: string) => {
-				this.property.value = dataUri;
-				this.propertyChange.emit(this.property.value);
-			});
+		if (this.objectURL) {
+			Property.revokeObjectURL(this.objectURL);
+		}
+
+		this.property.value = (<HTMLInputElement>event.target).files[0];
+		this.objectURL = this.property.createObjectURL();
+		this.propertyChange.emit(this.property.value);
 	}
 
 	onDeleteDraftClick(event: Event) {

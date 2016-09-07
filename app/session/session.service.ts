@@ -10,14 +10,14 @@ import { BehaviorSubject } from "rxjs/BehaviorSubject";
 import "rxjs/add/operator/publishReplay";
 import "rxjs/add/operator/toPromise";
 
-import { WobInfo } from "../models/wob";
+import { WobInfoModel } from "../models/wob";
 import { Urls } from "../shared/urls";
 
 export class SessionEvent {
 	type: string;
-	player: WobInfo;
+	player: WobInfoModel;
 
-	constructor(type: string, player?: WobInfo) {
+	constructor(type: string, player?: WobInfoModel) {
 		this.type = type;
 		this.player = player;
 	}
@@ -51,7 +51,7 @@ export class SessionService {
 		// If player is already logged in, send login event
 		if (this.isLoggedIn()) {
 			this.getPlayerInfo()
-				.then((player: WobInfo) => {
+				.then((player: WobInfoModel) => {
 					this.events.next(new SessionEvent(SessionEvent.Login, player));
 				});
 		}
@@ -79,7 +79,7 @@ export class SessionService {
 		return this.token !== undefined;
 	}
 
-	getPlayerInfo(): Promise<WobInfo> {
+	getPlayerInfo(): Promise<WobInfoModel> {
 		var headers = new Headers({
 			"Authorization": this.token
 		});
@@ -138,7 +138,7 @@ export class SessionService {
 
 					// Inform observers this session is logged in
 					this.getPlayerInfo()
-						.then((player: WobInfo) => {
+						.then((player: WobInfoModel) => {
 							this.events.next(new SessionEvent(admin ? SessionEvent.AdminLogin : SessionEvent.Login, player));
 						});
 
