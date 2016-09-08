@@ -13,7 +13,7 @@ import "rxjs/add/operator/withLatestFrom";
 
 import { BaseModel } from "../models/base";
 import { VerbModel } from "../models/wob";
-import { WobEditState } from "../types/wob";
+import { EditState } from "../types/wob";
 
 import { AceConfigComponent } from "./ace-config.component";
 import { VerbformEditorComponent } from "./verbform-editor.component";
@@ -76,7 +76,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 			var wobEditState = values[0]["wobEditState"];
 			var verbName = values[1]["verb"];
 
-			this.onWobEditStateChange(wobEditState)
+			this.onEditStateChange(wobEditState)
 				.then(() => {
 					// If specified verb exists, select it. Otherwise, use first
 					// verb in list.
@@ -134,7 +134,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 		this.routeParentParamsSubscription.unsubscribe();
 	}
 
-	private onWobEditStateChange(wobEditState: WobEditState): Promise<void> {
+	private onEditStateChange(wobEditState: EditState): Promise<void> {
 		this.verbDrafts = Object.create(null);
 		this.verbs = Object.create(null);
 		this.wobId = wobEditState.id;

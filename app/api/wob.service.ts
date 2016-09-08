@@ -10,7 +10,7 @@ import "rxjs/add/operator/toPromise";
 import { BaseModel } from "../models/base";
 import { Urls } from "../shared/urls";
 import { PropertyModel, VerbModel, InstanceOfModelList, WobInfoModel, WobInfoModelList } from "../models/wob";
-import { Property, WobEditState } from "../types/wob";
+import { Property, EditState } from "../types/wob";
 
 import { SessionHttp } from "../session/session-http.service";
 import { SessionService } from "../session/session.service";
@@ -108,8 +108,8 @@ export class WobService {
 			);
 	}
 
-	getEditState(id: number, admin?: boolean): Promise<WobEditState> {
-		var state: WobEditState = new WobEditState(id);
+	getEditState(id: number, admin?: boolean): Promise<EditState> {
+		var state: EditState = new EditState(id);
 		var draftBlobPromises: Promise<Property>[] = [];
 		var propertyPromises: Promise<Property>[] = [];
 		var verbPromises: Promise<VerbModel>[] = [];

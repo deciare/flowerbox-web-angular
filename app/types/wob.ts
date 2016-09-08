@@ -168,7 +168,7 @@ export class Property extends Metadata {
 }
 
 // For storing the wob editor's initial state.
-export class WobEditState {
+export class EditState {
 	constructor(id: number) {
 		this.id = id;
 		this.applied = {

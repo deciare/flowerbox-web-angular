@@ -12,7 +12,7 @@ import "rxjs/add/operator/distinctUntilChanged";
 
 import { BaseModel } from "../models/base";
 import { WobInfoModel } from "../models/wob";
-import { Property, WobEditState} from "../types/wob";
+import { Property, EditState} from "../types/wob";
 
 import { NewPropertyComponent, NewPropertyParams } from "./new-property.component";
 import { WobEditorComponent } from "./wob-editor.component";
@@ -53,9 +53,8 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 		this.asAdmin = false;
 	}
 
-	private onWobEditStateChange(data: any): void {
-		var wobEditState: WobEditState = data["wobEditState"];
-		console.log(wobEditState);
+	private onEditStateChange(data: any): void {
+		var wobEditState: EditState = data["wobEditState"];
 
 		this.intrinsics = [];
 		this.properties = [];
@@ -115,7 +114,7 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 	}
 
 	ngOnInit() {
-		this.routeDataSubscription = this.route.data.subscribe(this.onWobEditStateChange.bind(this));
+		this.routeDataSubscription = this.route.data.subscribe(this.onEditStateChange.bind(this));
 
 		this.routeParentParamsSubscription = this.route.parent.params.subscribe((params) => {
 			this.asAdmin = params["admin"] == "true" ? true : false;
