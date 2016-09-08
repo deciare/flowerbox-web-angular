@@ -15,8 +15,9 @@ import { AceConfigComponent } from "./ace-config.component";
 import { AudioPropertyEditorComponent } from "./audio-property-editor.component";
 import { GenericPropertyEditorComponent } from "./generic-property-editor.component";
 import { ImagePropertyEditorComponent } from "./image-property-editor.component";
-import { PropertyEditorComponent } from "./property-editor.component";
 import { NewPropertyComponent } from "./new-property.component";
+import { PropertyEditorComponent } from "./property-editor.component";
+import { TextPropertyEditorComponent } from "./text-property-editor.component";
 import { VerbEditorComponent } from "./verb-editor.component";
 import { VerbformEditorComponent } from "./verbform-editor.component";
 import { WobEditorComponent } from "./wob-editor.component";
@@ -41,6 +42,7 @@ import { WobEditorResolve } from "./wob-editor-resolve.service";
 		KeyValuePipe,
 		NewPropertyComponent,
 		PropertyEditorComponent,
+		TextPropertyEditorComponent,
 		VerbEditorComponent,
 		VerbformEditorComponent,
 		WobEditorComponent

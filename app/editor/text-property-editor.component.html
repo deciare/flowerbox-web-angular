@@ -1,0 +1,14 @@
+<div class="input-group">
+	<input class="form-control" type="text" [id]="property.name" [name]="property.name" [ngModel]="property.value" (ngModelChange)="onModelChange($event)" />
+	<span class="input-group-btn">
+		<button *ngIf="property.isDraft" class="btn btn-default" type="button" (click)="onDeleteDraftClick($event)" title="Discard draft" aria-label="Discard draft">
+			<span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+		</button>
+		<button *ngIf="!property.isDraft && !property.isIntrinsic" class="btn btn-default" type="button" (click)="onDeleteClick($event)" title="Remove property" aria-label="Remove property">
+			<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+		</button>
+		<button class="btn btn-default" type="button" (click)="onSaveClick($event)" title="Save property" aria-label="Save property">
+			<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>
+		</button>
+	</span>
+</div>

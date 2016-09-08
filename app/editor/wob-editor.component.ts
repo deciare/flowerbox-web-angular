@@ -73,7 +73,9 @@ export class WobEditorComponent {
 
 		// After DOM updates, reset the cursor to that position.
 		setTimeout(() => {
-			(<HTMLInputElement>element.focus().get(0)).setSelectionRange(pos, pos);
+			// Re-run the query, as the originally selected element may no
+			// longer exist.
+			(<HTMLInputElement>$(`#${id}`).focus().get(0)).setSelectionRange(pos, pos);
 		}, 0);
 	}
 }

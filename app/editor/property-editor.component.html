@@ -13,19 +13,8 @@
 				<span *ngIf="!property.isIntrinsic && isInherited(property) && !property.isDraft" class="status-label">(from #{{property.sourceId}})</span>
 				<span *ngIf="property.isDraft" class="status-label">(draft)</span>
 			</label>
-			<div *ngIf="!property.isBlob" class="input-group col-sm-10">
-				<input class="form-control" type="text" [id]="property.name" [name]="property.name" [ngModel]="property.value" (ngModelChange)="onChange(property, $event)" />
-				<span class="input-group-btn">
-					<button *ngIf="property.isDraft" class="btn btn-default" type="button" (click)="deleteDraft(property)" title="Discard draft" aria-label="Discard draft">
-						<span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
-					</button>
-					<button *ngIf="!property.isDraft && !property.isIntrinsic" class="btn btn-default" type="button" (click)="delete(property)" title="Remove property" aria-label="Remove property">
-						<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-					</button>
-					<button class="btn btn-default" type="button" (click)="save(property)" title="Save property" aria-label="Save property">
-						<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>
-					</button>
-				</span>
+			<div *ngIf="!property.isBlob" class="col-sm-10">
+				<text-property-editor [property]="property" (propertyChange)="onChange(property, $event)" (deleteDraftClick)="deleteDraft(property)" (deleteClick)="delete(property)" (saveClick)="save(property)"></text-property-editor>
 			</div>
 			<div *ngIf="property.isAudio" class="col-sm-10">
 				<audio-property-editor [property]="property" (propertyChange)="onChange(property, $event)" (deleteDraftClick)="deleteDraft(property)" (deleteClick)="delete(property)" (saveClick)="save(property)"></audio-property-editor>

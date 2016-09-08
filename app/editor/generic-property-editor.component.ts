@@ -9,7 +9,6 @@ import { DomSanitizer } from "@angular/platform-browser";
 import { Property } from "../types/wob";
 import { Urls } from "../shared/urls";
 
-import { MyDomSanitizer } from "../my-dom-sanitizer.service";
 import { SessionService } from "../session/session.service";
 
 @Component({
@@ -70,6 +69,11 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy {
 	onFileChange(event: Event) {
 		this.property.value = (<HTMLInputElement>event.target).files[0];
 		this.objectURL = this.property.createObjectURL();
+		this.propertyChange.emit(this.property.value);
+	}
+
+	onModelChange(event: Event) {
+		this.property.value = event;
 		this.propertyChange.emit(this.property.value);
 	}
 
