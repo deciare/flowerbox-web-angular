@@ -484,8 +484,13 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	saveCode(): Promise<BaseModel> {
 		var savedVerb: VerbModel;
 
+		if (this.selectedVerb.isDraft && this.selectedVerb.code === undefined) {
+			// Nothing to do if there is not currently a code draft.
+			return;
+		}
+
 		// Get the latest version of this verb from the server to ensure we
-		// don't inadvertently overwrite the code with an older version.
+		// don't inadvertently overwrite signatures with an older version.
 		return this.wobService.getVerb(
 				this.selectedVerb.id,
 				this.selectedVerb.name
@@ -570,8 +575,13 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	saveSigs(): Promise<BaseModel> {
 		var savedVerb: VerbModel;
 
+		if (this.selectedVerb.isDraft && this.selectedVerb.sigs === undefined) {
+			// Nothing to do if there is not currently a signatures draft.
+			return;
+		}
+
 		// Get the latest version of this verb from the server to ensure we
-		// don't inadvertently overwrite the signatures with an older version.
+		// don't inadvertently overwrite code with an older version.
 		return this.wobService.getVerb(
 				this.selectedVerb.id,
 				this.selectedVerb.name
