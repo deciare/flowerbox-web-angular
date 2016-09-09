@@ -5,8 +5,8 @@
 */
 import { Response } from "@angular/http";
 
-import { BaseModel } from "../models/base";
-import { PropertyModel, VerbModel } from "../models/wob";
+import { VerbModel } from "../models/wob";
+import { Tag } from "../shared/tag";
 import { Urls } from "../shared/urls";
 
 enum BlobType {
@@ -164,6 +164,90 @@ export class Property extends Metadata {
 	setAsVideo() {
 		this.setAsBlob();
 		this._blobType = BlobType.Video;
+	}
+}
+
+export class VerbSignature {
+	id: string;
+	indirectObj: string;
+	indirectObj2: string;
+	isInherited?: boolean;
+	obj: string;
+	prep: string;
+	prep2: string;
+	verb: string;
+
+	constructor(value: any, isInherited?: boolean) {
+		// Generate random ID for uniquely identifying this signature within a
+		// verb.
+		this.id = Tag.makeTag(4);
+		this.isInherited = isInherited === undefined ? false : isInherited;
+		this.value = value;
+	}
+
+	get value(): string {
+		return [
+			this.verb,
+			this.obj,
+			this.prep,
+			this.indirectObj,
+			this.prep2,
+			this.indirectObj2
+		].join(" ");
+	}
+
+	set value(value) {
+		var pieces = value.split(" ");
+
+		this.verb = pieces[0];
+		this.obj = pieces[1];
+		this.prep = pieces[2];
+		this.indirectObj = pieces[3];
+		this.prep2 = pieces[4];
+		this.indirectObj2 = pieces[5];
+	}
+}
+
+export class Verb extends Metadata {
+	sigs: VerbSignature[];
+	sigsDraft: VerbSignature[];
+	code: string;
+	codeDraft: string;
+
+	constructor(sourceId: number, name: string, sigs: string[], code: string, isDraft?: boolean, perms?: number, permsEffective?: number) {
+		super(sourceId, name, isDraft, perms, permsEffective);
+
+		if (sigs && sigs.length) {
+			this.sigs = [];
+			sigs.forEach((sig) => {
+				this.sigs.push(new VerbSignature(sig));
+			});
+		}
+		this.code = code;
+	}
+
+	get hasApplied(): boolean {
+		return this.hasCode || this.hasSigs;
+	}
+
+	get hasCode(): boolean {
+		return this.code !== undefined;
+	}
+
+	get hasCodeDraft(): boolean {
+		return this.codeDraft !== undefined;
+	}
+
+	get hasDraft(): boolean {
+		return this.hasCodeDraft || this.hasSigsDraft;
+	}
+
+	get hasSigs(): boolean {
+		return this.sigs !== undefined;
+	}
+
+	get hasSigsDraft(): boolean {
+		return this.sigsDraft !== undefined;
 	}
 }
 

@@ -14,13 +14,13 @@
 				<span *ngIf="property.isDraft" class="status-label">(draft)</span>
 			</label>
 			<div *ngIf="!property.isBlob" class="col-sm-10">
-				<text-property-editor [property]="property" (propertyChange)="onChange(property, $event)" (deleteDraftClick)="deleteDraft(property)" (deleteClick)="delete(property)" (saveClick)="save(property)"></text-property-editor>
+				<text-property-editor [admin]="asAdmin" [property]="property" [wobId]="wobId" (propertyChange)="onChange($event, property)" (propertyDelete)="onDelete($event)"></text-property-editor>
 			</div>
 			<div *ngIf="property.isAudio" class="col-sm-10">
-				<audio-property-editor [property]="property" (propertyChange)="onChange(property, $event)" (deleteDraftClick)="deleteDraft(property)" (deleteClick)="delete(property)" (saveClick)="save(property)"></audio-property-editor>
+				<audio-property-editor [admin]="asAdmin" [property]="property" [wobId]="wobId" (propertyChange)="onChange($event, property)" (propertyDelete)="onDelete($event)"></audio-property-editor>
 			</div>
 			<div *ngIf="property.isImage" class="col-sm-10">
-				<image-property-editor [property]="property" (propertyChange)="onChange(property, $event)" (deleteDraftClick)="deleteDraft(property)" (deleteClick)="delete(property)" (saveClick)="save(property)"></image-property-editor>
+				<image-property-editor [admin]="asAdmin" [property]="property" [wobId]="wobId" (propertyChange)="onChange($event, property)" (propertyDelete)="onDelete($event)"></image-property-editor>
 			</div>
 		</div>
 	</section>

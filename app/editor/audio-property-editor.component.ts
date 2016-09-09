@@ -11,6 +11,8 @@ import { Property } from "../types/wob";
 
 import { GenericPropertyEditorComponent } from "./generic-property-editor.component";
 
+import { WobService } from "../api/wob.service";
+
 @Component({
 	moduleId: module.id,
 	selector: "audio-property-editor",
@@ -21,8 +23,9 @@ import { GenericPropertyEditorComponent } from "./generic-property-editor.compon
 })
 export class AudioPropertyEditorComponent extends GenericPropertyEditorComponent {
 	constructor(
-		domSanitizer: DomSanitizer
+		domSanitizer: DomSanitizer,
+		wobService: WobService
 	) {
-		super(domSanitizer);
+		super(domSanitizer, wobService);
 	}
 }

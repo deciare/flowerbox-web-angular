@@ -38,8 +38,8 @@ export class NewPropertyComponent implements AfterViewInit {
 		this.validTypes = {
 			Text: null,
 			Audio: "audio",
-			Image: "image",
-			Video: "video"
+			Image: "image"/*,
+			Video: "video"*/
 		};
 		this.confirm = new EventEmitter<NewPropertyParams>();
 	}
