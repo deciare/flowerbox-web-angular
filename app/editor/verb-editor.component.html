@@ -1,12 +1,7 @@
 <div class="container">
 	<div class="row">
 		<ul class="item-list col-sm-2">
-			<span *ngFor="let verb of verbDrafts | keyvalue">
-				<li *ngIf="!verbs[verb.value.name]" class="draft" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
-					<a [routerLink]="[ { verb: verb.value.name } ]">{{verb.value.name}}</a>
-				</li>
-			</span>
-			<li *ngFor="let verb of verbs | keyvalue" [class.draft]="verbDrafts[verb.key]" [class.inherited]="isInherited(verb.value)" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
+			<li *ngFor="let verb of verbs | keyvalue" [class.draft]="verbs[verb.key].hasDraft" [class.inherited]="isInherited(verb.value)" [class.selected]="selectedVerb && verb.value.name == selectedVerb.name">
 				<a [routerLink]="[ { verb: verb.value.name } ]">{{verb.value.name}}</a>
 			</li>
 			<li class="plus"><a (click)="addVerb()">+</a></li>
@@ -14,26 +9,26 @@
 		<form class="form item-detail col-sm-10">
 			<section *ngIf="selectedVerb" class="verbforms">
 				<aside class="status-label">
-					<span *ngIf="isInherited(selectedVerb)" class="inherited">(inherited from #{{selectedVerb.id}})</span>
-					<span *ngIf="selectedVerb && selectedVerb.isDraft" class="draft">
-						<span *ngIf="selectedVerb.sigs != undefined && selectedVerb.code == undefined">(draft signatures)</span>
-						<span *ngIf="selectedVerb.sigs == undefined&& selectedVerb.code != undefined">(draft code)</span>
-						<span *ngIf="selectedVerb.sigs != undefined && selectedVerb.code != undefined">(draft signatures and code)</span>
+					<span *ngIf="isInherited(selectedVerb) && !selectedVerb.hasDraft" class="inherited">(inherited from #{{selectedVerb.sourceId}})</span>
+					<span *ngIf="selectedVerb && selectedVerb.hasDraft" class="draft">
+						<span *ngIf="selectedVerb.hasSigsDraft && !selectedVerb.hasCodeDraft">(draft signatures)</span>
+						<span *ngIf="!selectedVerb.hasSigsDraft && selectedVerb.hasCodeDraft">(draft code)</span>
+						<span *ngIf="selectedVerb.hasSigsDraft && selectedVerb.hasCodeDraft">(draft signatures and code)</span>
 					</span>
 					<span *ngIf="asAdmin" class="admin-banner monospace text-danger col-sm-12"><span aria-hidden="true">/* </span>editing as admin<span aria-hidden="true"> */</span></span>
 				</aside>
 				<header class="section-header">
 					Signatures
 					<div class="btn-group" role="group">
-						<button *ngIf="selectedVerb && selectedVerb.isDraft && selectedVerb.sigs != undefined" class="btn btn-link btn-header" type="button" title="Discard signature drafts" aria-label="Discard signature drafts" (click)="deleteSigsDraft()"><span class="glyphicon glyphicon-erase" aria-hidden="true"></span></button>
+						<button *ngIf="selectedVerb && selectedVerb.hasSigsDraft" class="btn btn-link btn-header" type="button" title="Discard signature drafts" aria-label="Discard signature drafts" (click)="deleteSigsDraft()"><span class="glyphicon glyphicon-erase" aria-hidden="true"></span></button>
 						<button class="btn btn-link btn-header" type="button" title="Save signatures" aria-label="Save signatures" (click)="saveSigs()"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
 					</div>
 				</header>
-				<div class="verbform" *ngFor="let sig of compositeVerb.sigs">
+				<div class="verbform" *ngFor="let sig of selectedVerb.sigs">
 					<button class="btn btn-link btn-verbform" title="Remove verbform" type="button" aria-label="Remove verbform" (click)="removeSignature(sig)"><span aria-hidden="true">-</span></button>
 					<button class="btn btn-link signature" type="button" title="Edit verbform" (click)="editSignature(sig)">
 						<span class="sr-only">Edit verbform</span>
-						<span *ngFor="let word of sig.split(' '); let i = index">
+						<span *ngFor="let word of sig.words; let i = index">
 							<span [ngSwitch]="i">
 								<span *ngSwitchCase="0" class="verb">{{word}}</span>
 								<span *ngSwitchCase="1" class="object">{{word}}</span>
@@ -51,7 +46,7 @@
 				<header class="section-header">
 					Code
 					<div class="btn-group" role="group">
-						<button *ngIf="selectedVerb && selectedVerb.isDraft && selectedVerb.code != undefined" class="btn btn-link btn-header" type="button" title="Discard code drafts" aria-label="Discard code drafts" (click)="deleteCodeDraft()"><span class="glyphicon glyphicon-erase" aria-hidden="true"></span></button>
+						<button *ngIf="selectedVerb && selectedVerb.hasCodeDraft" class="btn btn-link btn-header" type="button" title="Discard code drafts" aria-label="Discard code drafts" (click)="deleteCodeDraft()"><span class="glyphicon glyphicon-erase" aria-hidden="true"></span></button>
 						<button class="btn btn-link btn-header" type="button" title="Save code" aria-label="Save code" (click)="saveCode()"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
 						<button class="btn btn-link btn-header" type="button" title="Configure code editor" aria-label="Configure code editor" (click)="aceConfig.open(editor)"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></button>
 					</div>

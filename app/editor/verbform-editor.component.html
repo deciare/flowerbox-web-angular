@@ -6,53 +6,49 @@
 				<h4 id="verbform-editor-title">Edit verbform</h4>
 			</div>
 			<div class="modal-body">
-				<div *ngFor="let word of verbform; let i = index" class="form-group">
-					<span *ngIf="isFieldApplicable(i, true)" [ngSwitch]="i">
-						<span *ngSwitchCase="0">
-							<label class="control-label col-sm-3">Verb</label>
-							<div class="col-sm-9">{{word}}</div>
-						</span>
-						<span *ngSwitchCase="1">
-							<label for="obj" class="control-label col-sm-3">Object</label>
-							<div class="col-sm-9">
-								<select id="obj" name="obj" class="form-control" [(ngModel)]="verbform[i]">
-									<option *ngFor="let object of objects" [value]="object">{{object}}</option>
-								</select>
-							</div>
-						</span>
-						<span *ngSwitchCase="2">
-							<label for="prep" class="control-label col-sm-3">Preposition</label>
-							<div class="col-sm-9">
-								<select id="prep" name="prep" class="form-control" [(ngModel)]="verbform[i]">
-									<option *ngFor="let preposition of prepositions | keyvalue" [value]="preposition.key">{{preposition.value.join(', ')}}</option>
-								</select>
-							</div>
-						</span>
-						<span *ngSwitchCase="3">
-							<label for="indObj" class="control-label col-sm-3">Indirect obj.</label>
-							<div class="col-sm-9">
-								<select id="indObj" name="indObj" class="form-control" [(ngModel)]="verbform[i]">
-									<option *ngFor="let object of objects" [value]="object">{{object}}</option>
-								</select>
-							</div>
-						</span>
-						<span *ngSwitchCase="4">
-							<label for="prep2" class="control-label col-sm-3">2nd prep.</label>
-							<div class="col-sm-9">
-								<select id="prep2" name="prep2" class="form-control" [(ngModel)]="verbform[i]">
-									<option *ngFor="let preposition of prepositions | keyvalue" [value]="preposition.key">{{preposition.value.join(', ')}}</option>
-								</select>
-							</div>
-						</span>
-						<span *ngSwitchCase="5">
-							<label for="indObj2" class="control-label col-sm-3">2nd ind. obj.</label>
-							<div class="col-sm-9">
-								<select id="indObj2" name="indObj2" class="form-control" [(ngModel)]="verbform[i]">
-									<option *ngFor="let object of objects" [value]="object">{{object}}</option>
-								</select>
-							</div>
-						</span>
-					</span>
+				<div class="form-group">
+					<label class="text-right col-sm-3">Verb</label>
+					<div class="col-sm-9">{{verbform.verb}}</div>
+				</div>
+				<div class="form-group">
+					<label for="obj" class="control-label col-sm-3">Object</label>
+					<div class="col-sm-9">
+						<select id="obj" name="obj" class="form-control" [(ngModel)]="verbform.obj">
+							<option *ngFor="let object of objects | keyvalue" [value]="object.key">{{object.value}}</option>
+						</select>
+					</div>
+				</div>
+				<div *ngIf="verbform.obj != '__invalid__'" class="form-group">
+					<label for="prep" class="control-label col-sm-3">Preposition</label>
+					<div class="col-sm-9">
+						<select id="prep" name="prep" class="form-control" [(ngModel)]="verbform.prep">
+							<option *ngFor="let preposition of prepositions | keyvalue" [value]="preposition.key">{{preposition.value.join(', ')}}</option>
+						</select>
+					</div>
+				</div>
+				<div *ngIf="verbform.prep != '__invalid__'" class="form-group">
+					<label for="indirectObj" class="control-label col-sm-3">Indirect obj.</label>
+					<div class="col-sm-9">
+						<select id="indirectObj" name="indirectObj" class="form-control" [(ngModel)]="verbform.indirectObj">
+							<option *ngFor="let object of objects | keyvalue" [value]="object.key">{{object.value}}</option>
+						</select>
+					</div>
+				</div>
+				<div *ngIf="verbform.indirectObj != '__invalid__'" class="form-group">
+					<label for="prep2" class="control-label col-sm-3">2nd prep.</label>
+					<div class="col-sm-9">
+						<select id="prep2" name="prep2" class="form-control" [(ngModel)]="verbform.prep2">
+							<option *ngFor="let preposition of prepositions | keyvalue" [value]="preposition.key">{{preposition.value.join(', ')}}</option>
+						</select>
+					</div>
+				</div>
+				<div *ngIf="verbform.prep2 != '__invalid__'" class="form-group">
+					<label for="indirectObj2" class="control-label col-sm-3">2nd ind. obj.</label>
+					<div class="col-sm-9">
+						<select id="indirectObj2" name="indirectObj2" class="form-control" [(ngModel)]="verbform.indirectObj2">
+							<option *ngFor="let object of objects | keyvalue" [value]="object.key">{{object.value}}</option>
+						</select>
+					</div>
 				</div>
 			</div>
 			<div class="modal-footer">

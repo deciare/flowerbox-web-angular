@@ -6,6 +6,7 @@
 import { AfterViewInit, Component, EventEmitter, Input, Output } from "@angular/core";
 
 import { Tag } from "../shared/tag";
+import { VerbSignature } from "../types/wob";
 
 @Component({
 	moduleId: module.id,
@@ -18,11 +19,12 @@ import { Tag } from "../shared/tag";
 	templateUrl: "./verbform-editor.component.html"
 })
 export class VerbformEditorComponent implements AfterViewInit {
-	private objects: string[] = [
-		"none",
-		"self",
-		"any"
-	];
+	private objects: any = {
+		"__invalid__":	"(not selected)",
+		"none":			"none",
+		"self":			"self",
+		"any":			"any"
+	};
 	private prepositions: any = {
 		"__invalid__":	[ "(not selected)" ],
 		"with":			[ "with", "using" ],
@@ -44,14 +46,14 @@ export class VerbformEditorComponent implements AfterViewInit {
 
 	private domId: string;
 	private element: JQuery;
-	private verbform: string[];
+	private verbform: VerbSignature;
 
 
 	@Output()
-	save: EventEmitter<string>;
+	save: EventEmitter<VerbSignature>;
 
 	constructor() {
-		this.save = new EventEmitter<string>();
+		this.save = new EventEmitter<VerbSignature>();
 		this.domId = "verbform-editor-" + Tag.makeTag(3);
 	}
 
@@ -59,63 +61,31 @@ export class VerbformEditorComponent implements AfterViewInit {
 		this.element = $(`#${this.domId}`);
 	}
 
-	isFieldApplicable(index: number, allowPlaceholderPrep?: boolean): boolean {
-		if (index == 0) {
-			// The name of the verb is always applicable.
-			return true;
-		}
-
-		if (index % 2) {
-			// Odd-numbered indeces are objects. Objects are only applicable if
-			// the preceding preposition is applicable.
-			return this.verbform[index - 1] !== "__invalid__";
-		}
-		else {
-			// Even-numbered indeces are prepositions. Prepositions are
-			// applicable when they are either:
-			//  - Not blank
-			//  - A placeholder, and allowPlaceholderPrep is true, and the
-			//    previous preposition is not also a placeholder
-			if (this.verbform[index] !== "__invalid__" ||
-				(
-					allowPlaceholderPrep &&
-					this.verbform[index - 2] !== "__invalid__"
-				)
-			) {
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-	}
-
 	onSubmit() {
 		var output = [];
 
 		// Append fields to the output verbform until the first invalid field
 		// is encountered.
-		for (let i = 0; i < this.verbform.length; i++) {
-			if (this.isFieldApplicable(i)) {
-				output.push(this.verbform[i]);
-			}
-			else {
+		for (let i = 0; i < this.verbform.words.length; i++) {
+			if (this.verbform.words[i] == "__invalid__") {
 				break;
 			}
+			output.push(this.verbform.words[i]);
 		}
 
-		this.save.emit(output.join(" "));
+		this.save.emit(new VerbSignature(output.join(" ")));
 		this.element.modal("hide");
 	}
 
-	open(verbform: string) {
+	open(verbform: VerbSignature) {
 		this.element.modal();
-		this.verbform = verbform.split(" ");
-
-		// If the verbformt hat was passed in doesn't use all available slots,
-		// pad it with placeholder slots.
-		for (let i = this.verbform.length; i < 6; i++) {
-			this.verbform.push(i % 2 ? "none" : "__invalid__");
-		}
+		this.verbform = new VerbSignature(verbform.words.map((word, index) => {
+			if (word === undefined || word === null || word === "") {
+				return "__invalid__";
+			}
+			else {
+				return word;
+			}
+		}).join(" "));
 	}
 }

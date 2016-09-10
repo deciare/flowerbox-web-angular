@@ -10,7 +10,7 @@ import "rxjs/add/operator/toPromise";
 import { BaseModel } from "../models/base";
 import { Urls } from "../shared/urls";
 import { PropertyModel, VerbModel, InstanceOfModelList, WobInfoModel, WobInfoModelList } from "../models/wob";
-import { Property, EditState } from "../types/wob";
+import { EditState, Property, Verb } from "../types/wob";
 
 import { SessionHttp } from "../session/session-http.service";
 import { SessionService } from "../session/session.service";
@@ -43,6 +43,25 @@ export class WobService {
 						isDraft,
 						data.perms,
 						data.permseffective
+					));
+				}
+				else if (
+					data.id !== undefined &&
+					data.name !== undefined &&
+					(
+						data.sigs !== undefined ||
+						data.code !== undefined
+					)
+				) {
+					// Response contains a Verb.
+					return Promise.resolve(new Verb(
+						data.id,
+						data.name,
+						data.sigs,
+						data.code,
+						isDraft,
+						data.perms,
+						data.permseefective
 					));
 				}
 				else {
@@ -112,7 +131,7 @@ export class WobService {
 		var state: EditState = new EditState(id);
 		var draftBlobPromises: Promise<Property>[] = [];
 		var propertyPromises: Promise<Property>[] = [];
-		var verbPromises: Promise<VerbModel>[] = [];
+		var verbPromises: Promise<Verb>[] = [];
 
 		// Get info about this wob
 		return this.getInfo(id)
@@ -202,7 +221,7 @@ export class WobService {
 						}
 						else if (key.startsWith(Urls.draftVerb)) {
 							// If this is a verb draft...
-							state.draft.verbs.push(new VerbModel(
+							state.draft.verbs.push(new Verb(
 								// Wob ID
 								id,
 								// Verb name minus prefix
@@ -211,10 +230,11 @@ export class WobService {
 								draft.value[key].sigs,
 								// Code
 								draft.value[key].code,
+								// Is a draft?
+								true,
 								// TODO: Permissions
 								undefined,
-								// Draft status
-								false
+								undefined
 							));
 						}
 						else if (key.startsWith(Urls.draftIntrinsic)) {
@@ -231,7 +251,8 @@ export class WobService {
 								// Is a draft?
 								false,
 								// TODO: Permissions
-								undefined, undefined
+								undefined,
+								undefined
 							));
 						}
 					}
@@ -264,7 +285,7 @@ export class WobService {
 						Promise.all(verbPromises)
 					]);
 			})
-			.then((values: [ Property[], VerbModel[] ]) => {
+			.then((values: [ Property[], Verb[] ]) => {
 				// Add each applied property to the edit state
 				values[0].forEach((property: Property) => {
 					if (!property) {
@@ -284,7 +305,7 @@ export class WobService {
 					}
 				});
 				// Add each applied verb to the edit state
-				values[1].forEach((verb: VerbModel) => {
+				values[1].forEach((verb: Verb) => {
 					state.applied.verbs.push(verb);
 				});
 
@@ -587,7 +608,7 @@ export class WobService {
 			);
 	}
 
-	getVerb(id: number, name: string, admin?: boolean): Promise<VerbModel> {
+	getVerb(id: number, name: string, admin?: boolean): Promise<Verb> {
 		return this.http.get(Urls.wobGetVerb(id, name), {
 				admin: admin
 			})
@@ -625,7 +646,7 @@ export class WobService {
 			);
 	}
 
-	getVerbDraft(id: number, name: string): Promise<VerbModel> {
+	getVerbDraft(id: number, name: string): Promise<Verb> {
 		return this.sessionService.getPlayerInfo()
 			.then((player: WobInfoModel) => {
 				return this.http.get(Urls.worldWob + player.id + Urls.wobGetVerbDraft(id, name)).toPromise();

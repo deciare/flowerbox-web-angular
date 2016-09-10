@@ -12,8 +12,7 @@ import "rxjs/add/operator/distinctUntilChanged";
 import "rxjs/add/operator/withLatestFrom";
 
 import { BaseModel } from "../models/base";
-import { VerbModel } from "../models/wob";
-import { EditState } from "../types/wob";
+import { EditState, Verb, VerbSignature } from "../types/wob";
 
 import { AceConfigComponent } from "./ace-config.component";
 import { VerbformEditorComponent } from "./verbform-editor.component";
@@ -42,12 +41,11 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	private routeParentParamsSubscription: Subscription;
 
 	asAdmin: boolean;
-	draftUpdate: Subject<VerbModel>;
+	draftUpdate: Subject<Verb>;
 	message: string;
-	selectedVerb: VerbModel;
-	selectedSignature: string;
-	verbDrafts: any;
-	verbs: any;
+	selectedVerb: Verb;
+	selectedSignature: VerbSignature;
+	verbs: { [propName: string]: Verb; }
 	wobId: number;
 
 	@ViewChild(AceConfigComponent)
@@ -64,7 +62,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	) {
 		super(sessionService);
 		this.asAdmin = false;
-		this.draftUpdate = new Subject<VerbModel>();
+		this.draftUpdate = new Subject<Verb>();
 	}
 
 	ngOnInit() {
@@ -80,22 +78,10 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 				.then(() => {
 					// If specified verb exists, select it. Otherwise, use first
 					// verb in list.
-					if (verbName === undefined ||
-						(
-							!this.verbDrafts[verbName] &&
-							!this.verbs[verbName]
-						)
-					) {
+					if (verbName === undefined || !this.verbs[verbName]) {
 						verbName = this.firstVerb.name;
 					}
-
-					// If a draft of the selected verb exists, prefer the draft.
-					if (this.verbDrafts[verbName]) {
-						this.selectedVerb = this.verbDrafts[verbName];
-					}
-					else if (this.verbs[verbName]) {
-						this.selectedVerb = this.verbs[verbName]
-					}
+					this.selectedVerb = this.verbs[verbName];
 
 					// Initialise editor if needed.
 					if (!this.editor) {
@@ -115,9 +101,8 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 					}
 					// Avoid triggering draft creation when setting new code
 					// as a direct result of navigating to different verbs.
-					var compositeCode = this.compositeVerb.code;
 					this.ignoreCodeChanges = true;
-					this.editor.setValue(compositeCode ? compositeCode : "", -1);
+					this.editor.setValue(this.selectedVerb.code, -1);
 					this.ignoreCodeChanges = false;
 					this.editor.scrollToLine(0);
 				});
@@ -135,22 +120,24 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	}
 
 	private onEditStateChange(wobEditState: EditState): Promise<void> {
-		this.verbDrafts = Object.create(null);
 		this.verbs = Object.create(null);
 		this.wobId = wobEditState.id;
 
-		// Iterate through applied properties
+		// Iterate through applied verbs to create array of known verbs
 		wobEditState.applied.verbs.forEach((verb) => {
-			// Create array of properties that are currently applied
-			verb.isDraft = false;
 			this.verbs[verb.name] = verb;
 		});
 
-		// For each draft that exists for an intrinsic or property, overwrite
-		// what's displayed on the form with the draft version.
+		// For each draft that exists for a verb, merge that draft with the
+		// applied version of the same verb. If no applied version of the verb
+		// exists, append the draft to the end of the array.
 		wobEditState.draft.verbs.forEach((verb) => {
-			verb.isDraft = true;
-			this.verbDrafts[verb.name] = verb;
+			if (this.verbs[verb.name]) {
+				this.verbs[verb.name].mergeDraft(verb);
+			}
+			else {
+				this.verbs[verb.name] = verb;
+			}
 		});
 
 		// Indicate that WobEditState has been processed.
@@ -165,57 +152,8 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 		this.verbs = Object.assign(Object.create(null), this.verbs);
 	}
 
-	/**
-	 * Manually trigger change detection when content of verbDrafts is changed.
-	 * (Needed for pure pipe.)
-	 */
-	private verbDraftsChanged() {
-		this.verbDrafts = Object.assign(Object.create(null), this.verbDrafts);
-	}
-
-	/**
-	 * If the selected verb is not a draft, then return the selected verb.
-	 * If the selected verb is a draft, but the draft contains only signatures
-	 * or only code, then available portions of the draft are combined with
-	 * portions of the applied verb to create a composite verb.
-	 *
-	 * Changes made to this verb are silently discarded. Changes that need to
-	 * persist should be made to selectedVerb instead.
-	 */
-	get compositeVerb(): VerbModel {
-		var retval: VerbModel;
-
-		// If selectedVerb isn't yet available, return a meaningless placeholder
-		// that won't result in any syntax errors.
-		if (!this.selectedVerb) {
-			return new VerbModel(0, "", [], "", undefined, true);
-		}
-
-		// Create a Verb object based on selectedVerb, instead of setting
-		// retval = selectedVerb, to avoid making any changes to selectedVerb
-		retval = new VerbModel(
-			this.selectedVerb.id,
-			this.selectedVerb.name,
-			this.selectedVerb.sigs,
-			this.selectedVerb.code,
-			undefined,
-			this.selectedVerb.isDraft
-		);
-
-		if (this.selectedVerb.isDraft) {
-			if (this.selectedVerb.sigs === undefined) {
-				retval.sigs = this.verbs[this.selectedVerb.name] ? this.verbs[this.selectedVerb.name].sigs : [];
-			}
-			else if (this.selectedVerb.code === undefined) {
-				retval.code = this.verbs[this.selectedVerb.name] ? this.verbs[this.selectedVerb.name].code : "";
-			}
-		}
-
-		return retval;
-	}
-
-	get firstVerb(): VerbModel {
-		var verb: VerbModel;
+	get firstVerb(): Verb {
+		var verb: Verb;
 		for (let key in this.verbs) {
 			verb = this.verbs[key];
 			break;
@@ -224,18 +162,18 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	}
 
 	addSignature() {
-		this.editSignature(this.selectedVerb.name + " __new__");
+		this.editSignature(new VerbSignature(this.selectedVerb.name + " __new__"));
 	}
 
-	editSignature(sig: string) {
+	editSignature(sig: VerbSignature) {
 		this.selectedSignature = sig;
 		this.verbformEditor.open(sig);
 	}
 
-	removeSignature(sig: string) {
+	removeSignature(sig: VerbSignature) {
 		this.selectedSignature = sig;
 		var foundIndex = this.selectedVerb.sigs.findIndex((value) => {
-			return value == sig;
+			return value.id == sig.id;
 		});
 		this.selectedVerb.sigs.splice(foundIndex, 1);
 		this.onSignatureChange(null);
@@ -251,21 +189,22 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 
 		// If there's an existing verb with this name, navigate to the existing
 		// verb.
-		if (this.verbs[name] || this.verbDrafts[name]) {
+		if (this.verbs[name]) {
 			return this.navigateToVerb(name);
 		}
 
 		// Create new verb draft.
-		this.verbDrafts[name] = new VerbModel(
+		this.verbs[name] = new Verb(
 			this.wobId,	// wob ID
 			name,		// verb name
 			[],			// signatures
 			"",			// code
+			true,		// is draft
 			undefined,	// default permissions
-			true		// is draft
+			undefined
 		);
-		this.selectedVerb = this.verbDrafts[name];
-		this.verbDraftsChanged();
+		this.selectedVerb = this.verbs[name];
+		this.verbsChanged();
 
 		this.saveVerbDraft()
 			.then(() => {
@@ -283,17 +222,17 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	}
 
 	deleteCodeDraft(): Promise<BaseModel> {
-		if (this.selectedVerb.isDraft) {
+		if (this.selectedVerb.hasCodeDraft) {
 			// Unset code draft.
-			this.selectedVerb.code = undefined;
+			this.selectedVerb.codeDraft = undefined;
 
-			// Update editor contents.
+			// Update editor contents from server.
 			this.wobService.getVerb(
-					this.selectedVerb.id,
+					this.wobId,
 					this.selectedVerb.name
 				)
-				.then((verb: VerbModel) => {
-					this.verbs[verb.name] = verb;
+				.then((verb: Verb) => {
+					this.verbs[verb.name].mergeApplied(verb);
 
 					// Avoid triggering creation of a draft when resetting the
 					// contents of the editor in response to deleting a draft.
@@ -304,7 +243,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 				});
 
 			// If verbforms draft is also unset, delete the draft for this verb.
-			if (this.selectedVerb.sigs === undefined) {
+			if (!this.selectedVerb.hasSigsDraft) {
 				return this.deleteVerbDraft();
 			}
 			// Otherwise, save draft with undefined code.
@@ -315,12 +254,21 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	}
 
 	deleteSigsDraft(): Promise<BaseModel> {
-		if (this.selectedVerb.isDraft) {
+		if (this.selectedVerb.hasSigsDraft) {
 			// Unset verbforms draft.
-			this.selectedVerb.sigs = undefined;
+			this.selectedVerb.sigsDraft = undefined;
+
+			// Update signatures from server.
+			this.wobService.getVerb(
+					this.wobId,
+					this.selectedVerb.name
+				)
+				.then((verb: Verb) => {
+					this.verbs[verb.name].mergeApplied(verb);
+				});
 
 			// If code draft is also unset, delete the draft for this verb.
-			if (this.selectedVerb.code === undefined) {
+			if (!this.selectedVerb.hasCodeDraft) {
 				return this.deleteVerbDraft();
 			}
 			// Otherwise, save draft with undefined signatures.
@@ -331,31 +279,25 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	}
 
 	deleteVerbDraft(): Promise<BaseModel> {
-		if (this.selectedVerb.isDraft) {
-			// Delete draft from server.
-			return this.wobService.deleteVerbDraft(
-					this.wobId,
-					this.selectedVerb.name
-				)
-				.then((data: BaseModel) => {
-					// Delete draft from local data model.
-					delete this.verbDrafts[this.selectedVerb.name];
-					this.verbDraftsChanged();
+		// Delete draft from server.
+		return this.wobService.deleteVerbDraft(
+				this.wobId,
+				this.selectedVerb.name
+			)
+			.then((data: BaseModel) => {
+				// Delete draft from local data model.
+				this.verbs[this.selectedVerb.name].clearDraft();
+				this.verbsChanged();
 
-					// If an applied version of this verb exists, display the
-					// applied version.
-					if (this.verbs[this.selectedVerb.name]) {
-						this.selectedVerb = this.verbs[this.selectedVerb.name];
-					}
-					// Otherwise, navigate to the first still-existing verb.
-					else {
-						this.navigateToVerb(this.firstVerb.name);
-					}
+				// If an applied version of this verb exists, display the
+				// applied version.
+				if (!this.selectedVerb.hasApplied) {
+					this.navigateToVerb(this.firstVerb.name);
+				}
 
-					this.message = "Deleted verb draft";
-					return data;
-				});
-		}
+				this.message = "Deleted verb draft";
+				return data;
+			});
 	}
 
 	deleteVerb(): Promise<BaseModel> {
@@ -372,17 +314,18 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 			.then((data: BaseModel) => {
 				this.message = "Deleted verb";
 
-				// Delete verb from local data model.
-				delete this.verbs[verbName];
-				this.verbsChanged();
-
 				// Also delete verb draft from server.
 				return this.deleteVerbDraft();
 			})
+			.catch((data: BaseModel) => {
+				// Failing to delete the draft is okay, since one may not exist;
+				// move on to the next step.
+				return data;
+			})
 			.then((data: BaseModel) => {
-				// Delete draft from local data model.
-				delete this.verbDrafts[verbName];
-				this.verbDraftsChanged();
+				// Delete verb from local data model.
+				delete this.verbs[verbName];
+				this.verbsChanged();
 
 				// Navigate to first still-existing verb.
 				this.navigateToVerb(this.firstVerb.name);
@@ -401,53 +344,26 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	}
 
 	onCodeChange(code: string) {
-		// If the selected verb is not a draft, create a new draft with the
-		// modified code instead of the applied version of the verb.
-		if (!this.selectedVerb.isDraft) {
-			this.verbDrafts[this.selectedVerb.name] = new VerbModel(
-				this.wobId,
-				this.selectedVerb.name,
-				undefined,
-				code,
-				undefined,
-				true
-			);
-			this.selectedVerb = this.verbDrafts[this.selectedVerb.name];
-		}
-		// Otherwise, just modify the existing draft's code.
-		else {
-			this.selectedVerb.code = code;
-		}
+		// Update value of code draft.
+		this.selectedVerb.codeDraft = code;
 
 		// Notify observers draft has been updated.
 		this.draftUpdate.next(this.selectedVerb);
 	}
 
-	onSignatureChange(sig: string) {
-		// If the selected verb is not a draft, create a new draft and modify
-		// the draft instead of the applied version of the verb.
-		if (!this.selectedVerb.isDraft) {
-			this.verbDrafts[this.selectedVerb.name] = new VerbModel(
-				this.wobId,
-				this.selectedVerb.name,
-				this.selectedVerb.sigs,
-				undefined,
-				undefined,
-				true
-			);
-			this.selectedVerb = this.verbDrafts[this.selectedVerb.name];
-		}
-		// Otherwise, base sigs on the applied version of the verb.
-		else if (this.selectedVerb.sigs === undefined) {
-			this.selectedVerb.sigs = this.verbs[this.selectedVerb.name].sigs;
+	onSignatureChange(sig: VerbSignature) {
+		// If this verb doens't currently have a signatures draft, base our
+		// draft on the verb's applied signatures.
+		if (!this.selectedVerb.hasSigsDraft) {
+			this.selectedVerb.sigsDraft = this.selectedVerb.sigsApplied;
 		}
 
 		// Find existing verbform that was being edited
 		var foundIndex = this.selectedVerb.sigs.findIndex((value) => {
-			return value == this.selectedSignature;
+			return value.id == this.selectedSignature.id;
 		});
 
-		if (foundIndex == -1 && sig !== null) {
+		if (foundIndex == -1 && sig !== null && sig.value !== null) {
 			// If no existing verbfom matching the signature that was supplied
 			// to editSignature(), then a new verbform is being added.
 			// Confirm new verbform doesn't conflict with any existing one.
@@ -459,17 +375,17 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 				return;
 			}
 
-			// Append new verbform.
-			this.selectedVerb.sigs.push(sig);
+			// Append new verbform as a draft.
+			this.selectedVerb.sigsDraft.push(sig);
 		}
 		else {
-			if (sig === null) {
-				// Delete existing verbform.
-				delete this.selectedVerb.sigs[foundIndex];
+			if (sig === null || sig.value === null) {
+				// Delete existing verbform
+				delete this.selectedVerb.sigsDraft[foundIndex];
 			}
 			else {
 				// Replace existing verbform.
-				this.selectedVerb.sigs[foundIndex] = sig;
+				this.selectedVerb.sigsDraft[foundIndex] = sig;
 			}
 		}
 
@@ -482,9 +398,9 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	}
 
 	saveCode(): Promise<BaseModel> {
-		var savedVerb: VerbModel;
+		var savedVerb: Verb;
 
-		if (this.selectedVerb.isDraft && this.selectedVerb.code === undefined) {
+		if (!this.selectedVerb.hasCodeDraft) {
 			// Nothing to do if there is not currently a code draft.
 			return;
 		}
@@ -492,25 +408,24 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 		// Get the latest version of this verb from the server to ensure we
 		// don't inadvertently overwrite signatures with an older version.
 		return this.wobService.getVerb(
-				this.selectedVerb.id,
+				this.wobId,
 				this.selectedVerb.name
 			)
 			.then(
-				(verb: VerbModel) => {
+				(verb: Verb) => {
 					this.message = "Got latest verb from server";
 					// Saving means this verb is now directly associated with
 					// our object rather than inherited.
-					verb.id = this.wobId;
+					verb.sourceId = this.wobId;
 					// Use our code instead of the server's.
 					verb.code = this.selectedVerb.code;
-					verb.isDraft = false;
 
 					// Save the updated verb.
 					savedVerb = verb;
 					return this.wobService.setVerb(
-						verb.id,
+						verb.sourceId,
 						verb.name,
-						verb.sigs,
+						Verb.sigsAsStringArray(verb.sigs),
 						verb.code,
 						this.asAdmin
 					);
@@ -522,16 +437,17 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 					// Treat this like a new verb.
 					//
 					// Save the new verb without code.
-					savedVerb = new VerbModel(
+					savedVerb = new Verb(
 						this.wobId,
 						this.selectedVerb.name,
 						undefined,
 						this.selectedVerb.code,
+						false,
 						undefined,
-						false
+						undefined
 					);
 					return this.wobService.setVerb(
-						savedVerb.id,
+						savedVerb.sourceId,
 						savedVerb.name,
 						undefined,
 						savedVerb.code,
@@ -543,7 +459,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 				this.message += ", saved new code";
 
 				// After successful save to server, update local data model.
-				this.verbs[this.selectedVerb.name] = savedVerb;
+				this.verbs[this.selectedVerb.name].mergeApplied(savedVerb);
 				this.verbsChanged();
 
 				return this.deleteCodeDraft();
@@ -558,12 +474,12 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	}
 
 	saveVerbDraft(): Promise<BaseModel> {
-		if (this.selectedVerb.isDraft) {
+		if (this.selectedVerb.hasDraft) {
 			return this.wobService.setVerbDraft(
-					this.selectedVerb.id,
+					this.wobId,
 					this.selectedVerb.name,
-					this.selectedVerb.sigs,
-					this.selectedVerb.code
+					Verb.sigsAsStringArray(this.selectedVerb.sigsDraft),
+					this.selectedVerb.codeDraft
 				)
 				.then((data: BaseModel) => {
 					this.message = "Saved draft";
@@ -573,9 +489,9 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 	}
 
 	saveSigs(): Promise<BaseModel> {
-		var savedVerb: VerbModel;
+		var savedVerb: Verb;
 
-		if (this.selectedVerb.isDraft && this.selectedVerb.sigs === undefined) {
+		if (!this.selectedVerb.hasSigsDraft) {
 			// Nothing to do if there is not currently a signatures draft.
 			return;
 		}
@@ -583,25 +499,24 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 		// Get the latest version of this verb from the server to ensure we
 		// don't inadvertently overwrite code with an older version.
 		return this.wobService.getVerb(
-				this.selectedVerb.id,
+				this.selectedVerb.sourceId,
 				this.selectedVerb.name
 			)
 			.then(
-				(verb: VerbModel) => {
+				(verb: Verb) => {
 					this.message = "Got latest verb from server";
 					// Saving means this verb is now directly associated with
 					// our object rather than inherited.
-					verb.id = this.wobId;
+					verb.sourceId = this.wobId;
 					// Use our signatures instead of the server's.
 					verb.sigs = this.selectedVerb.sigs;
-					verb.isDraft = false;
 
 					// Save the updated verb.
 					savedVerb = verb;
 					return this.wobService.setVerb(
-						verb.id,
+						verb.sourceId,
 						verb.name,
-						verb.sigs,
+						Verb.sigsAsStringArray(verb.sigs),
 						verb.code,
 						this.asAdmin
 					);
@@ -613,18 +528,19 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 					// Treat this like a new verb.
 					//
 					// Save the new verb without code.
-					savedVerb = new VerbModel(
+					savedVerb = new Verb(
 						this.wobId,
 						this.selectedVerb.name,
-						this.selectedVerb.sigs,
+						Verb.sigsAsStringArray(this.selectedVerb.sigs),
 						undefined,
+						false,
 						undefined,
-						false
+						undefined
 					);
 					return this.wobService.setVerb(
-						savedVerb.id,
+						savedVerb.sourceId,
 						savedVerb.name,
-						savedVerb.sigs,
+						Verb.sigsAsStringArray(savedVerb.sigs),
 						undefined,
 						this.asAdmin
 					);
@@ -634,7 +550,7 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 				this.message += ", saved new signatures";
 
 				// After successful save to server, update local data model.
-				this.verbs[this.selectedVerb.name] = savedVerb;
+				this.verbs[this.selectedVerb.name].mergeApplied(savedVerb);
 				this.verbsChanged();
 
 				return this.deleteSigsDraft();
@@ -653,21 +569,22 @@ export class VerbEditorComponent extends WobEditorComponent implements OnDestroy
 		return this.wobService.setVerb(
 				this.wobId,
 				this.selectedVerb.name,
-				this.compositeVerb.sigs,
-				this.compositeVerb.code,
+				Verb.sigsAsStringArray(this.selectedVerb.sigs),
+				this.selectedVerb.code,
 				this.asAdmin
 			)
 			.then((data: BaseModel) => {
 				this.message = "Saved verb";
 				// Update local data model for applied verbs to match the verb
 				// that was just saved.
-				this.verbs[this.selectedVerb.name] = new VerbModel(
+				this.verbs[this.selectedVerb.name] = new Verb(
 					this.wobId,
 					this.selectedVerb.name,
-					this.compositeVerb.sigs,
-					this.compositeVerb.code,
+					Verb.sigsAsStringArray(this.selectedVerb.sigs),
+					this.selectedVerb.code,
+					false,
 					undefined,
-					false
+					undefined
 				);
 				this.verbsChanged();
 
