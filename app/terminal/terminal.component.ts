@@ -11,7 +11,8 @@ import { EventStream, EventStreamItem } from "../models/event-stream";
 import { InteractiveChunk } from "../embed/interactive-chunk.component";
 import { Tag } from "../shared/tag";
 import { Urls } from "../shared/urls";
-import { PropertyModel, WobInfoModel } from "../models/wob";
+import { WobInfoModel } from "../models/wob";
+import { Property } from "../types/wob";
 
 import { AutocompleteService } from "./autocomplete.service";
 import { SessionService } from "../session/session.service";
@@ -700,9 +701,9 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 
 			// Get wob ID and popup editor window
 			this.wobService.getProperty(name, "name")
-				.then((property: PropertyModel) => {
+				.then((property: Property) => {
 					this.appendLine("text-success", "Opening editor in new window");
-					id = property.id;
+					id = property.sourceId;
 					window.open("wob/" + id + (admin ? ";admin=true" : ""), "WobEditor");
 				},
 				(error) => {
