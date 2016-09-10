@@ -8,22 +8,19 @@ import { AfterViewInit, Component, EventEmitter, Input, Output, ViewEncapsulatio
 import { Tag } from "../shared/tag";
 import { Urls } from "../shared/urls";
 import { WobInfoModel } from "../models/wob";
-
-import { EmbedMediaComponent } from "./embed-media.component";
+import { Property } from "../types/wob";
 
 import { SessionService } from "../session/session.service";
 import { WobService } from "../api/wob.service";
 
-///<reference path="../typings/globals/jquery/index.d.ts" />
-///<reference path="../typings/globals/bootstrap/index.d.ts" />
-
-export class InteractiveChunk {
+export class RichChunk {
 	id: number; // wob ID
 	command: string; // command to execute on click
 	float: string; // whether content should float to left or right of line
+	property: Property; // associated wob property
 	text: string; // text to display inside chunk
 	type: string; // type of chunk
-	url: string; // URL of related content to display
+	url: string;
 
 	/**
 	 * Interactive chunk of text for displaying rich elements in the terminal,
@@ -41,6 +38,7 @@ export class InteractiveChunk {
 		if (typeof extra === "object") {
 			this.command = extra.command;
 			this.float = extra.float;
+			this.property = extra.property;
 			this.url = extra.url;
 		}
 	}
@@ -52,14 +50,14 @@ export class InteractiveChunk {
 
 @Component({
 	moduleId: module.id,
-	selector: "interactive-chunk",
+	selector: "rich-chunk",
 	encapsulation: ViewEncapsulation.None, // styles from this component also apply to child components
 	styleUrls: [
-		"./interactive-chunk.component.css"
+		"./rich-chunk.component.css"
 	],
-	templateUrl: "./interactive-chunk.component.html",
+	templateUrl: "./rich-chunk.component.html",
 })
-export class InteractiveChunkComponent implements AfterViewInit{
+export class RichChunkComponent implements AfterViewInit{
 	private content: string;
 	private title: string;
 	private popoverShown: boolean;
@@ -69,7 +67,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 	private imageData: string;
 
 	@Input()
-	chunk: InteractiveChunk;
+	chunk: RichChunk;
 
 	@Output()
 	layout: EventEmitter<any>;
@@ -154,7 +152,7 @@ export class InteractiveChunkComponent implements AfterViewInit{
 		}
 
 		switch(this.chunk.type) {
-		case InteractiveChunk.TypeWob:
+		case RichChunk.TypeWob:
 			// Once a Bootstrap popover's content is set for the first time,
 			// it can no longer be changed, so there's no point in getting new
 			// data from the server each time; reuse cached value

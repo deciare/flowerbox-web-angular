@@ -10,7 +10,7 @@ import { ApiModule } from "../api/api.module";
 import { SessionModule } from "../session/session.module";
 
 import { EmbedMediaComponent } from "./embed-media.component";
-import { InteractiveChunkComponent } from "./interactive-chunk.component";
+import { RichChunkComponent } from "./rich-chunk.component";
 
 @NgModule({
 	imports: [
@@ -20,11 +20,11 @@ import { InteractiveChunkComponent } from "./interactive-chunk.component";
 	],
 	exports: [
 		EmbedMediaComponent,
-		InteractiveChunkComponent
+		RichChunkComponent
 	],
 	declarations: [
 		EmbedMediaComponent,
-		InteractiveChunkComponent
+		RichChunkComponent
 	]
 })
 export class EmbedModule {

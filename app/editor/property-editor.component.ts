@@ -203,7 +203,6 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 	saveAll() {
 		var allInputs: GenericPropertyEditorComponent[] = [];
 
-		console.log("saveAll");
 		allInputs = allInputs.concat(
 			this.audioPropertyInputs.toArray(),
 			this.imagePropertyInputs.toArray(),

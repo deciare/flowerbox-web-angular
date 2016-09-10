@@ -8,7 +8,7 @@ import { Subscription } from "rxjs/Subscription";
 
 import { Config } from "../config";
 import { EventStream, EventStreamItem } from "../models/event-stream";
-import { InteractiveChunk } from "../embed/interactive-chunk.component";
+import { RichChunk } from "../embed/rich-chunk.component";
 import { Tag } from "../shared/tag";
 import { Urls } from "../shared/urls";
 import { WobInfoModel } from "../models/wob";
@@ -25,10 +25,10 @@ import { MaskPipe } from "./mask.pipe";
 ///<reference path="../typings/globals/bootstrap/index.d.ts" />
 
 class ChunkWrapper {
-	chunk: InteractiveChunk | ScrollbackChunk;
+	chunk: RichChunk | ScrollbackChunk;
 	placement: string;
 
-	constructor(chunk: ScrollbackChunk | InteractiveChunk, placement?: string) {
+	constructor(chunk: ScrollbackChunk | RichChunk, placement?: string) {
 		this.chunk = chunk;
 		this.placement = placement ? placement : ChunkWrapper.PlacementEnd;
 	}
@@ -52,12 +52,12 @@ class ScrollbackLine {
 	chunks: ScrollbackChunk[];
 	timestamp: Date;
 
-	constructor(chunk: ScrollbackChunk | ScrollbackChunk[] | InteractiveChunk | InteractiveChunk[], timestamp?: Date) {
+	constructor(chunk: ScrollbackChunk | ScrollbackChunk[] | RichChunk | RichChunk[], timestamp?: Date) {
 		if (chunk instanceof Array) {
 			this.chunks = chunk;
 		}
 		else if (chunk instanceof ScrollbackChunk ||
-			chunk instanceof InteractiveChunk
+			chunk instanceof RichChunk
 		) {
 			this.chunks = [ chunk ];
 		}
@@ -145,7 +145,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	}
 
 	private createInteractiveChunk(item: any, index: number, arr: Array<EventStreamItem>): ChunkWrapper {
-		var interactive: InteractiveChunk;
+		var interactive: RichChunk;
 
 		// Where in the current line the created chunk should be inserted
 		var placement = ChunkWrapper.PlacementEnd;
@@ -169,9 +169,9 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 				placement = ChunkWrapper.PlacementStart;
 			}
 
-			interactive = new InteractiveChunk(
+			interactive = new RichChunk(
 				item.id,
-				InteractiveChunk.TypeImage,
+				RichChunk.TypeImage,
 				item.text,
 				{
 					float: float,
@@ -180,9 +180,9 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 
 			break;
 		case "wob":
-			interactive = new InteractiveChunk(
+			interactive = new RichChunk(
 				item.id,
-				InteractiveChunk.TypeWob,
+				RichChunk.TypeWob,
 				item.text
 			);
 			break;
@@ -340,7 +340,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	}
 
 	private isInteractiveChunk(chunk: any): boolean {
-		return chunk instanceof InteractiveChunk;
+		return chunk instanceof RichChunk;
 	}
 
 	private loginPrompt(admin?: boolean): Promise<string> {

@@ -8,7 +8,7 @@
 				<td class="main-content">
 					<span *ngFor="let chunk of line.chunks"><!--
 						--><span [ngSwitch]="isInteractiveChunk(chunk)"><!--
-							--><interactive-chunk *ngSwitchCase="true" [chunk]="chunk" (layout)="scrollToBottom()"></interactive-chunk><!--
+							--><rich-chunk *ngSwitchCase="true" [chunk]="chunk" (layout)="scrollToBottom()"></rich-chunk><!--
 							--><span *ngSwitchCase="false" class="{{chunk.type}} pre">{{chunk.text}}</span><!--
 						--></span><!--
 					--></span>
