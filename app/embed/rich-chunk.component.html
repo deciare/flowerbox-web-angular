@@ -1,6 +1,6 @@
 <span [ngSwitch]="chunk.type"><!--
 	--><span id="{{tag}}" *ngSwitchCase="'image'" class="{{chunk.type}}" [style.float]="chunk.float"><!--
-		--><embed-media [type]="'image'" [url]="chunk.url" [alt]="chunk.text" (load)="onLayout($event)"></embed-media><!--
+		--><img-property [wobId]="chunk.id" [propertyName]="chunk.property" [title]="chunk.text" (load)="onLayout($event)"></img-property><!--
 	--></span><!--
 	--><span id="{{tag}}" *ngSwitchCase="'wob'" class="{{chunk.type}} pre" data-toggle="popover" data-trigger="manual" (mouseover)="showPopover()" (mouseout)="hidePopover()">{{chunk.text}}</span><!--
 --></span><!--

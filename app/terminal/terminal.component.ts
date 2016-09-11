@@ -21,9 +21,6 @@ import { WobService } from "../api/wob.service";
 
 import { MaskPipe } from "./mask.pipe";
 
-///<reference path="../typings/globals/jquery/index.d.ts" />
-///<reference path="../typings/globals/bootstrap/index.d.ts" />
-
 class ChunkWrapper {
 	chunk: RichChunk | ScrollbackChunk;
 	placement: string;
@@ -144,8 +141,8 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 		$('[data-toggle="tooltip"]').tooltip();
 	}
 
-	private createInteractiveChunk(item: any, index: number, arr: Array<EventStreamItem>): ChunkWrapper {
-		var interactive: RichChunk;
+	private createRichChunk(item: any, index: number, arr: Array<EventStreamItem>): ChunkWrapper {
+		var chunk: RichChunk;
 
 		// Where in the current line the created chunk should be inserted
 		var placement = ChunkWrapper.PlacementEnd;
@@ -169,18 +166,19 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 				placement = ChunkWrapper.PlacementStart;
 			}
 
-			interactive = new RichChunk(
+			chunk = new RichChunk(
 				item.id,
 				RichChunk.TypeImage,
 				item.text,
 				{
 					float: float,
-					url: Urls.wobGetProperty(item.id, item.property)
-				});
+					property: item.property
+				}
+			)
 
 			break;
 		case "wob":
-			interactive = new RichChunk(
+			chunk = new RichChunk(
 				item.id,
 				RichChunk.TypeWob,
 				item.text
@@ -188,7 +186,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 			break;
 		}
 
-		return new ChunkWrapper(interactive, placement);
+		return new ChunkWrapper(chunk, placement);
 	}
 
 	private handleOutput(data: EventStream) {
@@ -283,7 +281,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 						if (typeof(item) === "object") {
 							// If item is not plain text, create an interactive
 							// chunk based on item's object properties
-							let wrappedChunk = this.createInteractiveChunk(item, index, arr);
+							let wrappedChunk = this.createRichChunk(item, index, arr);
 
 							// Check whether the resultant chunk should be
 							// placed at the start or end of the current line
@@ -339,8 +337,12 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 		}
 	}
 
-	private isInteractiveChunk(chunk: any): boolean {
+	private isRichChunk(chunk: any): boolean {
 		return chunk instanceof RichChunk;
+	}
+
+	private isPlainChunk(chunk: any): boolean {
+		return chunk instanceof ScrollbackChunk;
 	}
 
 	private loginPrompt(admin?: boolean): Promise<string> {

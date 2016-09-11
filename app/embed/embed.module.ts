@@ -10,6 +10,7 @@ import { ApiModule } from "../api/api.module";
 import { SessionModule } from "../session/session.module";
 
 import { EmbedMediaComponent } from "./embed-media.component";
+import { ImagePropertyComponent } from "./image-property.component";
 import { RichChunkComponent } from "./rich-chunk.component";
 
 @NgModule({
@@ -20,10 +21,12 @@ import { RichChunkComponent } from "./rich-chunk.component";
 	],
 	exports: [
 		EmbedMediaComponent,
+		ImagePropertyComponent,
 		RichChunkComponent
 	],
 	declarations: [
 		EmbedMediaComponent,
+		ImagePropertyComponent,
 		RichChunkComponent
 	]
 })

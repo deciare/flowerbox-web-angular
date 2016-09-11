@@ -26,3 +26,7 @@
 .terminal .main-content {
 	padding-left: 0.5em;
 }
+.terminal >>> image-chunk > img {
+	max-height: 45vh;
+	max-width: 45vw;
+}
