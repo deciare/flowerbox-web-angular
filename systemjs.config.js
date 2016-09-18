@@ -31,9 +31,9 @@
 			"@angular/router/testing": "npm:@angular/router/bundles/router-testing.umd.js",
 			"@angular/forms/testing": "npm:@angular/forms/bundles/forms-testing.umd.js",
 			// other libraries
-			"ng2-cookies":				"npm:ng2-cookies",
-			"rxjs":					   "npm:rxjs",
-			"angular2-in-memory-web-api": "npm:angular2-in-memory-web-api",
+			"ng2-cookies": "npm:ng2-cookies",
+			"rxjs": "npm:rxjs",
+			"angular2-in-memory-web-api": "npm:angular2-in-memory-web-api"
 		},
 		// packages tells the System loader how to load when no filename and/or no extension
 		packages: {

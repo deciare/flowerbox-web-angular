@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { AfterViewInit, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
+import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewEncapsulation } from "@angular/core";
 
 import { Tag } from "../shared/tag";
 import { Urls } from "../shared/urls";
@@ -57,14 +57,13 @@ export class RichChunk {
 	],
 	templateUrl: "./rich-chunk.component.html",
 })
-export class RichChunkComponent implements AfterViewInit{
+export class RichChunkComponent implements AfterViewInit, OnDestroy {
 	private content: string;
-	private title: string;
-	private popoverShown: boolean;
-	private tag: string;
+	private domId: string;
 	private element: JQuery;
-	private popoverImageUrl: string;
-	private imageData: string;
+	private imageObjectURL: string;
+	private popoverShown: boolean;
+	private title: string;
 
 	@Input()
 	chunk: RichChunk;
@@ -76,7 +75,7 @@ export class RichChunkComponent implements AfterViewInit{
 		private sessionService: SessionService,
 		private wobService: WobService
 	) {
-		this.tag = "InteractiveChunk_" + Tag.makeTag(4);
+		this.domId = "rich-chunk-" + Tag.makeTag(4);
 		this.layout = new EventEmitter<any>();
 	}
 
@@ -93,7 +92,14 @@ export class RichChunkComponent implements AfterViewInit{
 	}
 
 	ngAfterViewInit() {
-		this.element = $(`#${this.tag}`);
+		this.element = $(`#${this.domId}`);
+	}
+
+	ngOnDestroy() {
+		if (this.imageObjectURL !== undefined) {
+			Property.revokeObjectURL(this.imageObjectURL);
+			this.imageObjectURL = undefined;
+		}
 	}
 
 	/**
@@ -125,7 +131,7 @@ export class RichChunkComponent implements AfterViewInit{
 	}
 
 	showPopover() {
-		var verbs: string[] = [];
+		var verbNames: string[] = [];
 
 		// Indicate that the popover should be shown, even though it may not
 		// necessarily be visible at this time (i.e. if content is blank
@@ -158,18 +164,13 @@ export class RichChunkComponent implements AfterViewInit{
 			// data from the server each time; reuse cached value
 			this.wobService.getInfo(this.chunk.id)
 				.then((data: WobInfoModel) => {
-					var imageProperty = data.properties.find((element) => {
+					var hasImageProperty = data.properties.find((element) => {
 						return element.value == "image";
-					});
-
-					// If object has images, fetch the image.
-					if (imageProperty !== undefined) {
-						this.popoverImageUrl = Urls.wobGetProperty(data.id, "image");
-					}
+					}) ? true : false;
 
 					// If object has verbs, list non-system verbs.
 					if (data.verbs) {
-						verbs = data.verbs.filter((verb) => {
+						verbNames = data.verbs.filter((verb) => {
 							if (verb.value.charAt(0) != "$") {
 								return true;
 							}
@@ -179,19 +180,37 @@ export class RichChunkComponent implements AfterViewInit{
 						});
 					}
 
-
 					// Cache response
 					this.content = `
 						<p>${data.desc}</p>
-						<p><b>Verbs:</b> ${verbs.join(", ")}</p>
+						<p><b>Verbs:</b> ${verbNames.join(", ")}</p>
 					`;
 					this.title = data.name + " (" + (data.globalid ? "@" + data.globalid + " · " : "") + "#" + data.id + ")";
 
-					// If an image was previously cached for this element,
-					// reuse it.
-					if (this.imageData) {
+					// If this popover should still be shown, show it now.
+					if (this.popoverShown) {
+						this.element.popover("show");
+					}
+
+
+					// If object is associated with an image, fetch the image.
+					if (hasImageProperty) {
+						// Download image property if it isn't already cached.
+						if (!this.imageObjectURL) {
+							return this.wobService.getBinaryProperty(data.id, "image");
+						}
+					}
+				})
+				.then((imageProperty: Property) => {
+					// If we arrived here after getting an image property...
+					if (imageProperty) {
+						this.imageObjectURL = imageProperty.createObjectURL();
+					}
+
+					// If an image was found for this wob, include it.
+					if (this.imageObjectURL) {
 						this.content = `
-							<img src="${this.imageData}" />
+							<img src="${this.imageObjectURL}" />
 						` + this.content;
 					}
 
@@ -209,27 +228,6 @@ export class RichChunkComponent implements AfterViewInit{
 					}
 				});
 			break;
-		}
-	}
-
-	setPopoverImage(data: string) {
-		// Cache image data.
-		this.imageData = data;
-
-		// Prepend the image to the popover's content.
-		this.content = `
-			<img src="${this.imageData}" />
-		` + this.content;
-		this.replacePopover({
-			content: this.content,
-			html: true,
-			title: this.title,
-			placement: this.popoverPlacement()
-		});
-
-		// Show the popover if it is supposed to be visible.
-		if (this.popoverShown) {
-			this.element.popover("show");
 		}
 	}
 }

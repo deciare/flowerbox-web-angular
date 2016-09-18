@@ -65,19 +65,21 @@ body {
 	padding: 0;
 }
 .popover .arrow {
-    background-color: black;
+	background-color: black;
 }
 .popover .popover-title {
-    background-color: #494949;
+	background-color: #494949;
 	color: white;
 	margin: 0;
 }
 .popover .popover-content {
-    background-color: #333333;
-    color: white;
+	background-color: #333333;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	color: white;
 }
 .popover .popover-content img {
-    max-width: 100%;
+	max-width: 100%;
 }
 .popover.top > .arrow:after {
 	border-top-color: #333333;

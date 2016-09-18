@@ -1,7 +1,6 @@
 <span [ngSwitch]="chunk.type"><!--
-	--><span id="{{tag}}" *ngSwitchCase="'image'" class="{{chunk.type}}" [style.float]="chunk.float"><!--
+	--><span id="{{domId}}" *ngSwitchCase="'image'" class="{{chunk.type}}" [style.float]="chunk.float"><!--
 		--><img-property [wobId]="chunk.id" [propertyName]="chunk.property" [title]="chunk.text" (load)="onLayout($event)"></img-property><!--
 	--></span><!--
-	--><span id="{{tag}}" *ngSwitchCase="'wob'" class="{{chunk.type}} pre" data-toggle="popover" data-trigger="manual" (mouseover)="showPopover()" (mouseout)="hidePopover()">{{chunk.text}}</span><!--
---></span><!--
---><embed-media [hidden]="true" [type]="'image'" [url]="popoverImageUrl" (load)="setPopoverImage($event)"></embed-media>
+	--><span id="{{domId}}" *ngSwitchCase="'wob'" class="{{chunk.type}} pre" data-toggle="popover" data-trigger="manual" (mouseover)="showPopover()" (mouseout)="hidePopover()">{{chunk.text}}</span><!--
+--></span>
