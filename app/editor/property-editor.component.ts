@@ -156,6 +156,19 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 
 	newDraft(param: NewPropertyParams) {
 		if (param.name && param.name.trim() != "") {
+			// Remove leading and trailing spaces from new property name.
+			param.name = param.name.trim();
+
+			// Ensure new property's name doesn't conflict with existing
+			// property.
+			let foundIndex = this.properties.findIndex((property) => {
+				return property.name == param.name;
+			});
+			if (foundIndex != -1) {
+				alert("A property named '" + param.name + "' already exists.");
+				return;
+			}
+
 			// Create form field for the new property.
 			var newProperty = new Property(
 				// New property belongs to the wob being edited
@@ -187,7 +200,7 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 			}
 
 			// Add new property to the list.
-			this.properties.push(newProperty);
+			this.appendOrReplaceProperty(newProperty);
 
 			// Focus the newly created field.
 			setTimeout(() => {
