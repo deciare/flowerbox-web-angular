@@ -25,7 +25,6 @@ export class WobService {
 	}
 
 	private handleResponse(response: Response, isDraft?: boolean): Promise<any> {
-		console.log(response);
 		var contentType = response.headers ? response.headers.get("Content-Type") : undefined;
 
 		if (!contentType || contentType.startsWith("application/json")) {
