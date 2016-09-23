@@ -1,5 +1,5 @@
-<div class="input-group">
-	<input class="form-control" type="text" [id]="property.name" [name]="property.name" [ngModel]="property.value" (ngModelChange)="onModelChange($event)" />
+<div class="input-group" [class.draft]="property.isDraft">
+	<input class="form-control" type="text" [id]="property.name" [name]="property.name" [ngModel]="property.value" (ngModelChange)="onValueChange($event)" />
 	<span class="input-group-btn">
 		<button *ngIf="property.isDraft" class="btn btn-default" type="button" (click)="onDeleteDraftClick($event)" title="Discard draft" aria-label="Discard draft">
 			<span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
@@ -12,4 +12,5 @@
 		</button>
 	</span>
 </div>
+<permissions *ngIf="!property.isIntrinsic" [item]="property" (permissionsChange)="onPermissionsChange($event)"></permissions>
 {{message}}

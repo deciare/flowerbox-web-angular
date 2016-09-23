@@ -9,6 +9,7 @@ import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
 
 import { WobInfoModel } from "../models/wob";
+import { Permissions } from "../types/permission";
 import { Property, EditState} from "../types/wob";
 
 import { NewPropertyComponent, NewPropertyParams } from "./new-property.component";
@@ -104,11 +105,45 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 				return value.name == findName;
 			})) != -1
 		) {
-			// If so, replace that property with draft version.
+			if (newItem.isDraft) {
+				// If the new item is a draft, we may need to adjust its
+				// permissions to make it display consistently with applied
+				// properties.
+				if (newItem.perms !== undefined) {
+					// If permissions were loaded from server as part of the
+					// draft, set effective permmissions equal to those explicit
+					// permissions.
+					newItem.permsEffective = newItem.perms;
+				}
+				else if (this[arrName][foundIndex].perms) {
+					// If draft property does not have explicit permissions set
+					// but the applied property does, copy explicit permissions
+					// from the applied property.
+					newItem.perms = this[arrName][foundIndex].perms;
+					newItem.permsEffective = newItem.perms;
+				}
+				else {
+					// If explicit permissions are set on neither the applied nor
+					// the draft property, inherit the applied property's
+					// effective permissions.
+					newItem.permsEffective = this[arrName][foundIndex].permsEffective;
+				}
+			}
+
+			// Since an applied property exists, replace that property with
+			// draft version.
 			this[arrName][foundIndex] = newItem;
 		}
 		else {
-			// If not, append draft property to end of array
+			// Set the draft's effective permissions based on the wob's
+			// permissions.
+			console.log("Inheriting permsEffective from wob");
+			newItem.permsEffective = new Permissions(this.intrinsics.find((intrinsic) => {
+				return intrinsic.name == "perms";
+			}).value);
+
+			// If applied property doesn't exist, append draft property to end
+			// of array.
 			this[arrName].push(newItem);
 		}
 	}

@@ -12,7 +12,8 @@ import "rxjs/add/operator/debounceTime";
 import "rxjs/add/operator/distinctUntilChanged";
 
 import { BaseModel } from "../models/base";
-import { WobInfoModel } from "../models/wob";
+import { PermissionsModel, WobInfoModel } from "../models/wob";
+import { Permissions } from "../types/permission";
 import { Property } from "../types/wob";
 import { Urls } from "../shared/urls";
 
@@ -152,9 +153,19 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 		this.pushChange();
 	}
 
-	onModelChange(event: Event) {
+	onValueChange(event: string) {
 		// Update property value, and mark the changed property as a draft.
 		this.property.value = event;
+		this.property.isDraft = true;
+
+		this.pushChange();
+	}
+
+	onPermissionsChange(event: Permissions) {
+		// Update property permissions, and mark the changed property as a
+		// draft.
+		this.property.perms = event;
+		this.property.permsEffective = event;
 		this.property.isDraft = true;
 
 		this.pushChange();
@@ -218,8 +229,8 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 								info[this.property.name],	// value
 								true,						// is intrinsic?
 								false,						// is draft?
-								undefined,					// TODO: permissions
-								undefined
+								undefined,					// permissions don't
+								undefined					// apply to intrinsics
 							);
 						});
 				}
@@ -267,6 +278,15 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 			.then((data: BaseModel) => {
 				this.message = "Saved " + this.property.name;
 
+				if (this.property.perms) {
+					return this.wobService.setPropertyPermissions(this.wobId, this.property.name, this.property.perms.toString(), this.admin);
+				}
+			})
+			.then((permissions: PermissionsModel) => {
+				if (permissions) {
+					this.property.perms = new Permissions(permissions.perms);
+					this.property.permsEffective = new Permissions(permissions.permseffective);
+				}
 				// Delete the corresponding property draft, if any.
 				return this.deleteDraft();
 			})
@@ -292,10 +312,10 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 			saveDraftPromise = this.wobService.setIntrinsicDraft(this.wobId, this.property.name, this.property.value)
 		}
 		else if (this.property.isBlob) {
-			saveDraftPromise = this.wobService.setBinaryPropertyDraft(this.wobId, this.property.name, this.property.value)
+			saveDraftPromise = this.wobService.setBinaryPropertyDraft(this.wobId, this.property.name, this.property.value, this.property.perms ? this.property.perms.toString() : undefined)
 		}
 		else {
-			saveDraftPromise = this.wobService.setPropertyDraft(this.wobId, this.property.name, this.property.value)
+			saveDraftPromise = this.wobService.setPropertyDraft(this.wobId, this.property.name, this.property.value, this.property.perms ? this.property.perms.toString() : undefined)
 		}
 
 		return saveDraftPromise
