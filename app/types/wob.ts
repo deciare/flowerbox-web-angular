@@ -3,11 +3,8 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { Response } from "@angular/http";
-
-import { VerbModel } from "../models/wob";
 import { Tag } from "../shared/tag";
-import { Urls } from "../shared/urls";
+import { Permissions } from "./permission";
 
 enum BlobType {
 	Audio,
@@ -18,8 +15,8 @@ enum BlobType {
 class Metadata {
 	isDraft: boolean;
 	name: string;
-	perms: number;
-	permsEffective: number;
+	perms: Permissions;
+	permsEffective: Permissions;
 	sourceId: number;
 
 	/**
@@ -31,12 +28,12 @@ class Metadata {
 	 * @param {number} permsEffective - (optional) Permissions currently in
 	 *   effect.
 	 */
-	constructor(sourceId: number, name: string, isDraft?: boolean, perms?: number, permsEffective?: number) {
+	constructor(sourceId: number, name: string, isDraft?: boolean, perms?: string, permsEffective?: string) {
 		this.sourceId = sourceId;
 		this.name = name;
 		this.isDraft = isDraft === undefined ? false : isDraft;
-		this.perms = perms;
-		this.permsEffective = permsEffective;
+		this.perms = perms ? new Permissions(perms) : undefined;
+		this.permsEffective = permsEffective ? new Permissions(permsEffective) : undefined;
 	}
 }
 
@@ -64,11 +61,11 @@ export class Property extends Metadata {
 	 * @param {string} name - Name of this property.
 	 * @param {any} value - Value of this property.
 	 * @param {boolean} isDraft - (optional) true if this property is a draft.
-	 * @param {number} perms - (optional) Permissions.
-	 * @param {number} permsEffective - (optional) Permissions currently in
+	 * @param {string} perms - (optional) Permissions.
+	 * @param {string} permsEffective - (optional) Permissions currently in
 	 *   effect.
 	 */
-	constructor(sourceId: number, name: string, value: any, isIntrinsic?: boolean, isDraft?: boolean, perms?: number, permsEffective?: number) {
+	constructor(sourceId: number, name: string, value: any, isIntrinsic?: boolean, isDraft?: boolean, perms?: string, permsEffective?: string) {
 		super(sourceId, name, isDraft, perms, permsEffective);
 		this.value = value;
 		this._isIntrinsic = isIntrinsic === undefined ? false : isIntrinsic;
@@ -330,11 +327,11 @@ export class Verb extends Metadata {
 	 * @param {boolean} isDraft - (optional) true if the sigsDraft and codeDraft
 	 *   properties of the new Verb should be set insead of the sigsApplied and
 	 *   codeApplied properties. (Default: false)
-	 * @param {number} perms - (optional) Permissions.
-	 * @param {number} permsEffective - (optional) Permissions currently in
+	 * @param {string} perms - (optional) Permissions.
+	 * @param {string} permsEffective - (optional) Permissions currently in
 	 *   effect.
 	 */
-	constructor(sourceId: number, name: string, sigs: string[], code: string, isDraft?: boolean, perms?: number, permsEffective?: number) {
+	constructor(sourceId: number, name: string, sigs: string[], code: string, isDraft?: boolean, perms?: string, permsEffective?: string) {
 		super(sourceId, name, isDraft, perms, permsEffective);
 
 		if (this.isDraft) {
