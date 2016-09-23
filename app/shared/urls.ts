@@ -99,6 +99,10 @@ export class Urls {
 		return Urls.worldWob + id + "/property/" + name + (sub ? "/" + sub : "");
 	}
 
+	static wobPropertyPermissions(id: number | string, name: string): string {
+		return Urls.worldWob + id + "/property/" + name + "/perms";
+	}
+
 	static wobSetBinaryProperties(id: number | string) {
 		return Urls.worldWob + id + "/properties/binary";
 	}

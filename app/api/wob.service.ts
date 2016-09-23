@@ -9,7 +9,8 @@ import "rxjs/add/operator/toPromise";
 
 import { BaseModel } from "../models/base";
 import { Urls } from "../shared/urls";
-import { PropertyModel, VerbModel, InstanceOfModelList, WobInfoModel, WobInfoModelList } from "../models/wob";
+import { PropertyModel, VerbModel, InstanceOfModelList, PermissionsModel, WobInfoModel, WobInfoModelList } from "../models/wob";
+import { Permissions } from "../types/permission";
 import { EditState, Property, Verb } from "../types/wob";
 
 import { SessionHttp } from "../session/session-http.service";
@@ -24,6 +25,7 @@ export class WobService {
 	}
 
 	private handleResponse(response: Response, isDraft?: boolean): Promise<any> {
+		console.log(response);
 		var contentType = response.headers ? response.headers.get("Content-Type") : undefined;
 
 		if (!contentType || contentType.startsWith("application/json")) {
@@ -35,15 +37,30 @@ export class WobService {
 					data.name !== undefined &&
 					data.value !== undefined
 				) {
-					// Response contains a Property.
-					return Promise.resolve(new Property(
-						data.id,
-						data.name,
-						data.value,
-						isDraft,
-						data.perms,
-						data.permseffective
-					));
+					if (isDraft) {
+						// Response contains a property draft.
+						return Promise.resolve(new Property(
+							data.id,
+							data.name,
+							data.value.value,
+							false,
+							true,
+							data.value.perms,
+							data.value.perms
+						));
+					}
+					else {
+						// Response contains a Property.
+						return Promise.resolve(new Property(
+							data.id,
+							data.name,
+							data.value,
+							false,
+							false,
+							data.perms,
+							data.permseffective
+						));
+					}
 				}
 				else if (
 					data.id !== undefined &&
@@ -209,14 +226,16 @@ export class WobService {
 								// Property name minus prefix
 								key.substring(Urls.draftProperty.length),
 								// Value
-								draft.value[key],
+								draft.value[key].value,
 								// Is intrinsic property?
 								false,
 								// Is a draft?
 								true,
-								// TODO: Permissions
-								undefined,
-								undefined
+								// Permissions
+								draft.value[key].perms,
+								// Effective permissions (same as permissions,
+								// which may be undefined)
+								draft.value[key].perms
 							));
 						}
 						else if (key.startsWith(Urls.draftVerb)) {
@@ -567,7 +586,7 @@ export class WobService {
 			);
 	}
 
-	setBinaryPropertyDraft(id: number, name: string, value: any): Promise<BaseModel> {
+	setBinaryPropertyDraft(id: number, name: string, value: any, perms?: string): Promise<BaseModel> {
 		var blobPropertyName = Urls.draftBlob + id + "_" + name;
 
 		// If value is a data URI, it needs to be converted into a Blob.
@@ -579,7 +598,10 @@ export class WobService {
 			.then((player: WobInfoModel) => {
 				// Create a property for storing this Blob.
 				return this.http.putFormData(Urls.wobSetBinaryProperties(player.id), {
-						[blobPropertyName]: value
+						[blobPropertyName]: {
+							value: value,
+							perms: perms
+						}
 					})
 					.toPromise();
 			})
@@ -593,16 +615,45 @@ export class WobService {
 			);
 	}
 
-	setPropertyDraft(id: number, name: string, value: any): Promise<BaseModel> {
+	setPropertyDraft(id: number, name: string, value: any, perms?: string): Promise<BaseModel> {
 		return this.sessionService.getPlayerInfo()
 			.then((player: WobInfoModel) => {
 				return this.http.put(Urls.worldWob + player.id +  Urls.wobSetDrafts(id),
 					{
-						[Urls.draftProperty + name]: value
+						[Urls.draftProperty + name]: {
+							value: value,
+							perms: perms
+						}
 					})
 					.toPromise();
 			})
 			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	getPropertyPermissions(id: number | string, name: string): Promise<PermissionsModel> {
+		return this.http.get(Urls.wobPropertyPermissions(id, name))
+			.toPromise()
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	setPropertyPermissions(id: number | string, name: string, perms: string, admin?: boolean): Promise<PermissionsModel> {
+		return this.http.put(Urls.wobPropertyPermissions(id, name), {
+				perms: perms
+			}, {
+				admin: admin
+			})
+			.toPromise()
+			.then(
+				// TODO: If setPropertyPermissions() is called from
+				// setProperty(), what happens to the response indicating what
+				// the current permissions are? (Since setProperty returns a
+				// Promise<BaseModel> and not Promise<Permissions>.)
 				this.handleResponse.bind(this),
 				this.handleServerError.bind(this)
 			);
