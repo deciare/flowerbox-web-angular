@@ -16,6 +16,8 @@ import { AudioPropertyEditorComponent } from "./audio-property-editor.component"
 import { GenericPropertyEditorComponent } from "./generic-property-editor.component";
 import { ImagePropertyEditorComponent } from "./image-property-editor.component";
 import { NewPropertyComponent } from "./new-property.component";
+import { PermissionsComponent } from "./permissions.component";
+import { PermissionEditorComponent } from "./permission-editor.component";
 import { PropertyEditorComponent } from "./property-editor.component";
 import { TextPropertyEditorComponent } from "./text-property-editor.component";
 import { VerbEditorComponent } from "./verb-editor.component";
@@ -41,6 +43,8 @@ import { WobEditorResolve } from "./wob-editor-resolve.service";
 		ImagePropertyEditorComponent,
 		KeyValuePipe,
 		NewPropertyComponent,
+		PermissionsComponent,
+		PermissionEditorComponent,
 		PropertyEditorComponent,
 		TextPropertyEditorComponent,
 		VerbEditorComponent,

@@ -160,3 +160,9 @@ export class InstanceOfModelList extends BaseModel {
 
 	public list: InstanceOfModel[];
 }
+
+// For returning permissions
+export class PermissionsModel extends BaseModel {
+	perms?: string;
+	permsEffective: string;
+}

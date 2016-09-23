@@ -1,0 +1,7 @@
+<div [class.inherited]="item.perms == undefined" [class.draft]="item.perms != undefined && item.isDraft">
+	Permissions: {{item.permsEffective}}
+	<button type="button" class="btn btn-link" title="Edit permissions" aria-label="Edit permissions" (click)="editor.open(item)">
+		<span class="glyphicon glyphicon-pencil"></span>
+	</button>
+</div>
+<permission-editor (permissionsChange)="onPermissionsChange($event)"></permission-editor>

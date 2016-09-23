@@ -1,0 +1,15 @@
+section {
+	margin-left: 2rem;
+}
+section > header {
+	margin-left: -2rem;
+}
+section > table {
+	margin-bottom: 0.9em;
+	table-layout: fixed;
+	width: 100%;
+}
+section > table th:not(:first-child),
+section > table td:not(:first-child) {
+	text-align: center;
+}
