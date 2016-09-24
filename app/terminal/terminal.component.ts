@@ -97,6 +97,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 	private lastShownTimestamp: Date;
 	private hasServerError: boolean;
 	private eventStreamSubscription: Subscription;
+	private isDebug: boolean;
 
 	constructor(
 		private autocompleteService: AutocompleteService,
@@ -112,6 +113,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 		this.scrollbackMaxLength = 5000; // Max number of scrollback lines
 		this.defaultPrompt = "fb> "; // Default command prompt
 		this.prompt = this.defaultPrompt; // Current command prompt
+		this.isDebug = false; // Show debug output? Toggle with !debug
 
 		// Uniquely identify this terminal
 		this.tag = "TerminalComponent_" + Tag.makeTag(4);
@@ -181,7 +183,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 			chunk = new RichChunk(
 				item.id,
 				RichChunk.TypeWob,
-				item.text
+				item.text + (this.isDebug ? " (#" + item.id + ")" : "")
 			);
 			break;
 		}
@@ -265,7 +267,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 					}
 					break;
 				case EventStreamItem.TypeDebug: // debug message
-					if (Config.debug) {
+					if (this.isDebug) {
 						lineType = lineType ? lineType : "text-info";
 					}
 					else {
@@ -299,7 +301,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 					break;
 				default:
 					// If debugging, print all unhandled message types.
-					if (Config.debug) {
+					if (this.isDebug) {
 						lineType = "text-info";
 						chunks.push(new ScrollbackChunk(lineType, "Unhandled event stream output: " + JSON.stringify(log)));
 					}
@@ -693,6 +695,18 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 			// Tell the user they've been logged out
 			this.appendLine("text-info", "Logged out. To log back in, type:");
 			this.appendLine("text-info", "  login");
+
+			// This command should be consumed (not executed on server)
+			processOnServer = false;
+		}
+		else if (matches = command.match(/^!debug$/)) {
+			this.isDebug = !this.isDebug;
+			if (this.isDebug) {
+				this.appendLine("text-success", "Debug output will be shown.");
+			}
+			else {
+				this.appendLine("text-success", "Debug output will be hidden.");
+			}
 
 			// This command should be consumed (not executed on server)
 			processOnServer = false;

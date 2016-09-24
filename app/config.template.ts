@@ -4,6 +4,5 @@
 	For licensing info, please see LICENCE file.
 */
 export class Config {
-	static debug: boolean = false;
 	static server: string = "http://localhost:3001/";
 }
