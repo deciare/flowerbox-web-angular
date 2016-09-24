@@ -697,7 +697,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 			// This command should be consumed (not executed on server)
 			processOnServer = false;
 		}
-		else if (matches = command.match(/^edit (.*)/)) {
+		else if (matches = command.match(/^!edit (.*)/)) {
 			var id: number;
 			var name = matches[1];
 
