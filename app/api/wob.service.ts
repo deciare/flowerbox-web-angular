@@ -163,6 +163,17 @@ export class WobService {
 
 				// Expect a promise to resolve with info about each property
 				data.properties.forEach((property) => {
+					// Exclude drafts, event stream, and properties that are
+					// not meant to be edited directly from being shown in
+					// the property editor.
+					if (property.value.startsWith(Urls.draftWob) ||
+						property.value.startsWith(Urls.draftBlob) ||
+						property.value == "eventstream" ||
+						property.value == "pwhash"
+					) {
+						return;
+					}
+
 					if (property.blobmimetype) {
 						propertyPromises.push(
 							this.getBinaryProperty(id, property.value, admin)
@@ -312,15 +323,7 @@ export class WobService {
 						return;
 					}
 
-					// Exclude drafts, event stream, and properties that are
-					// not meant to be edited directly from being shown in
-					// the property editor.
-					if (!property.name.startsWith(Urls.draftWob) &&
-						property.name != "eventstream" &&
-						property.name != "pwhash"
-					) {
-						state.applied.properties.push(property);
-					}
+					state.applied.properties.push(property);
 				});
 				// Add each applied verb to the edit state
 				values[1].forEach((verb: Verb) => {
