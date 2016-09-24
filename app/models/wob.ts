@@ -164,5 +164,5 @@ export class InstanceOfModelList extends BaseModel {
 // For returning permissions
 export class PermissionsModel extends BaseModel {
 	perms?: string;
-	permsEffective: string;
+	permseffective: string;
 }
