@@ -51,6 +51,8 @@ export class PermissionEditorComponent implements AfterViewInit {
 	}
 
 	open(item: Property | Verb) {
+		// Create a copy of the input item so that changes we make on the form
+		// are reflected in the copy only, and not in the original item.
 		if (item instanceof Property) {
 			this.item = new Property(
 				item.sourceId,
