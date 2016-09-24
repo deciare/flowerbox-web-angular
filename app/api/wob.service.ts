@@ -223,7 +223,7 @@ export class WobService {
 					for (let key in draft.value) {
 						if (key.startsWith(Urls.draftProperty)) {
 							// If this is a property draft...
-							if (typeof draft.value[key] === "string" && draft.value[key].startsWith(Urls.draftBlob)) {
+							if (typeof draft.value[key].value === "string" && draft.value[key].value.startsWith(Urls.draftBlob)) {
 								// If this draft's value is a Blob, the Blob
 								// content was stored in a separate property.
 								// Add it to the list of draft Blobs that need
@@ -600,10 +600,7 @@ export class WobService {
 			.then((player: WobInfoModel) => {
 				// Create a property for storing this Blob.
 				return this.http.putFormData(Urls.wobSetBinaryProperties(player.id), {
-						[blobPropertyName]: {
-							value: value,
-							perms: perms
-						}
+						[blobPropertyName]: value
 					})
 					.toPromise();
 			})
