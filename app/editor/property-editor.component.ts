@@ -135,9 +135,8 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 			this[arrName][foundIndex] = newItem;
 		}
 		else {
-			// Set the draft's effective permissions based on the wob's
+			// Set the new property's effective permissions based on the wob's
 			// permissions.
-			console.log("Inheriting permsEffective from wob");
 			newItem.permsEffective = new Permissions(this.intrinsics.find((intrinsic) => {
 				return intrinsic.name == "perms";
 			}).value);

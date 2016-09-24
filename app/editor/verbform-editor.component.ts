@@ -3,7 +3,7 @@
 	Copyright (C) 2016 Deciare
 	For licensing info, please see LICENCE file.
 */
-import { AfterViewInit, Component, EventEmitter, Input, Output } from "@angular/core";
+import { AfterViewInit, Component, EventEmitter, Output } from "@angular/core";
 
 import { Tag } from "../shared/tag";
 import { VerbSignature } from "../types/wob";
@@ -47,7 +47,6 @@ export class VerbformEditorComponent implements AfterViewInit {
 	private domId: string;
 	private element: JQuery;
 	private verbform: VerbSignature;
-
 
 	@Output()
 	save: EventEmitter<VerbSignature>;
