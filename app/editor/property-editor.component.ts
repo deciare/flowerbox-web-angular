@@ -111,7 +111,7 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 				// properties.
 				if (newItem.perms !== undefined) {
 					// If permissions were loaded from server as part of the
-					// draft, set effective permmissions equal to those explicit
+					// draft, set effective permissions equal to those explicit
 					// permissions.
 					newItem.permsEffective = newItem.perms;
 				}

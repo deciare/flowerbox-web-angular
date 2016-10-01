@@ -12,7 +12,7 @@ import "rxjs/add/operator/debounceTime";
 import "rxjs/add/operator/distinctUntilChanged";
 
 import { BaseModel } from "../models/base";
-import { PermissionsModel, WobInfoModel } from "../models/wob";
+import { DefaultPermissionsModel, PermissionsModel, WobInfoModel } from "../models/wob";
 import { Permissions } from "../types/permission";
 import { Property } from "../types/wob";
 import { Urls } from "../shared/urls";
@@ -164,11 +164,32 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 	onPermissionsChange(event: Permissions) {
 		// Update property permissions, and mark the changed property as a
 		// draft.
-		this.property.perms = event;
-		this.property.permsEffective = event;
 		this.property.isDraft = true;
+		if (event === undefined) {
+			// Permissions were unset; query default permissions from server
+			this.wobService.getDefaultPermissions("property")
+				.then((perms: DefaultPermissionsModel) => {
+					this.property.perms = undefined;
+					this.property.permsEffective = new Permissions(perms.perms);
+					this.pushChange();
 
-		this.pushChange();
+					// Ensure that changes propagate downward to
+					// PermissionEditorComponent by changing the this.property
+					// reference to trigger Angular's lifecycle hooks.
+					this.property = Property.from(this.property);
+				});
+		}
+		else {
+			// Explicit permissions were set.
+			this.property.perms = event;
+			this.property.permsEffective = event;
+			this.pushChange();
+
+			// Ensure that changes propagate downward to
+			// PermissionEditorComponent by changing the this.property
+			// reference to trigger Angular's lifecycle hooks.
+			this.property = Property.from(this.property);
+		}
 	}
 
 	onDeleteDraftClick(event: Event) {

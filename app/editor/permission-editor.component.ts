@@ -44,6 +44,12 @@ export class PermissionEditorComponent implements AfterViewInit {
 		this.element = $(`#${this.domId}`);
 	}
 
+	onReset() {
+		this.item.perms = undefined;
+		this.permissionsChange.emit(this.item);
+		this.element.modal("hide");
+	}
+
 	onSubmit() {
 		this.item.perms = this.item.permsEffective;
 		this.permissionsChange.emit(this.item);
