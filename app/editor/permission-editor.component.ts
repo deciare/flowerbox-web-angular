@@ -54,28 +54,10 @@ export class PermissionEditorComponent implements AfterViewInit {
 		// Create a copy of the input item so that changes we make on the form
 		// are reflected in the copy only, and not in the original item.
 		if (item instanceof Property) {
-			this.item = new Property(
-				item.sourceId,
-				item.name,
-				item.value,
-				false,
-				item.isDraft,
-				item.perms ? item.perms.toString() : undefined,
-				item.permsEffective ? item.permsEffective.toString() : undefined
-			);
+			this.item = Property.from(item);
 		}
 		else if (item instanceof Verb) {
-			this.item = new Verb(
-				item.sourceId,
-				item.name,
-				item.sigs.map((sig) => {
-					return sig.value;
-				}),
-				item.code,
-				item.isDraft,
-				item.perms ? item.perms.toString() : undefined,
-				item.permsEffective ? item.permsEffective.toString() : undefined
-			);
+			this.item = Verb.from(item);
 		}
 		this.element.modal();
 	}

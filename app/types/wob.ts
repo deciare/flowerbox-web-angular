@@ -28,12 +28,20 @@ class Metadata {
 	 * @param {number} permsEffective - (optional) Permissions currently in
 	 *   effect.
 	 */
-	constructor(sourceId: number, name: string, isDraft?: boolean, perms?: string, permsEffective?: string) {
+	constructor(sourceId: number, name: string, isDraft?: boolean, perms?: Permissions | string, permsEffective?: Permissions | string) {
 		this.sourceId = sourceId;
 		this.name = name;
 		this.isDraft = isDraft === undefined ? false : isDraft;
-		this.perms = perms ? new Permissions(perms) : undefined;
-		this.permsEffective = permsEffective ? new Permissions(permsEffective) : undefined;
+		this.perms = perms ? (
+			perms instanceof Permissions ?
+				new Permissions(perms.toString()) :
+				new Permissions(perms)
+			) : undefined;
+		this.permsEffective = permsEffective ? (
+			permsEffective instanceof Permissions ?
+				new Permissions(permsEffective.toString()) :
+				new Permissions(permsEffective)
+			) : undefined;
 	}
 }
 
@@ -56,16 +64,35 @@ export class Property extends Metadata {
 	private _value: string;
 
 	/**
+	 * Instantiates a new Property object based on the value of an existing
+	 * Property object. The new object does not share any references with the
+	 * old object.
+	 *
+	 * @param {Property} perms - Property object to use as a base.
+	 */
+	static from(property: Property): Property {
+		return new Property(
+			property.sourceId,
+			property.name,
+			property.value,
+			property.isIntrinsic,
+			property.isDraft,
+			property.perms,
+			property.permsEffective
+		);
+	}
+
+	/**
 	 * @constructor
 	 * @param {number} sourceId - Wob ID on which this property is defined.
 	 * @param {string} name - Name of this property.
 	 * @param {any} value - Value of this property.
 	 * @param {boolean} isDraft - (optional) true if this property is a draft.
-	 * @param {string} perms - (optional) Permissions.
-	 * @param {string} permsEffective - (optional) Permissions currently in
+	 * @param {Permissions | string} perms - (optional) Permissions.
+	 * @param {Permissions | string} permsEffective - (optional) Permissions currently in
 	 *   effect.
 	 */
-	constructor(sourceId: number, name: string, value: any, isIntrinsic?: boolean, isDraft?: boolean, perms?: string, permsEffective?: string) {
+	constructor(sourceId: number, name: string, value: any, isIntrinsic?: boolean, isDraft?: boolean, perms?: Permissions | string, permsEffective?: Permissions | string) {
 		super(sourceId, name, isDraft, perms, permsEffective);
 		this.value = value;
 		this._isIntrinsic = isIntrinsic === undefined ? false : isIntrinsic;
@@ -304,6 +331,25 @@ export class Verb extends Metadata {
 	codeDraft: string;
 
 	/**
+	 * Instantiates a new Verb object based on the value of an existing
+	 * Verb object. The new object does not share any references with the old
+	 * object.
+	 *
+	 * @param {Verb} perms - Verb object to use as a base.
+	 */
+	static from(verb: Verb): Verb {
+		return new Verb(
+			verb.sourceId,
+			verb.name,
+			Verb.sigsAsStringArray(verb.sigs),
+			verb.code,
+			verb.isDraft,
+			verb.perms,
+			verb.permsEffective
+		);
+	}
+
+	/**
 	 * Converts an array of VerbSignature objects into an array of strings, for
 	 * use with server APIs that expect an array of strings.
 	 *
@@ -331,7 +377,7 @@ export class Verb extends Metadata {
 	 * @param {string} permsEffective - (optional) Permissions currently in
 	 *   effect.
 	 */
-	constructor(sourceId: number, name: string, sigs: string[], code: string, isDraft?: boolean, perms?: string, permsEffective?: string) {
+	constructor(sourceId: number, name: string, sigs: string[], code: string, isDraft?: boolean, perms?: Permissions | string, permsEffective?: Permissions | string) {
 		super(sourceId, name, isDraft, perms, permsEffective);
 
 		if (this.isDraft) {
