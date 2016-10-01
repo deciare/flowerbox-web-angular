@@ -10,6 +10,7 @@ export class Urls {
 	static termEvents: string = Config.server + "terminal/new-events/";
 	static userLogin: string = Config.server + "user/login/";
 	static userPlayerInfo: string = Config.server + "user/player-info/";
+	static worldDefaultPerms: string = Config.server + "world/default-perms/";
 	static worldWob: string = Config.server + "world/wob/";
 
 	static draftBlob: string = "__draft_blob_";
@@ -129,5 +130,9 @@ export class Urls {
 
 	static wobSetDrafts(id: number | string) {
 		return "/property/" + Urls.draftWob + id + "/subs";
+	}
+
+	static defaultPermissions(type: string) {
+		return Urls.worldDefaultPerms + type;
 	}
 }

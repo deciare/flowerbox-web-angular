@@ -166,3 +166,8 @@ export class PermissionsModel extends BaseModel {
 	perms?: string;
 	permseffective: string;
 }
+
+// For returning default permissions
+export class DefaultPermissionsModel extends BaseModel {
+	perms: string;
+}

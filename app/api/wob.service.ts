@@ -9,7 +9,7 @@ import "rxjs/add/operator/toPromise";
 
 import { BaseModel } from "../models/base";
 import { Urls } from "../shared/urls";
-import { PropertyModel, VerbModel, InstanceOfModelList, PermissionsModel, WobInfoModel, WobInfoModelList } from "../models/wob";
+import { PropertyModel, VerbModel, InstanceOfModelList, DefaultPermissionsModel, PermissionsModel, WobInfoModel, WobInfoModelList } from "../models/wob";
 import { Permissions } from "../types/permission";
 import { EditState, Property, Verb } from "../types/wob";
 
@@ -719,6 +719,15 @@ export class WobService {
 					}
 				}).toPromise();
 			})
+			.then(
+				this.handleResponse.bind(this),
+				this.handleServerError.bind(this)
+			);
+	}
+
+	getDefaultPermissions(type: string): Promise<DefaultPermissionsModel> {
+		return this.http.get(Urls.defaultPermissions(type))
+			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
 				this.handleServerError.bind(this)
