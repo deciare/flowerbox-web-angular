@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
 
-import { WobInfoModel } from "../models/wob";
+import { DefaultPermissionsModel, WobInfoModel } from "../models/wob";
 import { Permissions } from "../types/permission";
 import { Property, EditState} from "../types/wob";
 
@@ -135,15 +135,16 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 			this[arrName][foundIndex] = newItem;
 		}
 		else {
-			// Set the new property's effective permissions based on the wob's
-			// permissions.
-			newItem.permsEffective = new Permissions(this.intrinsics.find((intrinsic) => {
-				return intrinsic.name == "perms";
-			}).value);
+			this.wobService.getDefaultPermissions("property")
+				.then((perms: DefaultPermissionsModel) => {
+					// Set the new property's effective permissions based on
+					// server defaults.
+					newItem.permsEffective = new Permissions(perms.perms);
 
-			// If applied property doesn't exist, append draft property to end
-			// of array.
-			this[arrName].push(newItem);
+					// If applied property doesn't exist, append draft property
+					// to end of array.
+					this[arrName].push(newItem);
+				});
 		}
 	}
 
