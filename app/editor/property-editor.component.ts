@@ -115,18 +115,20 @@ export class PropertyEditorComponent extends WobEditorComponent implements OnDes
 					// permissions.
 					newItem.permsEffective = newItem.perms;
 				}
-				else if (this[arrName][foundIndex].perms) {
-					// If draft property does not have explicit permissions set
-					// but the applied property does, copy explicit permissions
-					// from the applied property.
-					newItem.perms = this[arrName][foundIndex].perms;
-					newItem.permsEffective = newItem.perms;
-				}
-				else {
-					// If explicit permissions are set on neither the applied nor
-					// the draft property, inherit the applied property's
-					// effective permissions.
-					newItem.permsEffective = this[arrName][foundIndex].permsEffective;
+				else if (!this[arrName][foundIndex].isDraft) {
+					if (this[arrName][foundIndex].perms) {
+						// If draft property does not have explicit permissions
+						// set but the applied property does, copy explicit
+						// permissions from the applied property.
+						newItem.perms = this[arrName][foundIndex].perms;
+						newItem.permsEffective = newItem.perms;
+					}
+					else {
+						// If explicit permissions are set on neither the
+						// applied nor the draft property, inherit the applied
+						// property's effective permissions.
+						newItem.permsEffective = this[arrName][foundIndex].permsEffective;
+					}
 				}
 			}
 
