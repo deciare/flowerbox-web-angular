@@ -22,5 +22,10 @@
 				</button>
 			</div>
 		</div>
+		<div class="row">
+			<div class="col-xs-12">
+				<permissions *ngIf="!property.isIntrinsic" [item]="_propertyForPermissions" (permissionsChange)="onPermissionsChange($event)"></permissions>
+			</div>
+		</div>
 	</div>
 </div>
