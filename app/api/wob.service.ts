@@ -100,6 +100,7 @@ export class WobService {
 					metadata.id,
 					metadata.name,
 					data,
+					false,
 					isDraft,
 					metadata.perms,
 					metadata.permseffective
@@ -608,7 +609,7 @@ export class WobService {
 				(response: Response) => {
 					// Create a property draft that indicates that a Blob
 					// property corresponding to this draft exists.
-					return this.setPropertyDraft(id, name, blobPropertyName);
+					return this.setPropertyDraft(id, name, blobPropertyName, perms);
 				},
 				this.handleServerError.bind(this)
 			);
