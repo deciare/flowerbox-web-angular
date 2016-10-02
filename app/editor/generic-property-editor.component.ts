@@ -9,7 +9,6 @@ import { DomSanitizer } from "@angular/platform-browser";
 import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
 import "rxjs/add/operator/debounceTime";
-import "rxjs/add/operator/distinctUntilChanged";
 
 import { BaseModel } from "../models/base";
 import { DefaultPermissionsModel, PermissionsModel, WobInfoModel } from "../models/wob";
@@ -26,6 +25,12 @@ import { WobService } from "../api/wob.service";
 })
 export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnInit {
 	private _objectURL: string;
+
+	// _propertyForPermissions is passed as an input to the [item] data binding
+	// of PermissionsComponent. The value of _propertyForPermissions should be
+	// changed (i.e. it should reference a different instance of a Property
+	// object) whenever property is modified.
+	protected _propertyForPermissions: Property;
 
 	draftUpdate: Subject<Property>;
 	draftUpdateSubscription: Subscription;
@@ -107,8 +112,14 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 	 * components know when this property's value has changed.
 	 */
 	protected pushChange() {
+		// Queue server-side draft update.
 		this.draftUpdate.next(this.property);
+
+		// Inform parent component that property's value has changed.
 		this.propertyChange.emit(this.property);
+
+		// Update PermissionsComponent data binding.
+		this._propertyForPermissions = Property.from(this.property);
 	}
 
 	/**
@@ -123,9 +134,6 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 	ngOnInit() {
 		this.draftUpdateSubscription = this.draftUpdate
 			.debounceTime(500)
-			.distinctUntilChanged((x, y) => {
-				return x.value !== y.value
-			})
 			.subscribe(this.saveDraft.bind(this));
 	}
 
@@ -133,6 +141,9 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 		if (changes["property"].currentValue.isBlob) {
 			this.objectURL = changes["property"].currentValue.createObjectURL();
 		}
+
+		// Update PermissionsComponent data binding.
+		this._propertyForPermissions = Property.from(changes["property"].currentValue);
 	}
 
 	ngOnDestroy() {
@@ -172,11 +183,6 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 					this.property.perms = undefined;
 					this.property.permsEffective = new Permissions(perms.perms);
 					this.pushChange();
-
-					// Ensure that changes propagate downward to
-					// PermissionEditorComponent by changing the this.property
-					// reference to trigger Angular's lifecycle hooks.
-					this.property = Property.from(this.property);
 				});
 		}
 		else {
@@ -184,11 +190,6 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 			this.property.perms = event;
 			this.property.permsEffective = event;
 			this.pushChange();
-
-			// Ensure that changes propagate downward to
-			// PermissionEditorComponent by changing the this.property
-			// reference to trigger Angular's lifecycle hooks.
-			this.property = Property.from(this.property);
 		}
 	}
 

@@ -12,5 +12,5 @@
 		</button>
 	</span>
 </div>
-<permissions *ngIf="!property.isIntrinsic" [item]="property" (permissionsChange)="onPermissionsChange($event)"></permissions>
+<permissions *ngIf="!property.isIntrinsic" [item]="_propertyForPermissions" (permissionsChange)="onPermissionsChange($event)"></permissions>
 {{message}}
