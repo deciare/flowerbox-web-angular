@@ -198,7 +198,9 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 	}
 
 	onDeleteClick(event: Event) {
-		this.delete();
+		if (confirm("Really delete property \"" + this.property.name + "\"?\nThis cannot be undone.")) {
+			this.delete();
+		}
 	}
 
 	onSaveClick(event: Event) {
