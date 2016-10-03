@@ -381,7 +381,7 @@ export class Verb extends Metadata {
 		super(sourceId, name, isDraft, perms, permsEffective);
 
 		if (this.isDraft) {
-			if (sigs && sigs.length) {
+			if (sigs) {
 				this.sigsDraft = [];
 				sigs.forEach((sig) => {
 					this.sigsDraft.push(new VerbSignature(sig));
@@ -390,7 +390,7 @@ export class Verb extends Metadata {
 			this.codeDraft = code;
 		}
 		else {
-			if (sigs && sigs.length) {
+			if (sigs) {
 				this.sigsApplied = [];
 				sigs.forEach((sig) => {
 					this.sigsApplied.push(new VerbSignature(sig));
