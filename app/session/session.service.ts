@@ -107,13 +107,13 @@ export class SessionService {
 					});
 
 				if (data.success) {
-					return Promise.resolve(data);
+					return Promise.resolve<WobInfoModel>(data);
 				}
 				else {
-					return Promise.reject(data.error);
+					return Promise.reject<WobInfoModel>(data.error);
 				}
 			},
-			this.handleServerError.bind(this))
+			this.handleServerError.bind(this));
 	}
 
 	login(username: string, password: string, admin?: boolean): Promise<any> {
