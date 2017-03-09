@@ -7,7 +7,7 @@ import { Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, Router, Resolve } from "@angular/router";
 import { Observable } from "rxjs/Observable";
 
-import { WobInfoModel } from "../models/wob.ts";
+import { WobInfoModel } from "../models/wob";
 
 import { SessionHttp } from "../session/session-http.service";
 import { WobService } from "../api/wob.service";
