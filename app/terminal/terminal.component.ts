@@ -140,7 +140,7 @@ export class TerminalComponent implements AfterViewChecked, AfterViewInit, OnDes
 
 	ngAfterViewChecked() {
 		// Bootstrap: Opt-in to tooltip data API
-		$('[data-toggle="tooltip"]').tooltip();
+		(<any>$('[data-toggle="tooltip"]')).tooltip();
 	}
 
 	private createRichChunk(item: any, index: number, arr: Array<EventStreamItem>): ChunkWrapper {

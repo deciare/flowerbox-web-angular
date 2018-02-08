@@ -6,7 +6,7 @@
 import { Injectable } from "@angular/core";
 import { ConnectionBackend, Headers, Http, Request, RequestOptions, RequestOptionsArgs, Response, ResponseOptions, ResponseContentType, ResponseType } from "@angular/http";
 import { Observable } from "rxjs/Observable";
-import { Observer } from "rxjs/Observer";
+import { Subscriber } from "rxjs/Subscriber";
 import "rxjs/add/operator/do";
 import { SessionService } from "../session/session.service";
 
@@ -79,9 +79,7 @@ export class SessionHttp extends Http {
 			statusText: "Not logged in"
 		});
 
-		return new Observable<Response>((observer: Observer<Response>) => {
-			observer.error(new Response(responseOptions));
-		});
+		return Observable.throw(new Response(responseOptions));
 	}
 
 	private sendFormData(method: string, url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
@@ -136,7 +134,7 @@ export class SessionHttp extends Http {
 	}
 
 	private wrapXhrEvents(xhr: XMLHttpRequest) {
-		return new Observable<Response>((observer: Observer<Response>) => {
+		return Observable.create((subscriber: Subscriber<Response>) => {
 			xhr.onerror = (error: any) => {
 				var responseOptions = new ResponseOptions({
 					body: error,
@@ -146,7 +144,7 @@ export class SessionHttp extends Http {
 				});
 				var response = new Response(responseOptions);
 
-				observer.error(response);
+				subscriber.error(response);
 			};
 
 			xhr.onload = (event: Event) => {
@@ -164,11 +162,11 @@ export class SessionHttp extends Http {
 				// Otherwise, request failed.
 				response.ok = status >= 200 && status <= 299;
 				if (response.ok) {
-					observer.next(response);
-					observer.complete();
+					subscriber.next(response);
+					subscriber.complete();
 				}
 				else {
-					observer.error(response);
+					subscriber.error(response);
 				}
 			};
 		});

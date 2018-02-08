@@ -122,7 +122,7 @@ export class TerminalEventService {
 			});
 	}
 
-	getOutput() {
+	getOutput(): Promise<any> {
 		// console.debug("Getting output from", Urls.termEvents + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime());
 		return this.http.get(
 				Urls.termEvents + "?since=" + (this.lastCheckTime + 1) + "&datehack=" + new Date().getTime()

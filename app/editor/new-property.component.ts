@@ -46,19 +46,19 @@ export class NewPropertyComponent implements AfterViewInit {
 
 	ngAfterViewInit() {
 		this.element = $(`#${this.domId}`);
-		this.element.on("shown.bs.modal", (event: JQueryEventObject) => {
+		this.element.on(<any>"shown.bs.modal", (event: JQueryEventObject) => {
 			$("#propertyName").focus();
 		});
 	}
 
 	onSubmit() {
 		this.confirm.emit(new NewPropertyParams(this.name, this.validTypes[this.type]));
-		this.element.modal("hide");
+		(<any>this.element).modal("hide");
 	}
 
 	open() {
 		this.name = "";
 		this.type = "Text";
-		this.element.modal();
+		(<any>this.element).modal();
 	}
 }

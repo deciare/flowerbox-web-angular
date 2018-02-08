@@ -86,12 +86,16 @@ export class AceConfigComponent implements AfterViewInit {
 	}
 
 	onSubmit() {
-		this.element.modal("hide");
+		// HACK: modal() is a Bootstrap method, and therefore doesn't exist on
+		// JQuery<HTMLElement> type
+		(<any>this.element).modal("hide");
 	}
 
 	open(editor: any) {
 		this.setEditor(editor);
 		this.loadConfig();
-		this.element.modal();
+		// HACK: modal() is a Bootstrap method, and therefore doesn't exist on
+		// JQuery<HTMLElement> type
+		(<any>this.element).modal();
 	}
 }

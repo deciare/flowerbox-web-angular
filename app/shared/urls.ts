@@ -44,11 +44,11 @@ export class Urls {
 			xhr.open("GET", objectUrl, true);
 			xhr.responseType = "blob";
 			xhr.onload = function (event) {
-				if (this.status == 200) {
-					resolve(this.response);
+				if (xhr.status == 200) {
+					resolve(xhr.response);
 				}
 				else {
-					reject(this.status + " " + this.statusText)
+					reject(xhr.status + " " + xhr.statusText)
 				}
 			};
 			xhr.send();

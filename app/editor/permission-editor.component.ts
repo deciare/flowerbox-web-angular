@@ -47,13 +47,13 @@ export class PermissionEditorComponent implements AfterViewInit {
 	onReset() {
 		this.item.perms = undefined;
 		this.permissionsChange.emit(this.item);
-		this.element.modal("hide");
+		(<any>this.element).modal("hide");
 	}
 
 	onSubmit() {
 		this.item.perms = this.item.permsEffective;
 		this.permissionsChange.emit(this.item);
-		this.element.modal("hide");
+		(<any>this.element).modal("hide");
 	}
 
 	open(item: Property | Verb) {
@@ -65,6 +65,6 @@ export class PermissionEditorComponent implements AfterViewInit {
 		else if (item instanceof Verb) {
 			this.item = Verb.from(item);
 		}
-		this.element.modal();
+		(<any>this.element).modal();
 	}
 }

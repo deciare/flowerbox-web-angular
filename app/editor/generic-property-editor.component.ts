@@ -123,9 +123,9 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 	}
 
 	/**
-	 * Should be called when the value of the property is changed. Triggers
+	 * Should be called when the value of the property is deleted. Triggers
 	 * observables and output event bindings to let observers and other
-	 * components know when this property's value has changed.
+	 * components know when this property's value has deleted.
 	 */
 	protected pushDelete() {
 		this.propertyDelete.emit(this.property);
@@ -222,6 +222,7 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 				},
 				(error) => {
 					this.message = "Could not delete property: " + error;
+					return Promise.reject(error);
 				});
 		}
 	}
@@ -276,6 +277,7 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 				(error) => {
 					this.message = " Could not discard draft: " + error;
 					this.pushDelete();
+					return Promise.reject(error);
 				}
 			);
 	}
@@ -321,6 +323,7 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 				},
 				(error) => {
 					this.message = "Could not save property: " + error;
+					return Promise.reject(error);
 				}
 			);
 	}
@@ -351,6 +354,7 @@ export class GenericPropertyEditorComponent implements OnChanges, OnDestroy, OnI
 				},
 				(error) => {
 					this.message = "Could not save draft: " + error;
+					return Promise.reject(error);
 				}
 			);
 	}

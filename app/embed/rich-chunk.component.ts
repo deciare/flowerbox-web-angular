@@ -117,17 +117,17 @@ export class RichChunkComponent implements AfterViewInit, OnDestroy {
 		// Indicate that this popover should be hidden.
 		this.popoverShown = false;
 		// Hide the popover.
-		this.element.popover("hide");
+		(<any>this.element).popover("hide");
 	}
 
-	replacePopover(options: PopoverOptions) {
+	replacePopover(options: any /*BootStrap PopoverOptions*/) {
 		// Hide the previous popover. We won't be able to hide it
 		// after re-initialisation because we will no longer have
 		// a reference to that instance of the popover.
-		this.element.popover("hide");
+		(<any>this.element).popover("hide");
 
 		// Create a new popover and initialise it with updated content.
-		this.element.data("bs.popover", null).popover(options);
+		(<any>this.element).data("bs.popover", null).popover(options);
 	}
 
 	showPopover() {
@@ -141,7 +141,7 @@ export class RichChunkComponent implements AfterViewInit, OnDestroy {
 		// If content for this popover has never been loaded before, show a
 		// placeholder while making a request to the server.
 		if (!this.content) {
-			this.element.popover({
+			(<any>this.element).popover({
 				content: this.sessionService.isLoggedIn() ? "Loading..." : "Log in to view details",
 				placement: this.popoverPlacement()
 			}).popover("show");
@@ -189,7 +189,7 @@ export class RichChunkComponent implements AfterViewInit, OnDestroy {
 
 					// If this popover should still be shown, show it now.
 					if (this.popoverShown) {
-						this.element.popover("show");
+						(<any>this.element).popover("show");
 					}
 
 
@@ -224,7 +224,7 @@ export class RichChunkComponent implements AfterViewInit, OnDestroy {
 
 					// If this popover should still be shown, show it now.
 					if (this.popoverShown) {
-						this.element.popover("show");
+						(<any>this.element).popover("show");
 					}
 				});
 			break;

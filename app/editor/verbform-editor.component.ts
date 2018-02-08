@@ -73,11 +73,11 @@ export class VerbformEditorComponent implements AfterViewInit {
 		}
 
 		this.save.emit(new VerbSignature(output.join(" ")));
-		this.element.modal("hide");
+		(<any>this.element).modal("hide");
 	}
 
 	open(verbform: VerbSignature) {
-		this.element.modal();
+		(<any>this.element).modal();
 		this.verbform = new VerbSignature(verbform.words.map((word, index) => {
 			if (word === undefined || word === null || word === "") {
 				return "__invalid__";

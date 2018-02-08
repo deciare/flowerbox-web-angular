@@ -134,7 +134,7 @@ export class WobService {
 	}
 
 	getContents(id: number, admin?: boolean): Promise<WobInfoModelList>{
-		return this.http.get(Urls.worldWob + id + "/contents", {
+		return <Promise<any>>this.http.get(Urls.worldWob + id + "/contents", {
 				admin: admin
 			})
 			.toPromise()
@@ -336,7 +336,7 @@ export class WobService {
 	}
 
 	deleteIntrinsicDraft(id: number | string, name: string): Promise<BaseModel> {
-		return this.sessionService.getPlayerInfo()
+		return <Promise<any>>this.sessionService.getPlayerInfo()
 			.then((player: WobInfoModel) => {
 				return this.http.delete(Urls.worldWob + player.id + Urls.wobGetIntrinsicDraft(id, name)).toPromise();
 			})
@@ -347,7 +347,7 @@ export class WobService {
 	}
 
 	deleteProperty(id: number | string, name: string, admin?: boolean): Promise<BaseModel> {
-		return this.http.delete(Urls.wobGetProperty(id, name), {
+		return <Promise<any>>this.http.delete(Urls.wobGetProperty(id, name), {
 				admin: admin
 			})
 			.toPromise()
@@ -374,7 +374,7 @@ export class WobService {
 	}
 
 	deletePropertyDraft(id: number | string, name: string): Promise<BaseModel> {
-		return this.sessionService.getPlayerInfo()
+		return <Promise<any>>this.sessionService.getPlayerInfo()
 			.then((player: WobInfoModel) => {
 				return this.http.delete(Urls.worldWob + player.id + Urls.wobGetPropertyDraft(id, name)).toPromise();
 			})
@@ -385,7 +385,7 @@ export class WobService {
 	}
 
 	deleteVerb(id: number | string, name: string, admin: boolean): Promise<BaseModel> {
-		return this.sessionService.getPlayerInfo()
+		return <Promise<any>>this.sessionService.getPlayerInfo()
 			.then((player: WobInfoModel) => {
 				return this.http.delete(Urls.wobGetVerb(id, name), {
 					admin: admin
@@ -398,7 +398,7 @@ export class WobService {
 	}
 
 	deleteVerbDraft(id: number | string, name: string): Promise<BaseModel> {
-		return this.sessionService.getPlayerInfo()
+		return <Promise<any>>this.sessionService.getPlayerInfo()
 			.then((player: WobInfoModel) => {
 				return this.http.delete(Urls.worldWob + player.id + Urls.wobGetVerbDraft(id, name)).toPromise();
 			})
@@ -409,7 +409,7 @@ export class WobService {
 	}
 
 	getInfo(id: number | string, admin?: boolean): Promise<WobInfoModel> {
-		return this.http.get(Urls.wobInfo(id), {
+		return <Promise<any>>this.http.get(Urls.wobInfo(id), {
 				admin: admin
 			})
 			.toPromise()
@@ -420,7 +420,7 @@ export class WobService {
 	}
 
 	setIntrinsics(id: number, intrinsics: any, admin?: boolean): Promise<BaseModel> {
-		return this.http.put(Urls.wobInfo(id), intrinsics, {
+		return <Promise<any>>this.http.put(Urls.wobInfo(id), intrinsics, {
 			admin: admin
 		})
 		.toPromise()
@@ -431,7 +431,7 @@ export class WobService {
 	}
 
 	setIntrinsic(id: number, name: string, value: any, admin?: boolean): Promise<BaseModel> {
-		return this.http.put(Urls.wobInfo(id), {
+		return <Promise<any>>this.http.put(Urls.wobInfo(id), {
 				[name]: value
 			}, {
 				admin: admin
@@ -444,7 +444,7 @@ export class WobService {
 	}
 
 	getIntrinsicDraft(id: number, name: string): Promise<Property> {
-		return this.sessionService.getPlayerInfo()
+		return <Promise<any>>this.sessionService.getPlayerInfo()
 			.then((player: WobInfoModel) => {
 				return this.http.get(Urls.worldWob + player.id + Urls.wobGetIntrinsicDraft(id, name)).toPromise();
 			})
@@ -455,7 +455,7 @@ export class WobService {
 	}
 
 	setIntrinsicDraft(id: number, name: string, value: any): Promise<BaseModel> {
-		return this.sessionService.getPlayerInfo()
+		return <Promise<any>>this.sessionService.getPlayerInfo()
 			.then((player: WobInfoModel) => {
 				return this.http.put(Urls.worldWob + player.id +  Urls.wobSetDrafts(id),
 					{
@@ -471,7 +471,7 @@ export class WobService {
 
 	instanceOf(ids: number | number[] | string | string[], ancestorId: number | string): Promise<InstanceOfModelList> {
 		var idStr = ids instanceof Array ? ids.join(",") : ids;
-		return this.http.get(Urls.wobInstanceOf(idStr, ancestorId))
+		return <Promise<any>>this.http.get(Urls.wobInstanceOf(idStr, ancestorId))
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
@@ -480,7 +480,7 @@ export class WobService {
 	}
 
 	getBinaryProperty(id: number | string, name: string, admin?: boolean): Promise<Property> {
-		return this.http.get(Urls.wobGetProperty(id, name), {
+		return <Promise<any>>this.http.get(Urls.wobGetProperty(id, name), {
 				responseType: ResponseContentType.Blob,
 				admin: admin
 			})
@@ -492,7 +492,7 @@ export class WobService {
 	}
 
 	getProperty(id: number | string, name: string, admin?: boolean): Promise<Property> {
-		return this.http.get(Urls.wobGetProperty(id, name), {
+		return <Promise<any>>this.http.get(Urls.wobGetProperty(id, name), {
 				admin: admin
 			})
 			.toPromise()
@@ -508,7 +508,7 @@ export class WobService {
 			value = JSON.stringify(value);
 		}
 
-		return this.http.putFormData(Urls.wobSetBinaryProperties(id), {
+		return <Promise<any>>this.http.putFormData(Urls.wobSetBinaryProperties(id), {
 				[name]: value
 			}, {
 				admin: admin
@@ -537,7 +537,7 @@ export class WobService {
 	 * @param {any} properties - As descibed above
 	 */
 	setProperties(id: number, properties: any, admin?: boolean): Promise<BaseModel> {
-		return this.http.putFormData(Urls.wobSetProperties(id), properties, {
+		return <Promise<any>>this.http.putFormData(Urls.wobSetProperties(id), properties, {
 				admin: admin
 			})
 			.toPromise()
@@ -548,7 +548,7 @@ export class WobService {
 	}
 
 	setProperty(id: number, name: string, value: any, admin?: boolean): Promise<BaseModel> {
-		return this.http.put(Urls.wobSetProperties(id), {
+		return <Promise<any>>this.http.put(Urls.wobSetProperties(id), {
 				[name]: value
 			}, {
 				admin: admin
@@ -616,7 +616,7 @@ export class WobService {
 	}
 
 	setPropertyDraft(id: number, name: string, value: any, perms?: string): Promise<BaseModel> {
-		return this.sessionService.getPlayerInfo()
+		return <Promise<any>>this.sessionService.getPlayerInfo()
 			.then((player: WobInfoModel) => {
 				return this.http.put(Urls.worldWob + player.id +  Urls.wobSetDrafts(id),
 					{
@@ -634,7 +634,7 @@ export class WobService {
 	}
 
 	getPropertyPermissions(id: number | string, name: string): Promise<PermissionsModel> {
-		return this.http.get(Urls.wobPropertyPermissions(id, name))
+		return <Promise<any>>this.http.get(Urls.wobPropertyPermissions(id, name))
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
@@ -643,7 +643,7 @@ export class WobService {
 	}
 
 	setPropertyPermissions(id: number | string, name: string, perms: string, admin?: boolean): Promise<PermissionsModel> {
-		return this.http.put(Urls.wobPropertyPermissions(id, name), {
+		return <Promise<any>>this.http.put(Urls.wobPropertyPermissions(id, name), {
 				perms: perms
 			}, {
 				admin: admin
@@ -660,7 +660,7 @@ export class WobService {
 	}
 
 	getVerb(id: number, name: string, admin?: boolean): Promise<Verb> {
-		return this.http.get(Urls.wobGetVerb(id, name), {
+		return <Promise<any>>this.http.get(Urls.wobGetVerb(id, name), {
 				admin: admin
 			})
 			.toPromise()
@@ -671,7 +671,7 @@ export class WobService {
 	}
 
 	setVerbs(id: number, verbs: any, admin?: boolean): Promise<BaseModel> {
-		return this.http.put(Urls.wobSetVerbs(id), verbs, {
+		return <Promise<any>>this.http.put(Urls.wobSetVerbs(id), verbs, {
 				admin: admin
 			})
 			.toPromise()
@@ -682,7 +682,7 @@ export class WobService {
 	}
 
 	setVerb(id: number, name: string, sigs: string[], code: string, admin?: boolean): Promise<BaseModel> {
-		return this.http.put(Urls.wobSetVerbs(id), {
+		return <Promise<any>>this.http.put(Urls.wobSetVerbs(id), {
 				[name]: {
 					sigs: sigs,
 					code: code
@@ -727,7 +727,7 @@ export class WobService {
 	}
 
 	getDefaultPermissions(type: string): Promise<DefaultPermissionsModel> {
-		return this.http.get(Urls.defaultPermissions(type))
+		return <Promise<any>>this.http.get(Urls.defaultPermissions(type))
 			.toPromise()
 			.then(
 				this.handleResponse.bind(this),
